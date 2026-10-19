@@ -78,6 +78,10 @@ addEventListener('keydown', e => {
     UI.debug = !UI.debug;
     $('dbg').hidden = !UI.debug;
     e.preventDefault();
+  } else if (e.key === 'F4') {
+    // In debug view: full trajectories (recorded flight paths and the predicted shot).
+    if (UI.debug) UI.traj = !UI.traj;
+    e.preventDefault();
   } else if (e.key === 'r' || e.key === 'R') UI.ang = (UI.ang + 1) % 8;
   else if (e.key === 'c' || e.key === 'C') {
     UI.panT = -9;
@@ -139,6 +143,11 @@ const pinchGeom = () => {
   const [a, b] = [...ptrs.values()];
   return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
 };
+// No browser context menu anywhere over the game (HUD overlays included); the right button is the
+// weapon menu. The menu screen keeps the normal behaviour for text fields.
+addEventListener('contextmenu', e => {
+  if ($('menu').style.display === 'none') e.preventDefault();
+});
 cvs.addEventListener('contextmenu', e => e.preventDefault());
 cvs.addEventListener('pointerdown', e => {
   ac();

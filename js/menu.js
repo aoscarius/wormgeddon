@@ -213,6 +213,17 @@ document.querySelectorAll('.tabs button').forEach(b =>
   })
 );
 $('oTeams').addEventListener('change', buildTeamRows);
+// Client-side option (not a match rule): remembered between visits.
+try {
+  UI.autoCenter = localStorage.getItem('wormgeddon.autocenter') !== '0';
+} catch (e) {}
+$('oAuto').checked = UI.autoCenter;
+$('oAuto').addEventListener('change', e => {
+  UI.autoCenter = e.target.checked;
+  try {
+    localStorage.setItem('wormgeddon.autocenter', UI.autoCenter ? '1' : '0');
+  } catch (err) {}
+});
 $('bStart').addEventListener('click', () => {
   const rows = readTeamRows();
   NET.role = 'local';

@@ -120,10 +120,8 @@
                 <option value="random">Surprise me</option>
                 <option value="custom" data-nt disabled>Custom image</option>
               </select></label>
-            <div class="f mapload">
-              <select id="oLib" data-nt hidden></select>
-              <small id="oLibNote" data-nt></small>
-            </div>
+              <label class="f">Maps library<select id="oLib" data-nt disabled></select></label>
+              <small id="oLibNote" class="libnote" data-nt></small>
             <div class="f mapload">
               <label class="filebtn">Load map image&hellip;<input id="oMap" type="file"
                   accept="image/png,image/bmp,image/gif,image/webp,image/jpeg,.png,.bmp,.gif,.webp,.jpg,.jpeg,.img"
@@ -146,6 +144,8 @@
                 <option value="l">Large</option>
               </select></label>
             <label class="f">Seed<input id="oSeed" type="text" placeholder="random" maxlength="16" /></label>
+            <label class="f chk"><input id="oAuto" type="checkbox" checked /> Auto-centre the camera when a worm
+              moves</label>
           </fieldset>
           <fieldset>
             <legend>Rules</legend>
@@ -252,6 +252,7 @@
           <div><b>Esc</b> pause</div>
           <div><b>M</b> mute</div>
           <div><b>F3</b> or <b>`</b> debug view (collision boxes)</div>
+          <div><b>F4</b> (in debug view) show trajectories</div>
         </div>
         <p class="note">
           Ninja Rope: fire to hook, Left/Right swing, Up/Down reel, Enter or fire again to let go

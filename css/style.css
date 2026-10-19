@@ -1073,10 +1073,25 @@ kbd {
 .mapload select {
   max-width: 100%;
   flex: 1 1 140px;
-  background: var(--ground);
-  border: 2px solid var(--line);
-  border-radius: 5px;
-  padding: 3px 6px;
-  width: 150px;
-  min-width: 0;
+}
+
+.libnote {
+  display: block;
+  margin: -4px 0 6px;
+  opacity: 0.75;
+  line-height: 1.25;
+}
+.libnote.err {
+  color: var(--hit);
+  opacity: 1;
+}
+label.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+label.chk input {
+  width: auto;
+  flex: none;
 }

@@ -6,7 +6,7 @@
  * Per-frame drawing: parallax sky, water, terrain, entities, effects and targeting previews.
  *
  * Depends on: sprites, worm-art, fx, terrain
- * Globals defined: SKY_CLOUDS, drawSky, drawNuke, drawDebug, debugText, drawWater, render
+ * Globals defined: SKY_CLOUDS, drawSky, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, render
  */
 
 /* ---- Rendering ---- */
@@ -262,6 +262,89 @@ function drawDebug() {
   ctx2.stroke();
   ctx2.setLineDash([]);
 }
+/** Recorded flight paths for the debug view: projectile id -> {pts, col, gone}. */
+const DBG_PATHS = new Map();
+/**
+ * Debug trajectories (F4 while the debug view is on). Two things are drawn:
+ *  - the real path of every projectile and of the active worm, recorded frame by frame and kept
+ *    for 8 s after the projectile is gone;
+ *  - a prediction of the selected weapon's shot at the current aim (and at the current charge, or
+ *    full power when not charging), simulated with the same physics and terrain collision.
+ * Weapons opt in to the prediction through `fire.launch = {type, lo, hi}` (set by throwP()).
+ */
+function drawTrajectories() {
+  const S = CAM.s,
+    now = G.time;
+  const rec = (key, x, y, col) => {
+    let r = DBG_PATHS.get(key);
+    if (!r) DBG_PATHS.set(key, (r = { pts: [], col, gone: 0 }));
+    r.gone = 0;
+    const l = r.pts[r.pts.length - 1];
+    if (!l || Math.hypot(l[0] - x, l[1] - y) > 2) {
+      r.pts.push([x, y]);
+      if (r.pts.length > 900) r.pts.shift();
+    }
+  };
+  for (const p of G.projs) rec('p' + p.id, p.x, p.y, '#ff5ad0');
+  const aw = activeWorm();
+  if (aw && !aw.dead && (G.phase === 'turn' || G.phase === 'retreat'))
+    rec('w' + aw.id + ':' + G.round, aw.x, aw.y - 2, '#30ff60');
+  ctx2.lineWidth = 1.4 / S;
+  for (const [k, r] of DBG_PATHS) {
+    if (k[0] === 'p' && !G.projs.some(p => 'p' + p.id === k)) r.gone = (r.gone || 0) + 1 / 60;
+    if (k[0] === 'w' && !k.endsWith(':' + G.round)) r.gone = (r.gone || 0) + 1 / 30;
+    if (r.gone > 8) {
+      DBG_PATHS.delete(k);
+      continue;
+    }
+    ctx2.globalAlpha = Math.max(0.15, 1 - r.gone / 8);
+    ctx2.strokeStyle = r.col;
+    ctx2.beginPath();
+    r.pts.forEach(([x, y], i) => (i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y)));
+    ctx2.stroke();
+  }
+  ctx2.globalAlpha = 1;
+  // prediction of the selected weapon
+  const d = G.weapon && WEAPONS[G.weapon.id];
+  if (!aw || aw.dead || !d || !d.fire.launch || G.phase !== 'turn') return;
+  const { type, lo, hi } = d.fire.launch,
+    pt = PTYPES[type],
+    power = G.weapon.pw > 0 ? G.weapon.pw : 1,
+    sp = lo + (hi - lo) * power,
+    [mx, my, dx, dy] = muzzle(aw),
+    g = { x: mx, y: my, vx: dx * sp, vy: dy * sp, r: pt.r || 3, bounce: pt.bounce || 0, fric: pt.fric == null ? 0.85 : pt.fric };
+  let fuse = pt.fuse != null ? (d.fuse ? G.weapon.fuse : pt.fuse) : null,
+    t = 0;
+  ctx2.strokeStyle = '#ffe04a';
+  ctx2.setLineDash([5 / S, 4 / S]);
+  ctx2.beginPath();
+  ctx2.moveTo(g.x, g.y);
+  let end = null;
+  for (let i = 0; i < 60 * 8; i++) {
+    const dt = 1 / 60;
+    g.vy += GRAV * (pt.grav == null ? 1 : pt.grav) * dt;
+    if (pt.wind) g.vx += G.wind * WIND_ACC * pt.wind * dt;
+    const c = stepBody(g, dt);
+    ctx2.lineTo(g.x, g.y);
+    t += dt;
+    if ((c && pt.hit) || g.y > G.waterY || g.x < -200 || g.x > T.w + 200) {
+      end = [g.x, g.y];
+      break;
+    }
+    if (fuse != null && t >= fuse) {
+      end = [g.x, g.y];
+      break;
+    }
+  }
+  ctx2.stroke();
+  ctx2.setLineDash([]);
+  if (end) {
+    ctx2.strokeStyle = '#ff4040';
+    ctx2.beginPath();
+    ctx2.arc(end[0], end[1], (pt.expl ? pt.expl.r : 10), 0, TAU);
+    ctx2.stroke();
+  }
+}
 /** Text block of the debug view: phase, timers and, while settling, what is blocking the turn change. */
 function debugText() {
   const aw = activeWorm();
@@ -269,6 +352,7 @@ function debugText() {
     `phase ${G.phase}  round ${G.round + 1}  timer ${G.timer.toFixed(1)}`,
     `worms ${G.worms.filter(w => !w.dead).length}  projs ${G.projs.length}  objs ${G.objs.length}  fires ${G.fires.length}`,
     `water ${G.waterY.toFixed(0)} -> ${G.waterTarget.toFixed(0)}`,
+    `trajectories (F4): ${UI.traj ? 'on' : 'off'}`,
   ];
   if (G.phase === 'settle')
     lines.push(`settle ${G.settleT.toFixed(1)} s  blocked by: ${quietBlocker() || 'nothing'}`);
@@ -384,7 +468,10 @@ function render() {
     ctx2.restore();
   }
   drawWater(true);
-  if (UI.debug) drawDebug();
+  if (UI.debug) {
+    drawDebug();
+    if (UI.traj) drawTrajectories();
+  }
   const aw = activeWorm();
   if (aw) {
     drawAim(aw);

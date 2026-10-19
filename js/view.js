@@ -30,6 +30,9 @@ const UI = {
   panel: false,
   panT: -9,
   debug: false,
+  traj: false,
+  autoCenter: true,
+  moving: false,
   shake: 0,
   flash: null,
   flashA: 0,
@@ -76,6 +79,14 @@ function camFocus(dt) {
   let tx = CAM.x,
     ty = CAM.y;
   const w = activeWorm();
+  // Auto-centre: the moment the active worm starts to move (keys or physics) a manual pan/zoom
+  // offset is dropped and the camera returns to the worm.
+  if (w && UI.autoCenter && (G.phase === 'turn' || G.phase === 'retreat')) {
+    const keys = isMyTurn() && (LOCAL.l || LOCAL.r || LOCAL.jump || LOCAL.back),
+      moving = !!keys || Math.hypot(w.vx || 0, w.vy || 0) > 12;
+    if (moving && !UI.moving) UI.panT = -9;
+    UI.moving = moving;
+  } else UI.moving = false;
   if (G.time - UI.panT < 2.5 && UI.panT > 0) {
     /* user is panning */
   } else {

@@ -22,7 +22,7 @@ function muzzle(w) {
  * with speed interpolated from lo to hi by the charge power (fuse taken from the 1-5 keys).
  */
 function throwP(type, lo, hi, extra) {
-  return c => {
+  const fn = c => {
     const w = c.w,
       [mx, my, dx, dy] = muzzle(w),
       sp = lo + (hi - lo) * c.power;
@@ -30,6 +30,8 @@ function throwP(type, lo, hi, extra) {
     if (PTYPES[type].fuse != null && WEAPONS[c.wdef.id].fuse) e.fuse = G.weapon.fuse;
     return spawnProj(type, mx, my, dx * sp, dy * sp, w, e);
   };
+  fn.launch = { type, lo, hi }; // lets the debug view predict the flight (see drawTrajectories)
+  return fn;
 }
 /**
  * Instant-hit shot (shotgun, handgun, uzi): walks along the ray in 3 px steps and stops at the

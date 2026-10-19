@@ -1,7 +1,7 @@
 # Wormgeddon
 
 A turn-based artillery game for the browser, in the spirit of Worms Armageddon. Plain HTML5 canvas,
-no framework, no assets: levels, sound, icons and worms are all generated or drawn in code.
+no framework, no assets: maps, sound, icons and worms are all generated or drawn in code.
 Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 
 ## Features
@@ -35,8 +35,6 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 - The weapon menu is a drawer that slides in from the right and slides back out.
 
 ## Quick start
-
-Open `dist/wormgeddon.html` in a browser. That single file contains everything.
 
 To work on the source, open `index.html` instead (it loads `css/style.css` and `js/*.js`
 directly, no build step needed), then run `node build.js` to regenerate the single-file builds.
@@ -79,10 +77,8 @@ runs offline without them (only online play and the display font are lost).
 ```
 index.html          page markup + <script> tags in dependency order (development entry point)
 css/style.css       all styles
+maps/*.png          custom png maps
 js/*.js             one file per module, classic scripts sharing the global scope
-build.js            bundles everything into dist/ (node build.js)
-dist/               generated single-file builds (standalone page + fragment)
-tests/smoke.py      headless-browser smoke test (Playwright)
 ```
 
 | Module           | Responsibility                                                       |
@@ -187,32 +183,20 @@ to `ICON_DRAW` in `js/icons.js` and, if it needs a new projectile, a `registerPr
 Text keys are the English sentences themselves. In code write `tr('Waiting for {0}', name)`; static
 text in `index.html` needs no markup, the page is translated by walking its text nodes. To add a
 language: copy `js/lang-it.js` to `js/lang-xx.js` and translate the values, add the code to `LANGS`
-in `js/i18n.js`, and add the script tag after `lang-it.js` in `index.html`. Anything missing falls
-back to English, and `tests/smoke.py` fails if a static page text has no Italian entry. Strings
+in `js/i18n.js`, and add the script tag after `lang-it.js` in `index.html`. Strings
 sent over the network are English keys plus arguments, so every player sees their own language.
 
-## Build and test
+## Maps folder (PNG maps)
 
-```
-node build.js            # writes dist/wormgeddon.html and dist/wormgeddon.fragment.html
-npx prettier --write .   # formatting (config in .prettierrc)
-python3 tests/smoke.py   # needs Python Playwright and a Chromium
-```
-
-`tests/smoke.py` plays bot-only matches with 2 and 8 teams for five simulated minutes, checks that
-all 36 weapons are registered and that the Concrete Donkey keeps hopping and exploding, and fails
-on any page error.
-
-## Map library (PNG levels from a folder)
-
-Put PNG maps (transparent sky, or Worms Armageddon style PNG/BMP) in `maps/` and list them in
-`maps/manifest.json`:
+Put PNG maps (transparent sky, or Worms Armageddon style PNG/BMP) in the **`maps/`** folder, optionally
+described by `maps/manifest.json`:
 
 ```json
 { "maps": [ { "name": "Floating isles", "file": "floating-isles.png" }, "other.png" ] }
 ```
 
-- Served over http(s) the game reads `maps/manifest.json` by itself and fills a drop-down in the menu.
+- Served over http(s), the manifest / directory index of `maps/` is read at start-up too.
+- Details in `maps/README.txt` and `docs/DEVELOPING.md`.
 
 ## Custom map notes
 
@@ -222,6 +206,12 @@ Put PNG maps (transparent sky, or Worms Armageddon style PNG/BMP) in `maps/` and
   those maps are normally drawn; if a map comes out inverted, make the sky transparent instead.
 - Pictures narrower than 800 px are enlarged (2-4x, crisp), pictures larger than 3600 x 1600 px
   are reduced. A strip of open space is added below the picture for the water.
+
+## Developer documentation
+
+`docs/DEVELOPING.md` explains the architecture and how to add weapons, projectiles, maps, level styles,
+themes, languages, crates, menu options and network state, with worked examples.
+Debug keys: `F3` / `` ` `` debug view, `F4` trajectories (while the debug view is on).
 
 ## Robustness notes
 
