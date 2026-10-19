@@ -7,19 +7,24 @@ Everything is plain JavaScript loaded with ordinary `<script>` tags (no bundler,
 every top-level `function` / `const` is a global and you can try things in the browser console
 (`window.__wh` also exposes `newGame`, `stepOnce`, `G`, ...).
 
-- [1. Project layout and workflow](#1-project-layout-and-workflow)
-- [2. How the game runs](#2-how-the-game-runs)
-- [3. Adding a weapon](#3-adding-a-weapon) (worked example: Pumpkin Bomb)
-- [4. Adding a projectile type](#4-adding-a-projectile-type)
-- [5. Tool-like weapons (rope, jet pack ...)](#5-tool-like-weapons)
-- [6. Levels](#6-levels) (levels folder, generated styles, themes)
-- [7. Menu options and match settings](#7-menu-options-and-match-settings)
-- [8. Languages](#8-languages)
-- [9. Crates, sounds, icons, sprites, worm art](#9-crates-sounds-icons-sprites-worm-art)
-- [10. Bots](#10-bots)
-- [11. Online play and the network protocol](#11-online-play-and-the-network-protocol)
-- [12. Debugging and tests](#12-debugging-and-tests)
-- [13. Conventions and gotchas](#13-conventions-and-gotchas)
+- [Wormgeddon developer guide](#wormgeddon-developer-guide)
+  - [1. Project layout and workflow](#1-project-layout-and-workflow)
+  - [2. How the game runs](#2-how-the-game-runs)
+  - [3. Adding a weapon](#3-adding-a-weapon)
+    - [Worked example: Pumpkin Bomb](#worked-example-pumpkin-bomb)
+  - [4. Adding a projectile type](#4-adding-a-projectile-type)
+  - [5. Tool-like weapons](#5-tool-like-weapons)
+  - [6. Levels](#6-levels)
+    - [6.1 Levels folder (PNG levels)](#61-levels-folder-png-levels)
+    - [6.2 Generated level styles](#62-generated-level-styles)
+    - [6.3 Themes](#63-themes)
+  - [7. Menu options and match settings](#7-menu-options-and-match-settings)
+  - [8. Languages](#8-languages)
+  - [9. Crates, sounds, icons, sprites, worm art](#9-crates-sounds-icons-sprites-worm-art)
+  - [10. Bots](#10-bots)
+  - [11. Online play and the network protocol](#11-online-play-and-the-network-protocol)
+  - [12. Debugging and tests](#12-debugging-and-tests)
+  - [13. Conventions and gotchas](#13-conventions-and-gotchas)
 
 ---
 
@@ -221,6 +226,8 @@ put state on the worm and `controlWorm()` / `physWorm()` in `worms.js` act on it
   switches the jet pack off (`handleFire`, `selectWeapon` in `weapons.js`); Enter / Backspace
   (Jump / Back on touch) also release the rope. Aiming and weapon changes work again afterwards.
   `toSettle()` always drops rope, jet pack and tool at the end of the turn.
+* **Falling out of the world.** `sinkWorm()` (`worms.js`) handles both the water and the map's left/right
+  edges: splash, log line, "died" banner, and the turn ends.
 * When you add a new held state, add it to: `toSettle` (drop it), `processDeaths` and
   `explode` (knock it off), the snapshot in `net.js`, and `drawAim` / `drawWorm` if it changes how the
   worm looks.

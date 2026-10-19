@@ -150,6 +150,13 @@ function aiTick(t, dt) {
     if (w.grounded && Math.random() < 0.02) inp.jump = 1;
   } else if (ai.st === 'aim') {
     const p = ai.plan;
+    ai.aT = (ai.aT || 0) + dt;
+    if (ai.aT > 5) {
+      // Could not reach the planned angle in time: shoot with what we have.
+      ai.st = 'fire';
+      ai.t = 0;
+      return;
+    }
     w.face = p.face;
     if (!ai.sel) {
       selectWeapon(t.id, p.weapon, p.fuse);
@@ -194,5 +201,25 @@ function aiTick(t, dt) {
     ai.st = 'done';
   } else if (ai.st === 'done') {
     inp.fire = 0;
+    ai.dT = (ai.dT || 0) + dt;
+    const cur = WEAPONS[G.weapon.id];
+    if (cur && cur.shots && G.weapon.shots > 0 && G.weapon.shots < cur.shots) {
+      // A multi-shot weapon (shotgun) is not finished after the first shot: take the next one.
+      ai.st = 'fire';
+      ai.t = 0.45;
+      ai.dT = 0;
+    } else if (ai.dT > 1.5) {
+      // Watchdog: the shot did not happen (weapon not selectable, shot cancelled ...). Re-plan up to
+      // twice, then give up the turn instead of idling until the timer runs out.
+      ai.retry = (ai.retry || 0) + 1;
+      ai.dT = 0;
+      if (ai.retry <= 2) {
+        ai.st = 'think';
+        ai.t = 0.2;
+        ai.sel = 0;
+        ai.ch = 0;
+        ai.moved = 1;
+      } else ai.st = 'skip';
+    }
   }
 }

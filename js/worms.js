@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: walkStep, physBody, physWorm, ropePhys, controlWorm
+ * Globals defined: walkStep, physBody, supported, physWorm, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -134,22 +134,27 @@ function physWorm(w, dt, active) {
     w.stuckN = 0;
     w.wt = 0;
   }
-  // water, off-map
-  if (w.y + w.r > G.waterY + 6 && !w.sunk) {
-    w.sunk = true;
-    w.hp = 0;
-    w.dead = true;
-    w.rope = null;
-    emit({ e: 'splash', x: w.x, y: G.waterY });
-    emit({ e: 'log', t: '{0} drowned', a: [w.name], c: teamOf(w).color });
-    if (w.id === G.active && G.phase !== 'over') toSettle();
-  }
-  if (!w.dead && (w.x < -40 || w.x > T.w + 40)) {
-    w.hp = 0;
-    w.dead = true;
-    w.sunk = true;
-    if (w.id === G.active) toSettle();
-  }
+  // Water and map edges: both kill the worm with a splash, a log line and a banner message.
+  if (!w.sunk && w.y + w.r > G.waterY + 6) sinkWorm(w, '{0} drowned');
+  else if (!w.sunk && !w.dead && (w.x < -40 || w.x > T.w + 40)) sinkWorm(w, '{0} fell off the map');
+}
+/**
+ * Removes a worm that fell into the water or off the side of the map: splash at the nearest
+ * point of the shore (clamped to the map so it is on screen), sound, log line and the usual
+ * "died" banner, and the active worm's turn ends.
+ * @param {string} text English log key with {0} = worm name
+ */
+function sinkWorm(w, text) {
+  w.sunk = true;
+  w.hp = 0;
+  w.dead = true;
+  w.rope = null;
+  w.jet = null;
+  w.tool = null;
+  emit({ e: 'splash', x: clamp(w.x, 4, T.w - 4), y: G.waterY });
+  emit({ e: 'log', t: text, a: [w.name], c: teamOf(w).color });
+  emit({ e: 'msg', t: '{0} ({1}) died', a: [w.name, teamOf(w).name] });
+  if (w.id === G.active && G.phase !== 'over') toSettle();
 }
 /** Pendulum physics for the ninja rope: gravity + swing input, then the worm is kept within the rope length. */
 function ropePhys(w, dt, active) {
