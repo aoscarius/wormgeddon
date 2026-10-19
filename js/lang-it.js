@@ -13,12 +13,17 @@
 /* ===== Italian ===== */
 I18N.it = {
   /* ---- Page, HUD and overlays ---- */
-  'Wormgeddon': 'Wormgeddon',
+  Wormgeddon: 'Wormgeddon',
   Team: 'Squadra',
   Worm: 'Verme',
   Wind: 'Vento',
   'Hold Space to charge': 'Tieni premuto Spazio per caricare',
   'Weapons [W]': 'Armi [W]',
+  Weapons: 'Armi',
+  Close: 'Chiudi',
+  Fire: 'Fuoco',
+  Jump: 'Salta',
+  'Back-flip': 'Salto mortale',
   'Click a weapon to arm it. Keys 1-5 set the fuse, R rotates a girder.':
     'Clicca su un’arma per sceglierla. I tasti 1-5 impostano la miccia, R ruota la trave.',
   Paused: 'In pausa',
@@ -169,11 +174,24 @@ I18N.it = {
   recentre: 'ricentra',
   'cycle worm (Select Worm)': 'cambia verme (Scegli verme)',
   Tab: 'Tab',
+  'Load maps folder\u2026': 'Carica cartella mappe\u2026',
+  'Pick a library map\u2026': 'Scegli una mappa dalla libreria\u2026',
+  '{0} maps in the library': '{0} mappe nella libreria',
+  'No images found in that folder.': 'Nessuna immagine trovata in quella cartella.',
+  'Pick a folder of PNG maps (with an optional manifest.json).': 'Scegli una cartella di mappe PNG (con un manifest.json facoltativo).',
+  'Left/Right swing \u00b7 Up/Down reel \u00b7 JUMP, BACK or FIRE lets go': 'Sinistra/Destra oscilla \u00b7 Su/Gi\u00f9 accorcia/allunga \u00b7 SALTO o INDIETRO molla \u00b7 FUOCO nuovo gancio',
+  'Left/Right swing \u00b7 Up/Down reel \u00b7 Enter, Backspace or Space lets go': 'Sinistra/Destra oscilla \u00b7 Su/Gi\u00f9 accorcia/allunga \u00b7 Invio, Backspace o Spazio molla',
+  'Up/Left/Right thrust \u00b7 FIRE switches off': 'Su/Sinistra/Destra spinta \u00b7 FUOCO spegne',
+  'Up/Left/Right thrust \u00b7 Space switches off': 'Su/Sinistra/Destra spinta \u00b7 Spazio spegne',
+  'FIRE stops digging': 'FUOCO ferma lo scavo',
+  'Space stops digging': 'Spazio ferma lo scavo',
+  'debug view (collision boxes)': 'vista debug (box di collisione)',
+  or: 'o',
   Esc: 'Esc',
   pause: 'pausa',
   mute: 'muto',
-  'Ninja Rope: fire to hook, Left/Right swing, Up/Down reel, Enter to let go. Jet Pack: Up thrust, Left/Right sideways, Space to switch off. Super Sheep: steer with arrows, Space to detonate.':
-    'Corda ninja: spara per agganciarti, Sinistra/Destra per oscillare, Su/Giù per accorciare o allungare, Invio per lasciare. Jet pack: Su per la spinta, Sinistra/Destra di lato, Spazio per spegnere. Super pecora: sterza con le frecce, Spazio per far esplodere.',
+  'Ninja Rope: fire to hook, Left/Right swing, Up/Down reel, Enter or fire again to let go (then you can aim and change weapon). Jet Pack: Up thrust, Left/Right sideways, Space to switch off. Super Sheep: steer with arrows, Space to detonate.':
+    'Corda ninja: spara per agganciarti, Sinistra/Destra per oscillare, Su/Giù per accorciare o allungare, Invio o di nuovo fuoco per lasciare (poi puoi mirare e cambiare arma). Jet pack: Su per la spinta, Sinistra/Destra di lato, Spazio per spegnere. Super pecora: sterza con le frecce, Spazio per far esplodere.',
 
   /* ---- In game: HUD ---- */
   '{0} (bot)': '{0} (bot)',
@@ -184,6 +202,10 @@ I18N.it = {
     'Tieni premuto Spazio per caricare, rilascia per sparare',
   'Click the map to target': 'Clicca sulla mappa per mirare',
   Active: 'Attiva',
+  'Tap to place · \u27F3 to rotate': 'Tocca per posizionare · \u27F3 per ruotare',
+  'Hold FIRE to charge, release to shoot': 'Tieni premuto FUOCO per caricare, rilascia per sparare',
+  'Press FIRE': 'Premi FUOCO',
+  'fuse {0}s (tap the timer)': 'miccia {0}s (tocca il timer)',
   'Press Space': 'Premi Spazio',
   'fuse {0}s (keys 1-5)': 'miccia {0}s (tasti 1-5)',
   'Bot is thinking': 'Il bot sta pensando',

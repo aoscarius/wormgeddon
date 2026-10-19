@@ -29,6 +29,7 @@ const UI = {
   ang: 0,
   panel: false,
   panT: -9,
+  debug: false,
   shake: 0,
   flash: null,
   flashA: 0,

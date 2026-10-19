@@ -433,22 +433,6 @@ kbd {
   opacity: 1;
 }
 /* Weapon panel: grid of icon buttons */
-#wpanel {
-  right: max(10px, env(safe-area-inset-right));
-  bottom: max(10px, env(safe-area-inset-bottom));
-  width: min(430px, 92vw);
-  max-height: 62vh;
-  overflow: auto;
-  background: #0d1a2bf0;
-  border: 2px solid var(--line);
-  border-radius: 8px;
-  padding: 8px;
-  pointer-events: auto;
-  display: none;
-}
-#wpanel.on {
-  display: block;
-}
 #wgrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
@@ -514,25 +498,6 @@ kbd {
   color: var(--mute);
   max-width: 40vw;
 }
-#touch {
-  inset: auto 0 0 0;
-  height: 0;
-  display: none;
-}
-.tc {
-  position: absolute;
-  pointer-events: auto;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #fff2;
-  border: 2px solid #fff5;
-  font-size: 1.3rem;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  touch-action: none;
-}
 /* Pause and game-over overlays */
 #pause {
   position: fixed;
@@ -556,19 +521,6 @@ kbd {
 #over.on {
   display: grid;
 }
-@media (max-width: 640px) {
-  #log {
-    display: none;
-  }
-  .tb .n {
-    flex-basis: 56px;
-  }
-  #timer {
-    width: 56px;
-    height: 56px;
-    font-size: 1.7rem;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   #msg {
     transition: none;
@@ -581,6 +533,7 @@ kbd {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
+  margin: 10px 0px 10px 0px;
 }
 .mapload .filebtn,
 .mapload button {
@@ -616,4 +569,514 @@ kbd {
   background: var(--panel);
   color: inherit;
   font: inherit;
+}
+
+/* ---- Weapon drawer: slides in from the right edge and slides back out ---- */
+#wback {
+  inset: 0;
+  background: rgba(4, 10, 20, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.28s ease,
+    visibility 0s linear 0.28s;
+  pointer-events: none;
+}
+#wback.on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+#wpanel {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 88vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom)) 12px;
+  background: #0d1a2bf5;
+  border-left: 2px solid var(--line);
+  border-radius: 14px 0 0 14px;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+  transform: translateX(104%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.85, 0.25, 1),
+    visibility 0s linear 0.3s;
+}
+#wpanel.on {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+#wpanel .wphead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--display);
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+#wclose {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+#wgrid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
+}
+#wpanel .note {
+  margin: 0;
+  font-size: 0.8rem;
+}
+#cur {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* ---- On-screen gamepad (touch devices) ---- */
+#touch {
+  inset: auto 0 0 0;
+  height: 0;
+  display: none;
+  --pad: clamp(118px, 34vmin, 170px);
+  --fire: clamp(74px, 21vmin, 104px);
+  --edge: max(14px, env(safe-area-inset-bottom));
+  transition: opacity 0.25s;
+}
+#touch.off {
+  opacity: 0;
+  pointer-events: none;
+}
+#touch.off * {
+  pointer-events: none !important;
+}
+.dpad {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left));
+  bottom: var(--edge);
+  width: var(--pad);
+  height: var(--pad);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(40, 62, 96, 0.55), rgba(13, 26, 43, 0.55));
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(4px);
+  box-shadow:
+    inset 0 2px 10px rgba(255, 255, 255, 0.08),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+.dpad .arm {
+  position: absolute;
+  width: 34%;
+  height: 34%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.55);
+  transition:
+    color 0.08s,
+    transform 0.08s;
+}
+.dpad .arm svg {
+  width: 62%;
+  height: 62%;
+  fill: currentColor;
+}
+.dpad .arm.u {
+  top: 6%;
+  left: 33%;
+}
+.dpad .arm.d {
+  bottom: 6%;
+  left: 33%;
+}
+.dpad .arm.d svg {
+  transform: rotate(180deg);
+}
+.dpad .arm.l {
+  left: 6%;
+  top: 33%;
+}
+.dpad .arm.l svg {
+  transform: rotate(-90deg);
+}
+.dpad .arm.r {
+  right: 6%;
+  top: 33%;
+}
+.dpad .arm.r svg {
+  transform: rotate(90deg);
+}
+.dpad .arm.on {
+  color: var(--accent);
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+.dpad .hub {
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+}
+.tact {
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: var(--edge);
+  width: calc(var(--fire) * 2.05);
+  height: calc(var(--fire) * 2.05);
+}
+.tbtn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(13, 26, 43, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.08s,
+    background 0.08s;
+}
+.tbtn svg {
+  width: 52%;
+  height: 52%;
+}
+.tbtn.down {
+  transform: scale(0.92);
+  background: rgba(255, 122, 168, 0.35);
+}
+.tbtn.fire {
+  right: 0;
+  bottom: 0;
+  width: var(--fire);
+  height: var(--fire);
+  background: radial-gradient(circle at 35% 30%, #ff9cc0, var(--accent) 60%, #d44a7c);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #3a0d22;
+  box-shadow:
+    0 0 18px rgba(255, 122, 168, 0.55),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+}
+.tbtn.fire.down {
+  background: radial-gradient(circle at 35% 30%, #ffd0e0, #ff8cb5 60%, #e0558a);
+}
+/* power ring around the fire button, filled while charging */
+.tbtn.fire::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: conic-gradient(var(--warn) calc(var(--pw, 0) * 1%), rgba(255, 255, 255, 0.12) 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%);
+  mask: radial-gradient(circle, transparent 62%, #000 64%);
+  pointer-events: none;
+}
+.tbtn.jump,
+.tbtn.back {
+  width: calc(var(--fire) * 0.66);
+  height: calc(var(--fire) * 0.66);
+}
+.tbtn.jump {
+  top: 0;
+  right: calc(var(--fire) * 0.12);
+}
+.tbtn.back {
+  left: 0;
+  bottom: calc(var(--fire) * 0.04);
+}
+
+/* ---- Responsive HUD ---- */
+@media (max-width: 900px), (max-height: 520px) {
+  #hudTop {
+    gap: 6px;
+  }
+  #timer {
+    width: 54px;
+    height: 54px;
+    font-size: 1.6rem;
+    border-width: 2px;
+  }
+  #who {
+    font-size: 0.95rem;
+    padding: 3px 9px;
+  }
+  #who small {
+    font-size: 0.78rem;
+  }
+  #windbox {
+    width: 108px;
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+  #log {
+    display: none;
+  }
+  /* team health bars become a compact strip under the top row so the gamepad has the bottom */
+  #teamsbar {
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: auto;
+    top: calc(max(10px, env(safe-area-inset-top)) + 62px);
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3px;
+    pointer-events: none;
+  }
+  .tb {
+    flex: 1 1 64px;
+    max-width: 120px;
+    padding: 1px 4px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+  .tb .n {
+    flex-basis: 34px;
+  }
+  .tb .bar {
+    height: 7px;
+  }
+  #cur {
+    min-width: 0;
+    max-width: 62vw;
+    gap: 8px;
+    padding: 3px 12px 3px 6px;
+    font-size: 0.9rem;
+  }
+  #cur img {
+    width: 36px;
+    height: 36px;
+  }
+  #cur small {
+    font-size: 0.72rem;
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #msg {
+    top: 24%;
+  }
+}
+/* Touch devices: the weapon box becomes the menu button and sits above the gamepad's centre */
+@media (pointer: coarse) {
+  #wtoggle {
+    display: none !important;
+  }
+  #cur {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    border-color: var(--accent);
+  }
+  #cur::after {
+    content: '\25B8';
+    color: var(--accent);
+    font-size: 1.1rem;
+    margin-left: 2px;
+  }
+}
+@media (pointer: coarse) and (max-aspect-ratio: 1/1) {
+  /* portrait phone: lift the weapon box above the d-pad / fire row */
+  #cur {
+    bottom: calc(clamp(118px, 34vmin, 170px) + max(14px, env(safe-area-inset-bottom)) + 12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #wpanel,
+  #wback,
+  .tbtn,
+  .dpad .arm {
+    transition: none;
+  }
+}
+
+/* Gamepad aux button and layering with the weapon drawer */
+.tbtn.aux {
+  top: 0;
+  left: calc(var(--fire) * 0.12);
+  width: calc(var(--fire) * 0.6);
+  height: calc(var(--fire) * 0.6);
+  font-family: var(--display);
+  font-size: 1.15rem;
+  color: var(--warn);
+}
+.tbtn.aux[hidden] {
+  display: none;
+}
+#wpanel {
+  z-index: 5;
+}
+#wpanel.on ~ #touch,
+#wback.on ~ #touch {
+  opacity: 0;
+  pointer-events: none;
+}
+#wpanel.on ~ #touch * {
+  pointer-events: none !important;
+}
+/* Menu on narrow screens: language selector above the title, tabs in one scrollable row */
+@media (max-width: 640px) {
+  #card {
+    padding: 14px 12px;
+  }
+  #card .lang {
+    position: static;
+    display: block;
+    margin: 0 0 6px auto;
+  }
+  h1 small {
+    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+  }
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-right: -12px;
+    padding-right: 12px;
+  }
+  .tabs button {
+    flex: none;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+}
+
+/* Debug overlay text */
+#dbg {
+  left: max(10px, env(safe-area-inset-left));
+  top: calc(max(10px, env(safe-area-inset-top)) + 150px);
+  margin: 0;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #9dffb0;
+  font: 11px/1.35 monospace;
+  border-radius: 4px;
+  max-width: 90vw;
+  white-space: pre-wrap;
+}
+
+/* ---- Touch layout: glassy white controls, compact action cluster, weapon box always at the bottom ---- */
+@media (max-width: 900px), (max-height: 520px) {
+  /* team bars: always one column, never a wrapped strip */
+  #teamsbar {
+    right: auto;
+    width: min(150px, 40vw);
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 2px;
+  }
+  .tb {
+    flex: none;
+    max-width: none;
+  }
+}
+#touch {
+  --pad: clamp(104px, 30vmin, 150px);
+  --fire: clamp(56px, 16vmin, 76px);
+  /* controls sit in the bottom corners; touchFx() adds .lift when they would overlap the weapon box */
+  --edge: max(10px, env(safe-area-inset-bottom));
+}
+#touch.lift {
+  --edge: calc(max(10px, env(safe-area-inset-bottom)) + var(--curh, 56px) + 8px);
+}
+.dpad,
+.tbtn,
+.tbtn.fire {
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.92);
+}
+.tbtn.down,
+.tbtn.fire.down {
+  background: rgba(255, 255, 255, 0.34);
+}
+.dpad .arm {
+  color: rgba(255, 255, 255, 0.8);
+}
+.dpad .hub {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.tbtn.aux {
+  color: #fff;
+}
+.tbtn.fire::before {
+  inset: -7px;
+}
+/* compact cluster: fire bottom-right, jump above it, back-flip to its left, fuse/rotate top-left */
+.tact {
+  width: calc(var(--fire) * 1.8);
+  height: calc(var(--fire) * 1.8);
+}
+.tbtn.jump,
+.tbtn.back {
+  width: calc(var(--fire) * 0.62);
+  height: calc(var(--fire) * 0.62);
+}
+.tbtn.jump {
+  top: 0;
+  right: calc(var(--fire) * 0.19);
+}
+.tbtn.back {
+  left: 0;
+  bottom: calc(var(--fire) * 0.19);
+}
+.tbtn.aux {
+  top: 0;
+  left: calc(var(--fire) * 0.1);
+  width: calc(var(--fire) * 0.5);
+  height: calc(var(--fire) * 0.5);
+  font-size: 0.95rem;
+}
+/* the weapon box stays at the bottom centre in every orientation, the controls sit above it */
+@media (pointer: coarse) {
+  #cur {
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 900px), (max-height: 520px) {
+  .tb .n {
+    flex-basis: 56px;
+  }
+}
+
+.mapload select {
+  max-width: 100%;
+  flex: 1 1 140px;
+  background: var(--ground);
+  border: 2px solid var(--line);
+  border-radius: 5px;
+  padding: 3px 6px;
+  width: 150px;
+  min-width: 0;
 }

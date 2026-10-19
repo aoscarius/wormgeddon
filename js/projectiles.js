@@ -371,11 +371,17 @@ registerProj('supersheep', {
   fuse: 9,
   fixedAngle: true,
   expl: { r: 50, d: 80, k: 1 },
+  // Steering: the arrow keys name a heading (Right = 0, Down = 90 deg, Left = 180, Up = 270, and
+  // the diagonals for two keys); the sheep turns towards it by the shortest way. With no key held
+  // it keeps its course. Up/Down therefore work just like Left/Right.
   tick(p, dt) {
     const inp = curInp && p.ow === G.active ? curInp : null;
-    if (inp) {
-      if (inp.l) p.a -= 2.4 * dt;
-      if (inp.r) p.a += 2.4 * dt;
+    if (inp && (inp.l || inp.r || inp.u || inp.d)) {
+      const want = Math.atan2((inp.d ? 1 : 0) - (inp.u ? 1 : 0), (inp.r ? 1 : 0) - (inp.l ? 1 : 0));
+      let diff = want - p.a;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // shortest signed angle
+      const turn = 4.2 * dt;
+      p.a += Math.abs(diff) <= turn ? diff : Math.sign(diff) * turn;
     }
     p.vx = Math.cos(p.a) * 230;
     p.vy = Math.sin(p.a) * 230;

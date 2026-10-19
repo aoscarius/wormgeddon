@@ -1,0 +1,60 @@
+{
+  "maps": [
+    {
+      "name": "Air Force One",
+      "file": "AirForceOne.png"
+    },
+    {
+      "name": "Cavern",
+      "file": "Cavern.png"
+    },
+    {
+      "name": "Color Artsy Shopper II",
+      "file": "ColorArtsyShopperII.png"
+    },
+    {
+      "name": "Construction In Progress",
+      "file": "ConstructionInProgress.png"
+    },
+    {
+      "name": "Finding Nemo",
+      "file": "FindingNemo.png"
+    },
+    {
+      "name": "Forest Shopper",
+      "file": "ForestShopper.png"
+    },
+    {
+      "name": "Haunted Walls",
+      "file": "HauntedWalls.png"
+    },
+    {
+      "name": "Jabbas Palace",
+      "file": "JabbasPalace.png"
+    },
+    {
+      "name": "Lab Shoppa",
+      "file": "LabShoppa.png"
+    },
+    {
+      "name": "Lab Shopping",
+      "file": "LabShopping.png"
+    },
+    {
+      "name": "Lion King Shopper",
+      "file": "LionKingShopper.png"
+    },
+    {
+      "name": "Nature Shoppa",
+      "file": "NatureShoppa.png"
+    },
+    {
+      "name": "SMB Shopper",
+      "file": "SMBShopper.png"
+    },
+    {
+      "name": "Titanic",
+      "file": "Titanic.png"
+    }
+  ]
+}

@@ -62,7 +62,12 @@ function step(dt, inputs) {
         }
         if (G.phase === 'turn' || G.phase === 'retreat') toSettle();
       }
-      if (G.phase !== 'settle') controlWorm(w, inp, dt);
+      if (G.phase !== 'settle') {
+        // While a steerable weapon (super sheep) is flying, the arrow keys steer it and the worm
+        // stands still instead of walking and aiming at the same time.
+        if (G.projs.some(p => PTYPES[p.t].ctl && p.ow === w.id)) physWorm(w, dt, false);
+        else controlWorm(w, inp, dt);
+      }
     }
   }
   for (const o of G.worms) {
@@ -108,9 +113,9 @@ function step(dt, inputs) {
   // phase logic
   if (G.phase === 'settle') {
     G.settleT += dt;
-    // quiet() normally decides when the turn may change; the 30 s limit is a safety net so a stray
+    // quiet() normally decides when the turn may change; the 10 s limit is a safety net so a stray
     // object can never freeze the match.
-    if (G.settleT > 1 && (quiet() || G.settleT > 30)) {
+    if (G.settleT > 1 && (quiet() || G.settleT > 10)) {
       G.settleQ += dt;
       if (G.settleQ > 0.5) {
         flushDamage();

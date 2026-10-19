@@ -10,7 +10,7 @@
  * clients. It is refreshed about 12 times per second from the main loop (see main.js).
  *
  * Depends on: view, core, icons, match (avail)
- * Globals defined: esc, isMyTurn, setHTML, hudTurnInfo, hudWind, hudTeams, weaponHint,
+ * Globals defined: esc, isMyTurn, setHTML, hudTurnInfo, hudWind, hudTeams, weaponHint, activeHint,
  *     hudWeapon, hudPanel, hud, showOver
  */
 
@@ -77,17 +77,38 @@ function hudTeams(t) {
 
 /** Usage hint shown under the weapon name. */
 function weaponHint(d) {
-  if (d.id === 'girder') return tr('Click to place · R / wheel to rotate');
+  const touch = matchMedia('(pointer:coarse)').matches;
+  if (d.id === 'girder')
+    return touch
+      ? tr('Tap to place · \u27F3 to rotate')
+      : tr('Click to place · R / wheel to rotate');
   if (d.id === 'homing' && G.weapon.tx == null) return tr('Click the map to set a target first');
   let hint = d.charge
-    ? tr('Hold Space to charge, release to fire')
+    ? tr(touch ? 'Hold FIRE to charge, release to shoot' : 'Hold Space to charge, release to fire')
     : d.click
       ? tr('Click the map to target')
       : d.noFire
         ? tr('Active')
-        : tr('Press Space');
-  if (d.fuse) hint += ' · ' + tr('fuse {0}s (keys 1-5)', G.weapon.fuse);
+        : tr(touch ? 'Press FIRE' : 'Press Space');
+  if (d.fuse)
+    hint +=
+      ' \u00b7 ' + tr(touch ? 'fuse {0}s (tap the timer)' : 'fuse {0}s (keys 1-5)', G.weapon.fuse);
   return hint;
+}
+
+/** Hint for a weapon that is currently in use (rope, jet pack, digging tool), or '' if none. */
+function activeHint(w) {
+  const touch = matchMedia('(pointer:coarse)').matches;
+  if (!w) return '';
+  if (w.rope)
+    return tr(
+      touch
+        ? 'Left/Right swing \u00b7 Up/Down reel \u00b7 JUMP, BACK or FIRE lets go'
+        : 'Left/Right swing \u00b7 Up/Down reel \u00b7 Enter, Backspace or Space lets go'
+    );
+  if (w.jet) return tr(touch ? 'Up/Left/Right thrust \u00b7 FIRE switches off' : 'Up/Left/Right thrust \u00b7 Space switches off');
+  if (w.tool && w.tool.k !== 'kami') return tr(touch ? 'FIRE stops digging' : 'Space stops digging');
+  return '';
 }
 
 /** The box at the bottom centre: icon, name, ammo and a hint (or who we are waiting for). */
@@ -101,7 +122,7 @@ function hudWeapon(t, mine) {
   }
   $('curName').textContent = wname(d.id) + (ammo >= 0 ? ' ×' + ammo : '  ∞');
   $('curHint').textContent = mine
-    ? weaponHint(d)
+    ? activeHint(activeWorm()) || weaponHint(d)
     : t && t.ctrl === 'ai'
       ? tr('Bot is thinking')
       : tr('Waiting for {0}', t ? t.name : '');
@@ -143,7 +164,8 @@ function hudPanel(t, mine) {
     $('wgrid').innerHTML = html;
   }
   $('wtoggle').style.display = mine ? '' : 'none';
-  if (!mine) $('wpanel').classList.remove('on');
+  $('touch').classList.toggle('off', !mine);
+  if (!mine) togglePanel(false);
 }
 
 /** Refreshes the whole HUD from the current match state. */
@@ -158,6 +180,7 @@ function hud() {
   hudWeapon(t, mine);
   setHTML('log', FX.logs.map(l => `<span style="color:${l.c}">${esc(l.t)}</span>`).join(''));
   hudPanel(t, mine);
+  if (UI.debug) $('dbg').textContent = debugText();
 }
 
 /**

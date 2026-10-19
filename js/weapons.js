@@ -488,6 +488,9 @@ registerWeapon({
     let x = w.x,
       y = w.y - 4;
     const ang = Math.atan2(dy, dx);
+    // Firing again lets go of the old rope first: a throw that finds no anchor leaves the worm free.
+    const had = !!w.rope;
+    w.rope = null;
     for (let d = 0; d < 290; d += 3) {
       x = w.x + Math.cos(ang) * d;
       y = w.y - 4 + Math.sin(ang) * d;
@@ -499,6 +502,7 @@ registerWeapon({
         return 'keep';
       }
     }
+    if (had) w.vy -= 20;
     return 'miss';
   },
 });
@@ -692,6 +696,12 @@ function selectWeapon(team, id, fuse) {
   if (G.phase === 'retreat' && !d.anyPhase) return;
   if (G.weapon.ch) return;
   if (w.tool) return;
+  // Choosing the weapon that is currently in use again detaches it (rope, jet pack).
+  if (id === G.weapon.id && ((id === 'rope' && w.rope) || (id === 'jetpack' && w.jet))) {
+    w.rope = null;
+    w.jet = null;
+    return;
+  }
   G.weapon.id = id;
   G.weapon.pw = 0;
   G.weapon.shots = 0;
@@ -719,6 +729,13 @@ function handleFire(w, t, inp, dt) {
       inp.fireP = 0;
       return;
     }
+  }
+  // A second press on the rope lets go of it, which frees aiming and weapon changes again.
+  if (inp.fireP && w.rope && W.id === 'rope') {
+    w.rope = null;
+    inp.fireP = 0;
+    emit({ e: 'snd', s: 'beep' });
+    return;
   }
   if (inp.fireP && w.jet) {
     w.jet = null;

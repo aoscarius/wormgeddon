@@ -1,319 +1,300 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Wormgeddon</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&display=swap"
-    />
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <!-- Battlefield: everything in the world is drawn on this canvas (render.js) -->
-    <canvas id="c" aria-label="Battlefield"></canvas>
 
-    <!-- In-game HUD, filled by hud.js -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Wormgeddon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
 
-    <div id="hud" hidden>
-      <div id="hudTop">
-        <div id="timer">45</div>
-        <div id="who"><span id="whoTeam">Team</span><small id="whoWorm">Worm</small></div>
+<body>
+  <!-- Battlefield: everything in the world is drawn on this canvas (render.js) -->
+  <canvas id="c" aria-label="Battlefield"></canvas>
+
+  <!-- In-game HUD, filled by hud.js -->
+
+  <div id="hud" hidden>
+    <div id="hudTop">
+      <div id="timer" data-nt>45</div>
+      <div id="who">
+        <span id="whoTeam" data-nt>Team</span><small id="whoWorm" data-nt>Worm</small>
       </div>
-      <div id="windbox">
-        Wind
-        <div id="windbar"><div id="windfill"></div></div>
-      </div>
-      <div id="log"></div>
-      <div id="msg"></div>
-      <div id="teamsbar"></div>
-      <div id="cur">
-        <img id="curIcon" alt="" width="44" height="44" />
-        <div><b id="curName">Bazooka</b><small id="curHint">Hold Space to charge</small></div>
-      </div>
-      <button id="wtoggle" class="btn sm" type="button">Weapons [W]</button>
-      <div id="wpanel">
-        <div id="wgrid"></div>
-        <p class="note">Click a weapon to arm it. Keys 1-5 set the fuse, R rotates a girder.</p>
-      </div>
-      <div id="touch"></div>
     </div>
-
-    <div id="pause">
+    <div id="windbox">
+      Wind
+      <div id="windbar">
+        <div id="windfill"></div>
+      </div>
+    </div>
+    <div id="log"></div>
+    <pre id="dbg" data-nt hidden></pre>
+    <div id="msg"></div>
+    <div id="teamsbar"></div>
+    <div id="cur" role="button" tabindex="0">
+      <img id="curIcon" alt="" width="44" height="44" />
       <div>
-        <h1>Paused</h1>
-        <div class="row" style="justify-content: center">
-          <button class="btn go" id="bResume" type="button">Resume</button
-          ><button class="btn" id="bQuit" type="button">Quit to menu</button>
-        </div>
+        <b id="curName" data-nt>Bazooka</b><small id="curHint" data-nt>Hold Space to charge</small>
       </div>
     </div>
-    <div id="over">
-      <div>
-        <h1 id="overT">Victory</h1>
-        <p id="overS" style="font-size: 1.3rem"></p>
-        <div class="row" style="justify-content: center">
-          <button class="btn go" id="bAgain" type="button">Back to menu</button>
-        </div>
+    <button id="wtoggle" class="btn sm" type="button">Weapons [W]</button>
+    <div id="wback"></div>
+    <aside id="wpanel" aria-label="Weapons" aria-hidden="true">
+      <div class="wphead">
+        <b>Weapons</b><button id="wclose" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div id="wgrid"></div>
+      <p class="note">Click a weapon to arm it. Keys 1-5 set the fuse, R rotates a girder.</p>
+    </aside>
+    <div id="touch"></div>
+  </div>
+
+  <div id="pause">
+    <div>
+      <h1>Paused</h1>
+      <div class="row" style="justify-content: center">
+        <button class="btn go" id="bResume" type="button">Resume</button><button class="btn" id="bQuit"
+          type="button">Quit to menu</button>
       </div>
     </div>
-
-    <!-- Setup menu: local / bots, host online, join online, controls (menu.js, net.js) -->
-    <div id="menu">
-      <div id="card">
-        <select id="oLang" data-nt class="lang" aria-label="Language"></select>
-        <h1>Wormgeddon<small>Turn-based artillery chaos. Local, vs bots, or online.</small></h1>
-        <div class="tabs" role="tablist">
-          <button type="button" data-tab="local" class="on">Local / Bots</button>
-          <button type="button" data-tab="host">Host online</button>
-          <button type="button" data-tab="join">Join online</button>
-          <button type="button" data-tab="help">Controls</button>
-        </div>
-
-        <section id="tab-local">
-          <div class="grid">
-            <fieldset>
-              <legend>Teams</legend>
-              <div id="teamRows"></div>
-              <label class="f"
-                >Teams<select id="oTeams">
-                  <option>2</option>
-                  <option>3</option>
-                  <option>4</option>
-                  <option>5</option>
-                  <option>6</option>
-                  <option>7</option>
-                  <option>8</option>
-                </select></label
-              >
-              <label class="f"
-                >Worms per team<select id="oWorms">
-                  <option>1</option>
-                  <option>2</option>
-                  <option>3</option>
-                  <option selected>4</option>
-                  <option>5</option>
-                  <option>6</option>
-                  <option>8</option>
-                </select></label
-              >
-            </fieldset>
-            <fieldset>
-              <legend>Battlefield</legend>
-              <label class="f"
-                >Level style<select id="oStyle">
-                  <option value="hills">Rolling hills</option>
-                  <option value="islands">Floating islands</option>
-                  <option value="caves">Caverns</option>
-                  <option value="plateau">Terraces</option>
-                  <option value="canyon">Canyon</option>
-                  <option value="mountains">Mountains</option>
-                  <option value="archipelago">Archipelago</option>
-                  <option value="random">Surprise me</option>
-                  <option value="custom" data-nt disabled>Custom image</option>
-                </select></label
-              >
-              <div class="f mapload">
-                <label class="filebtn"
-                  >Load map image&hellip;<input
-                    id="oMap"
-                    type="file"
-                    accept="image/png,image/bmp,image/gif,image/webp,image/jpeg,.png,.bmp,.gif,.webp,.jpg,.jpeg,.img"
-                    hidden /></label
-                ><button type="button" id="oMapClear" hidden>Remove</button>
-                <small id="oMapNote" data-nt
-                  >PNG with transparency, or a Worms Armageddon style PNG/BMP map. You can also drop
-                  the file onto this window.</small
-                >
-              </div>
-              <label class="f"
-                >Theme<select id="oTheme">
-                  <option value="grass">Meadow</option>
-                  <option value="desert">Desert</option>
-                  <option value="snow">Arctic</option>
-                  <option value="hell">Inferno</option>
-                  <option value="neon">Neon</option>
-                  <option value="random">Random</option>
-                </select></label
-              >
-              <label class="f"
-                >Size<select id="oSize">
-                  <option value="s">Small</option>
-                  <option value="m" selected>Medium</option>
-                  <option value="l">Large</option>
-                </select></label
-              >
-              <label class="f"
-                >Seed<input id="oSeed" type="text" placeholder="random" maxlength="16"
-              /></label>
-            </fieldset>
-            <fieldset>
-              <legend>Rules</legend>
-              <label class="f"
-                >Worm health<select id="oHp">
-                  <option>50</option>
-                  <option selected>100</option>
-                  <option>150</option>
-                  <option>200</option>
-                </select></label
-              >
-              <label class="f"
-                >Turn time (s)<select id="oTime">
-                  <option>20</option>
-                  <option>30</option>
-                  <option selected>45</option>
-                  <option>60</option>
-                  <option>90</option>
-                </select></label
-              >
-              <label class="f"
-                >Arsenal<select id="oArs">
-                  <option value="std">Standard</option>
-                  <option value="full">Everything (99)</option>
-                  <option value="bazooka">Bazooka only</option>
-                  <option value="chaos">Chaos (random ammo)</option>
-                </select></label
-              >
-              <label class="f"
-                >Mines<select id="oMines">
-                  <option>0</option>
-                  <option selected>6</option>
-                  <option>14</option>
-                  <option>25</option>
-                </select></label
-              >
-              <label class="f"
-                >Oil drums<select id="oDrums">
-                  <option>0</option>
-                  <option selected>4</option>
-                  <option>10</option>
-                </select></label
-              >
-              <label class="f"
-                >Crates<select id="oCrates">
-                  <option value="0">None</option>
-                  <option value="0.35" selected>Sometimes</option>
-                  <option value="0.8">Frequent</option>
-                </select></label
-              >
-              <label class="f"
-                >Sea level rise<select id="oRise">
-                  <option value="0" selected>Off</option>
-                  <option value="1">Every round</option>
-                  <option value="2">Every 2 rounds</option>
-                  <option value="3">Every 3 rounds</option>
-                  <option value="5">Every 5 rounds</option>
-                </select></label
-              >
-              <label class="f"
-                >Sudden death<select id="oSD">
-                  <option value="0">Off</option>
-                  <option value="8">After 8 rounds</option>
-                  <option value="15" selected>After 15 rounds</option>
-                </select></label
-              >
-            </fieldset>
-          </div>
-          <div class="row">
-            <button class="btn go" id="bStart" type="button">Start battle</button
-            ><span class="note" id="localNote">Human teams share the keyboard in turns.</span>
-          </div>
-        </section>
-
-        <section id="tab-host" hidden>
-          <p class="note">
-            The host runs the simulation. Friends join with the room code; each friend controls one
-            team. Online play needs this page opened from a normal web address or file, because some
-            embedded viewers block peer connections.
-          </p>
-          <div class="row">
-            <button class="btn go" id="bHost" type="button">Create room</button
-            ><span class="code" id="hostCode">----</span
-            ><button class="btn sm" id="bCopy" type="button">Copy code</button>
-          </div>
-          <ul id="lobbyList"></ul>
-          <p class="note" id="hostNote">
-            Set rules and level in the Local tab first, then come back here. Teams not taken by a
-            friend stay as bots or local players.
-          </p>
-          <div class="row">
-            <button class="btn go" id="bHostStart" type="button" disabled>
-              Start online battle
-            </button>
-          </div>
-        </section>
-
-        <section id="tab-join" hidden>
-          <label class="f" style="max-width: 420px"
-            ><span>Your name</span><input id="jName" type="text" value="Player" maxlength="14"
-          /></label>
-          <label class="f" style="max-width: 420px"
-            ><span>Room code</span
-            ><input id="jCode" type="text" placeholder="paste code" maxlength="40"
-          /></label>
-          <div class="row">
-            <button class="btn go" id="bJoin" type="button">Join room</button
-            ><span class="note" id="joinNote"></span>
-          </div>
-        </section>
-
-        <section id="tab-help" hidden>
-          <div class="keys">
-            <div><b>Left / Right</b> walk, swing, steer</div>
-            <div><b>Up / Down</b> aim</div>
-            <div><b>Enter</b> jump, <b>Backspace</b> back-flip</div>
-            <div><b>Space</b> hold to charge, release to fire</div>
-            <div><b>W</b> weapon panel</div>
-            <div><b>1-5</b> grenade fuse</div>
-            <div><b>Mouse click</b> target (strikes, teleport, girder, homing)</div>
-            <div><b>Wheel / pinch</b> zoom, <b>R</b> rotate girder</div>
-            <div><b>Right-click</b> weapon menu</div>
-            <div><b>Drag</b> pan camera, <b>C</b> recentre</div>
-            <div><b>Tab</b> cycle worm (Select Worm)</div>
-            <div><b>Esc</b> pause</div>
-            <div><b>M</b> mute</div>
-          </div>
-          <p class="note">
-            Ninja Rope: fire to hook, Left/Right swing, Up/Down reel, Enter to let go. Jet Pack: Up
-            thrust, Left/Right sideways, Space to switch off. Super Sheep: steer with arrows, Space
-            to detonate.
-          </p>
-        </section>
+  </div>
+  <div id="over">
+    <div>
+      <h1 id="overT">Victory</h1>
+      <p id="overS" data-nt style="font-size: 1.3rem"></p>
+      <div class="row" style="justify-content: center">
+        <button class="btn go" id="bAgain" type="button">Back to menu</button>
       </div>
     </div>
+  </div>
 
-    <!-- PeerJS (online multiplayer). Optional: the game works offline without it. -->
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <!-- Game modules. Order matters: later files use globals defined by earlier ones. -->
-    <script src="js/util.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/lang-it.js"></script>
-    <script src="js/audio.js"></script>
-    <script src="js/themes.js"></script>
-    <script src="js/terrain.js"></script>
-    <script src="js/custommap.js"></script>
-    <script src="js/collision.js"></script>
-    <script src="js/core.js"></script>
-    <script src="js/match.js"></script>
-    <script src="js/combat.js"></script>
-    <script src="js/projectiles.js"></script>
-    <script src="js/worms.js"></script>
-    <script src="js/crates.js"></script>
-    <script src="js/weapons.js"></script>
-    <script src="js/step.js"></script>
-    <script src="js/view.js"></script>
-    <script src="js/fx.js"></script>
-    <script src="js/sprites.js"></script>
-    <script src="js/worm-art.js"></script>
-    <script src="js/render.js"></script>
-    <script src="js/icons.js"></script>
-    <script src="js/hud.js"></script>
-    <script src="js/input.js"></script>
-    <script src="js/ai.js"></script>
-    <script src="js/net.js"></script>
-    <script src="js/menu.js"></script>
-    <script src="js/main.js"></script>
-  </body>
+  <!-- Setup menu: local / bots, host online, join online, controls (menu.js, net.js) -->
+  <div id="menu">
+    <div id="card">
+      <select id="oLang" data-nt class="lang" aria-label="Language"></select>
+      <h1>Wormgeddon<small>Turn-based artillery chaos. Local, vs bots, or online.</small></h1>
+      <div class="tabs" role="tablist">
+        <button type="button" data-tab="local" class="on">Local / Bots</button>
+        <button type="button" data-tab="host">Host online</button>
+        <button type="button" data-tab="join">Join online</button>
+        <button type="button" data-tab="help">Controls</button>
+      </div>
+
+      <section id="tab-local">
+        <div class="grid">
+          <fieldset>
+            <legend>Teams</legend>
+            <div id="teamRows"></div>
+            <label class="f">Teams<select id="oTeams">
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+              </select></label>
+            <label class="f">Worms per team<select id="oWorms">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option selected>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>8</option>
+              </select></label>
+          </fieldset>
+          <fieldset>
+            <legend>Battlefield</legend>
+            <label class="f">Level style<select id="oStyle">
+                <option value="hills">Rolling hills</option>
+                <option value="islands">Floating islands</option>
+                <option value="caves">Caverns</option>
+                <option value="plateau">Terraces</option>
+                <option value="canyon">Canyon</option>
+                <option value="mountains">Mountains</option>
+                <option value="archipelago">Archipelago</option>
+                <option value="random">Surprise me</option>
+                <option value="custom" data-nt disabled>Custom image</option>
+              </select></label>
+            <div class="f mapload">
+              <select id="oLib" data-nt hidden></select>
+              <small id="oLibNote" data-nt></small>
+            </div>
+            <div class="f mapload">
+              <label class="filebtn">Load map image&hellip;<input id="oMap" type="file"
+                  accept="image/png,image/bmp,image/gif,image/webp,image/jpeg,.png,.bmp,.gif,.webp,.jpg,.jpeg,.img"
+                  hidden /></label><button type="button" id="oMapClear" hidden>Remove</button>
+              <small id="oMapNote" data-nt>PNG with transparency, or a Worms Armageddon style PNG/BMP map. You can also
+                drop
+                the file onto this window.</small>
+            </div>
+            <label class="f">Theme<select id="oTheme">
+                <option value="grass">Meadow</option>
+                <option value="desert">Desert</option>
+                <option value="snow">Arctic</option>
+                <option value="hell">Inferno</option>
+                <option value="neon">Neon</option>
+                <option value="random">Random</option>
+              </select></label>
+            <label class="f">Size<select id="oSize">
+                <option value="s">Small</option>
+                <option value="m" selected>Medium</option>
+                <option value="l">Large</option>
+              </select></label>
+            <label class="f">Seed<input id="oSeed" type="text" placeholder="random" maxlength="16" /></label>
+          </fieldset>
+          <fieldset>
+            <legend>Rules</legend>
+            <label class="f">Worm health<select id="oHp">
+                <option>50</option>
+                <option selected>100</option>
+                <option>150</option>
+                <option>200</option>
+              </select></label>
+            <label class="f">Turn time (s)<select id="oTime">
+                <option>20</option>
+                <option>30</option>
+                <option selected>45</option>
+                <option>60</option>
+                <option>90</option>
+              </select></label>
+            <label class="f">Arsenal<select id="oArs">
+                <option value="std">Standard</option>
+                <option value="full">Everything (99)</option>
+                <option value="bazooka">Bazooka only</option>
+                <option value="chaos">Chaos (random ammo)</option>
+              </select></label>
+            <label class="f">Mines<select id="oMines">
+                <option>0</option>
+                <option selected>6</option>
+                <option>14</option>
+                <option>25</option>
+              </select></label>
+            <label class="f">Oil drums<select id="oDrums">
+                <option>0</option>
+                <option selected>4</option>
+                <option>10</option>
+              </select></label>
+            <label class="f">Crates<select id="oCrates">
+                <option value="0">None</option>
+                <option value="0.35" selected>Sometimes</option>
+                <option value="0.8">Frequent</option>
+              </select></label>
+            <label class="f">Sea level rise<select id="oRise">
+                <option value="0" selected>Off</option>
+                <option value="1">Every round</option>
+                <option value="2">Every 2 rounds</option>
+                <option value="3">Every 3 rounds</option>
+                <option value="5">Every 5 rounds</option>
+              </select></label>
+            <label class="f">Sudden death<select id="oSD">
+                <option value="0">Off</option>
+                <option value="8">After 8 rounds</option>
+                <option value="15" selected>After 15 rounds</option>
+              </select></label>
+          </fieldset>
+        </div>
+        <div class="row">
+          <button class="btn go" id="bStart" type="button">Start battle</button><span class="note" id="localNote">Human
+            teams share the keyboard in turns.</span>
+        </div>
+      </section>
+
+      <section id="tab-host" hidden>
+        <p class="note">
+          The host runs the simulation. Friends join with the room code; each friend controls one
+          team. Online play needs this page opened from a normal web address or file, because some
+          embedded viewers block peer connections.
+        </p>
+        <div class="row">
+          <button class="btn go" id="bHost" type="button">Create room</button><span class="code"
+            id="hostCode">----</span><button class="btn sm" id="bCopy" type="button">Copy code</button>
+        </div>
+        <ul id="lobbyList"></ul>
+        <p class="note" id="hostNote">
+          Set rules and level in the Local tab first, then come back here. Teams not taken by a
+          friend stay as bots or local players.
+        </p>
+        <div class="row">
+          <button class="btn go" id="bHostStart" type="button" disabled>
+            Start online battle
+          </button>
+        </div>
+      </section>
+
+      <section id="tab-join" hidden>
+        <label class="f" style="max-width: 420px"><span>Your name</span><input id="jName" type="text" value="Player"
+            maxlength="14" /></label>
+        <label class="f" style="max-width: 420px"><span>Room code</span><input id="jCode" type="text"
+            placeholder="paste code" maxlength="40" /></label>
+        <div class="row">
+          <button class="btn go" id="bJoin" type="button">Join room</button><span class="note" id="joinNote"></span>
+        </div>
+      </section>
+
+      <section id="tab-help" hidden>
+        <div class="keys">
+          <div><b>Left / Right</b> walk, swing, steer</div>
+          <div><b>Up / Down</b> aim</div>
+          <div><b>Enter</b> jump, <b>Backspace</b> back-flip</div>
+          <div><b>Space</b> hold to charge, release to fire</div>
+          <div><b>W</b> weapon panel</div>
+          <div><b>1-5</b> grenade fuse</div>
+          <div><b>Mouse click</b> target (strikes, teleport, girder, homing)</div>
+          <div><b>Wheel / pinch</b> zoom, <b>R</b> rotate girder</div>
+          <div><b>Right-click</b> weapon menu</div>
+          <div><b>Drag</b> pan camera, <b>C</b> recentre</div>
+          <div><b>Tab</b> cycle worm (Select Worm)</div>
+          <div><b>Esc</b> pause</div>
+          <div><b>M</b> mute</div>
+          <div><b>F3</b> or <b>`</b> debug view (collision boxes)</div>
+        </div>
+        <p class="note">
+          Ninja Rope: fire to hook, Left/Right swing, Up/Down reel, Enter or fire again to let go
+          (then you can aim and change weapon). Jet Pack: Up thrust, Left/Right sideways, Space to
+          switch off. Super Sheep: steer with arrows, Space
+          to detonate.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <!-- PeerJS (online multiplayer). Optional: the game works offline without it. -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- Game modules. Order matters: later files use globals defined by earlier ones. -->
+  <script src="js/util.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/lang-it.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/terrain.js"></script>
+  <script src="js/custommap.js"></script>
+  <script src="js/collision.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/match.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/projectiles.js"></script>
+  <script src="js/worms.js"></script>
+  <script src="js/crates.js"></script>
+  <script src="js/weapons.js"></script>
+  <script src="js/step.js"></script>
+  <script src="js/view.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/worm-art.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/net.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/maplib.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
 </html>

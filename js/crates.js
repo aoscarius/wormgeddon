@@ -76,15 +76,34 @@ function updateObjs(dt) {
         o.vx *= 0.99;
         const c = stepBody(o, dt);
         o.age = (o.age || 0) + dt;
-        // Any terrain contact counts as landing (a slope or wall must not keep the crate "falling"
-        // forever, which would stall the turn change); a hard time limit is the last resort.
-        if (c || o.age > 25) {
+        // Progress watchdog: a crate that has not moved 1.5 px in half a second is wedged somewhere
+        // (corner, crevice) and counts as landed so its parachute closes and the turn can go on.
+        o.wt = (o.wt || 0) + dt;
+        if (o.wt >= 0.5) {
+          o.stuck = Math.hypot(o.x - (o.wx === undefined ? o.x : o.wx), o.y - (o.wy || o.y)) < 1.5;
+          o.wx = o.x;
+          o.wy = o.y;
+          o.wt = 0;
+        }
+        // Any terrain contact (or being wedged, or a hard time limit) lands it.
+        if (c || o.stuck || o.age > 25) {
           o.landed = true;
           o.vy = 0;
+          o.vx = 0;
+          o.air = 0;
+          o.stuck = false;
         }
-      } else if (!groundBelow(o.x, o.y, 6)) {
-        o.landed = false;
-      }
+      } else if (!groundBelow(o.x, o.y, o.r + 1)) {
+        // Landed but nothing under it (the ground was blown away): after a short grace period it
+        // opens the parachute and falls again. The grace period stops the parachute flickering.
+        o.air = (o.air || 0) + dt;
+        if (o.air > 0.25) {
+          o.landed = false;
+          o.air = 0;
+          o.age = 0;
+          o.vy = 40;
+        }
+      } else o.air = 0;
       if (o.y > G.waterY + 4) o.kill = true;
       for (const w of G.worms)
         if (

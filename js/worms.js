@@ -18,7 +18,7 @@
  */
 function walkStep(o, dx) {
   const nx = o.x + dx;
-  for (let c = 0; c <= 5; c++) {
+  for (let c = 0; c <= 6; c++) {
     if (!hitC(nx, o.y - c, o.r)) {
       o.x = nx;
       o.y -= c;
@@ -57,10 +57,20 @@ function physBody(o, dt) {
  * layered on top in controlWorm().
  * @param {boolean} active true for the worm being controlled (jet pack counts as no-fall-damage)
  */
+/**
+ * True when a worm is held up by the terrain: ground under its feet (groundBelow) or any solid
+ * contact one pixel below its collision circle. The second test catches spikes and diagonal edges
+ * that the circle touches but the three foot samples miss, which used to leave a worm "falling"
+ * with zero velocity for ever.
+ */
+function supported(w) {
+  return groundBelow(w.x, w.y, w.r) || hitC(w.x, w.y + 1, w.r);
+}
+
 function physWorm(w, dt, active) {
   if (w.rope) return ropePhys(w, dt, active);
   if (w.grounded) {
-    if (!groundBelow(w.x, w.y, w.r)) {
+    if (!supported(w)) {
       w.grounded = false;
     } else if (Math.abs(w.vx) > 4) {
       walkStep(w, w.vx * dt);
@@ -90,10 +100,39 @@ function physWorm(w, dt, active) {
         if (w.vy > -90 || Math.abs(w.vy) < 110) {
           w.vx *= 0.4;
           w.vy = 0;
-          w.grounded = groundBelow(w.x, w.y, w.r);
+          w.grounded = supported(w);
         }
       } else if (c.speed > FALLV * 1.3) hurt(w, Math.round((c.speed - FALLV * 1.3) / 10));
     }
+  }
+  // Settle watchdog: a worm that is not grounded but is barely moving and has ground under it is
+  // standing; one that has not made progress for 1.2 s (wedged in a crevice) is freed and grounded.
+  if (!w.grounded && !w.rope && !w.jet && !w.tool && !w.dead) {
+    if (supported(w) && Math.hypot(w.vx, w.vy) < 25) {
+      w.grounded = true;
+      w.vx = w.vy = 0;
+    }
+    w.wt = (w.wt || 0) + dt;
+    if (w.wt >= 0.4) {
+      const moved = Math.hypot(w.x - (w.wx === undefined ? w.x : w.wx), w.y - (w.wy || w.y));
+      w.stuckN = moved < 1.5 ? (w.stuckN || 0) + 1 : 0;
+      w.wx = w.x;
+      w.wy = w.y;
+      w.wt = 0;
+      if (w.stuckN >= 3) {
+        const f = findFree(w.x, w.y - 2, w.r, 30);
+        if (f) {
+          w.x = f[0];
+          w.y = f[1];
+        }
+        w.grounded = true;
+        w.vx = w.vy = 0;
+        w.stuckN = 0;
+      }
+    }
+  } else {
+    w.stuckN = 0;
+    w.wt = 0;
   }
   // water, off-map
   if (w.y + w.r > G.waterY + 6 && !w.sunk) {

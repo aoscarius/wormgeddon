@@ -235,8 +235,11 @@ function startTurn() {
 function toSettle() {
   const w = activeWorm();
   if (w) {
+    // Everything the player was holding is dropped when the turn ends (rope included, otherwise
+    // the worm would dangle and hold up the turn change).
     w.tool = null;
     w.jet = null;
+    w.rope = null;
   }
   G.phase = 'settle';
   G.settleT = 0;
@@ -245,20 +248,27 @@ function toSettle() {
   G.weapon.pw = 0;
 }
 /** True when nothing is moving or about to happen: no projectiles in flight, fires, scheduled actions or moving worms. */
-function quiet() {
-  if (G.sched.length || G.arma > 0) return false;
+function quietBlocker() {
+  if (G.sched.length) return 'scheduled actions';
+  if (G.arma > 0) return 'armageddon';
   for (const p of G.projs) {
     const d = PTYPES[p.t];
-    if (!(d.passive && p.fuse == null)) return false;
+    if (!(d.passive && p.fuse == null)) return 'projectile ' + p.t;
   }
-  for (const o of G.objs) if (o.lit) return false;
+  for (const o of G.objs) if (o.lit) return 'burning drum';
   for (const w of G.worms) {
     if (w.dead && w.y > G.waterY) continue;
-    if (!w.grounded || Math.abs(w.vx) > 6 || w.tool) return false;
+    if (!w.grounded) return 'worm ' + w.name + ' in the air';
+    if (Math.abs(w.vx) > 6) return 'worm ' + w.name + ' sliding';
+    if (w.tool) return 'worm ' + w.name + ' using a tool';
   }
-  if (G.fires.length && G.settleT < 14) return false;
-  for (const o of G.objs) if (o.k === 'crate' && !o.landed) return false;
-  return true;
+  if (G.fires.length && G.settleT < 6) return 'fires burning';
+  // (a crate still parachuting down never holds up the turn change: it keeps falling meanwhile)
+  return null;
+}
+/** True when nothing is moving any more and the turn may change (see quietBlocker for why not). */
+function quiet() {
+  return quietBlocker() === null;
 }
 /** Kills worms whose health reached 0 (small death explosion each). Returns true if anyone died. */
 function processDeaths() {

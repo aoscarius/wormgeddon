@@ -36,21 +36,40 @@ function normalAt(x, y) {
   const l = Math.hypot(nx, ny);
   return l ? [nx / l, ny / l] : [0, -1];
 }
-/* Moves a body for dt seconds with sub-stepping; returns {n,speed} on a terrain contact. */
 /**
  * Moves a body for dt seconds, sub-stepping in <= 2 px increments so fast bodies cannot tunnel
- * through thin terrain. On the first contact the velocity is reflected using the body's
- * `bounce` (restitution) and `fric` (tangential damping) and the step stops.
+ * through thin terrain.
+ *
+ *  - A body that starts embedded in the ground (a crater edge, girder or new terrain on top of
+ *    it) is first pushed out to the nearest free spot, so nothing can stay wedged for ever.
+ *  - On the first contact against the surface the velocity is reflected using the body's `bounce`
+ *    (restitution) and `fric` (tangential damping) and the remaining sub-steps continue with the
+ *    new velocity, so bodies slide off walls and out of corners instead of freezing.
+ *  - A step that is blocked without moving into the surface (grazing a corner) is resolved by
+ *    trying each axis on its own, which slides along the wall.
  *
  * @param {{x,y,vx,vy,r,bounce?,fric?}} b body, mutated in place
- * @returns {{n: number[], speed: number}|null} surface normal and impact speed, or null if free
+ * @returns {{n: number[], speed: number}|null} surface normal and impact speed of the first
+ *     contact, or null if the body moved freely
  */
 function stepBody(b, dt) {
+  if (hitC(b.x, b.y, b.r)) {
+    const f = findFree(b.x, b.y, b.r, 40);
+    if (f) {
+      b.x = f[0];
+      b.y = f[1];
+    } else {
+      // buried deeper than we can search: move freely so the body can dig itself out
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      return null;
+    }
+  }
   const sp = Math.hypot(b.vx, b.vy) * dt,
     n = Math.max(1, Math.ceil(sp / 2));
-  const sx = (b.vx * dt) / n,
-    sy = (b.vy * dt) / n;
-  let res = null;
+  let sx = (b.vx * dt) / n,
+    sy = (b.vy * dt) / n,
+    res = null;
   for (let i = 0; i < n; i++) {
     const nx = b.x + sx,
       ny = b.y + sy;
@@ -71,9 +90,19 @@ function stepBody(b, dt) {
         vt = b.vx * tx + b.vy * ty;
       b.vx -= vt * (1 - f) * tx;
       b.vy -= vt * (1 - f) * ty;
+      if (res) break; // second contact in the same tick: stop here
+      res = { n: N, speed: -vn };
+      sx = (b.vx * dt) / n;
+      sy = (b.vy * dt) / n;
+      continue;
     }
-    res = { n: N, speed: -vn };
-    break;
+    // Blocked while not moving into the surface (corner graze): slide along one axis.
+    if (!hitC(nx, b.y, b.r)) b.x = nx;
+    else if (!hitC(b.x, ny, b.r)) b.y = ny;
+    else {
+      res = res || { n: N, speed: 0 };
+      break;
+    }
   }
   return res;
 }

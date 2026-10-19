@@ -29,7 +29,10 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
   menu (top right). Team names, weapon names, HUD, messages and help are all translated.
 - **Bots** that simulate shots to pick weapon, angle and power.
 - **Online play**: the host runs the game, friends join with a short room code.
-- Touch controls for phones and tablets.
+- Touch controls for phones and tablets: a slide-able d-pad, a big fire button with a power ring,
+  jump and back-flip buttons, a fuse/girder button, pinch to zoom and a tap on the weapon box to
+  open the weapon drawer. The HUD adapts to portrait and landscape phones.
+- The weapon menu is a drawer that slides in from the right and slides back out.
 
 ## Quick start
 
@@ -46,7 +49,8 @@ runs offline without them (only online play and the display font are lost).
 
 | Input                  | Action                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| Left / Right           | walk, swing the rope, steer a super sheep                                                        |
+| Left / Right           | walk, swing the rope, steer a super sheep (all four arrows steer it in 8 directions)             |
+| F3 or `                | debug view: collision circles, probe points, bounding boxes, velocities, settle blocker          |
 | Up / Down              | aim (rope: reel in / out; jet pack: thrust)                                                      |
 | Enter / Backspace      | jump / back-flip (Enter also lets go of the rope)                                                |
 | Space                  | hold to charge, release to fire; fires instant weapons; detonates sheep                          |
@@ -199,6 +203,17 @@ python3 tests/smoke.py   # needs Python Playwright and a Chromium
 all 36 weapons are registered and that the Concrete Donkey keeps hopping and exploding, and fails
 on any page error.
 
+## Map library (PNG levels from a folder)
+
+Put PNG maps (transparent sky, or Worms Armageddon style PNG/BMP) in `maps/` and list them in
+`maps/manifest.json`:
+
+```json
+{ "maps": [ { "name": "Floating isles", "file": "floating-isles.png" }, "other.png" ] }
+```
+
+- Served over http(s) the game reads `maps/manifest.json` by itself and fills a drop-down in the menu.
+
 ## Custom map notes
 
 - Native Worms Armageddon `.img` files are not supported (proprietary compressed format); convert
@@ -208,9 +223,24 @@ on any page error.
 - Pictures narrower than 800 px are enlarged (2-4x, crisp), pictures larger than 3600 x 1600 px
   are reduced. A strip of open space is added below the picture for the water.
 
+## Robustness notes
+
+- Bodies (worms, crates, projectiles) that end up embedded in terrain are pushed to the nearest free spot,
+  and they slide along walls/corners instead of freezing on first contact.
+- A worm or crate that makes no progress for ~1 s is freed; landed crates close their parachute
+  and reopen it only if the ground under them is really gone.
+- The turn change after "--" waits only for real movement (projectiles, worms in the air or
+  sliding, burning drums, fires up to 6 s). Falling crates never delay it; hard cap 10 s.
+
 ## Known limitations
 
 - Online play is host-authoritative with no lag compensation, no reconnection and no spectators.
 - Weapon balance and bot skill are first-pass and meant to be tuned in the data records.
 - Floating-point results are only ever computed on the host, so there is no desync, but a slow
   host slows everyone down.
+
+## Rope, jet pack and similar
+
+Fire (or choosing the same weapon again in the menu) while hanging on the ninja rope, or while the
+jet pack is on, lets go and frees aiming and weapon changes again. Whatever is still held when the
+turn ends is dropped automatically.

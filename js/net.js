@@ -401,7 +401,7 @@ function joinRoom() {
   const code = $('jCode')
     .value.trim()
     .toUpperCase()
-    .replace(/^WORMHOLE-/, '');
+    .replace(/^WORMGEDDON-/, '');
   if (!code) {
     $('joinNote').textContent = tr('Enter the room code.');
     return;

@@ -6,7 +6,7 @@
  * Per-frame drawing: parallax sky, water, terrain, entities, effects and targeting previews.
  *
  * Depends on: sprites, worm-art, fx, terrain
- * Globals defined: SKY_CLOUDS, drawSky, drawNuke, drawWater, render
+ * Globals defined: SKY_CLOUDS, drawSky, drawNuke, drawDebug, debugText, drawWater, render
  */
 
 /* ---- Rendering ---- */
@@ -190,6 +190,95 @@ function drawNuke() {
   ctx2.restore();
 }
 /**
+ * Debug view (toggle with F3 or `): draws what the physics really sees. Every body gets its
+ * collision circle, the 8 probe points used by hitC (red = touching ground, green = free), its
+ * bounding box and a velocity vector; worms show grounded/airborne, crates show landed/falling,
+ * and a terrain pixel grid is outlined around the active worm.
+ */
+function drawDebug() {
+  const S = CAM.s,
+    lw = 1.2 / S;
+  const body = (b, col, label) => {
+    ctx2.lineWidth = lw;
+    // bounding box (axis aligned square around the circle)
+    ctx2.strokeStyle = 'rgba(255,255,0,.8)';
+    ctx2.strokeRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+    // collision circle
+    ctx2.strokeStyle = col;
+    ctx2.beginPath();
+    ctx2.arc(b.x, b.y, b.r, 0, TAU);
+    ctx2.stroke();
+    // probe points: centre + ring
+    const pts = [[0, 0]].concat(RING.map(([cx, cy]) => [cx * b.r, cy * b.r]));
+    for (const [dx, dy] of pts) {
+      ctx2.fillStyle = solid(b.x + dx, b.y + dy) ? '#ff3030' : '#30ff60';
+      ctx2.fillRect(b.x + dx - 1.2 / S, b.y + dy - 1.2 / S, 2.4 / S, 2.4 / S);
+    }
+    // velocity (0.25 s ahead)
+    if (b.vx || b.vy) {
+      ctx2.strokeStyle = '#00d0ff';
+      ctx2.beginPath();
+      ctx2.moveTo(b.x, b.y);
+      ctx2.lineTo(b.x + b.vx * 0.25, b.y + b.vy * 0.25);
+      ctx2.stroke();
+    }
+    // ground-contact sample points used by groundBelow
+    ctx2.fillStyle = groundBelow(b.x, b.y, b.r) ? '#30ff60' : '#ff3030';
+    for (const ox of [-3, 0, 3])
+      ctx2.fillRect(b.x + ox - 1 / S, b.y + b.r + 1.5 - 1 / S, 2 / S, 2 / S);
+    if (label) {
+      ctx2.fillStyle = '#fff';
+      ctx2.font = `${10 / S}px monospace`;
+      ctx2.fillText(label, b.x + b.r + 3 / S, b.y - b.r);
+    }
+  };
+  for (const w of G.worms)
+    if (!w.dead) body(w, w.grounded ? '#30ff60' : '#ff9a30', (w.grounded ? 'G ' : 'A ') + w.hp);
+  for (const p of G.projs) body(p, '#ff5ad0', p.t);
+  for (const o of G.objs)
+    body(
+      o,
+      o.landed || o.k === 'drum' ? '#30ff60' : '#ff9a30',
+      o.k === 'crate' ? (o.landed ? 'landed' : 'falling') : o.k
+    );
+  ctx2.fillStyle = '#ffa030';
+  for (const f of G.fires) ctx2.fillRect(f.x - 1, f.y - 1, 2, 2);
+  // terrain mask around the active worm, one square per solid pixel (zoom in to read it)
+  const aw = activeWorm();
+  if (aw && S > 1.4) {
+    ctx2.fillStyle = 'rgba(255,60,60,.35)';
+    for (let y = Math.floor(aw.y) - 20; y < aw.y + 20; y++)
+      for (let x = Math.floor(aw.x) - 20; x < aw.x + 20; x++)
+        if (solid(x, y)) ctx2.fillRect(x, y, 1, 1);
+  }
+  // world border
+  ctx2.strokeStyle = 'rgba(255,255,255,.4)';
+  ctx2.strokeRect(0, 0, T.w, T.h);
+  ctx2.setLineDash([6 / S, 6 / S]);
+  ctx2.strokeStyle = 'rgba(80,160,255,.8)';
+  ctx2.beginPath();
+  ctx2.moveTo(0, G.waterY);
+  ctx2.lineTo(T.w, G.waterY);
+  ctx2.stroke();
+  ctx2.setLineDash([]);
+}
+/** Text block of the debug view: phase, timers and, while settling, what is blocking the turn change. */
+function debugText() {
+  const aw = activeWorm();
+  const lines = [
+    `phase ${G.phase}  round ${G.round + 1}  timer ${G.timer.toFixed(1)}`,
+    `worms ${G.worms.filter(w => !w.dead).length}  projs ${G.projs.length}  objs ${G.objs.length}  fires ${G.fires.length}`,
+    `water ${G.waterY.toFixed(0)} -> ${G.waterTarget.toFixed(0)}`,
+  ];
+  if (G.phase === 'settle')
+    lines.push(`settle ${G.settleT.toFixed(1)} s  blocked by: ${quietBlocker() || 'nothing'}`);
+  if (aw)
+    lines.push(
+      `active ${aw.name}  ${aw.x.toFixed(1)},${aw.y.toFixed(1)}  v ${aw.vx.toFixed(0)},${aw.vy.toFixed(0)}  ${aw.grounded ? 'grounded' : 'airborne'}`
+    );
+  return lines.join('\n');
+}
+/**
  * Draws one complete frame: sky, world (water, terrain, objects, projectiles, worms, fire, effects,
  * labels, targeting previews) in world space with camera and screen shake, then the flash overlay.
  */
@@ -295,6 +384,7 @@ function render() {
     ctx2.restore();
   }
   drawWater(true);
+  if (UI.debug) drawDebug();
   const aw = activeWorm();
   if (aw) {
     drawAim(aw);

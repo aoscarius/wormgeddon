@@ -77,6 +77,7 @@ function frame(now) {
         }
       }
     }
+    touchFx();
     render();
   } catch (err) {
     console.error(err);
