@@ -37,7 +37,7 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 ## Quick start
 
 To work on the source, open `index.html` instead (it loads `css/style.css` and `js/*.js`
-directly, no build step needed), then run `node build.js` to regenerate the single-file builds.
+directly, no build step needed).
 
 Online play needs the page to be opened from a normal web address or file (not inside an
 embedded viewer that blocks WebRTC). The PeerJS library and fonts load from a CDN; the game also

@@ -83,6 +83,10 @@ input:focus-visible {
   font-size: 1.2rem;
   padding: 10px 22px;
 }
+.btn.exit {
+  font-size: 1.2rem;
+  padding: 10px 22px;
+}
 .btn.sm {
   padding: 3px 9px;
   font-size: 0.9rem;

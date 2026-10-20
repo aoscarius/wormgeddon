@@ -38,7 +38,7 @@ function drawSky() {
   ctx2.globalAlpha = 0.55;
   for (const c of SKY_CLOUDS) {
     const x =
-        ((((c.x + t * (8 + wind * 14) - CAM.x * 0.12) % (VW + 500)) + VW + 500) % (VW + 500)) - 250,
+        ((((c.x + t * (8 + wind * 114) - CAM.x * 0.12) % (VW + 500)) + VW + 500) % (VW + 500)) - 250,
       y = c.y * 1.3 - CAM.y * 0.06;
     ctx2.beginPath();
     ctx2.ellipse(x, y, 70 * c.s, 20 * c.s, 0, 0, TAU);

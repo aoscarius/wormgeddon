@@ -70,6 +70,21 @@ function noiseBurst(dur, vol = 0.2, lp = 800) {
   s.start();
 }
 /**
+ * Creates an MP3 sound-effect function. Each call plays a separate voice so
+ * overlapping playback is supported.
+ * @param {string} src URL or path to the MP3 file
+ * @param {number} [vol=1] Playback volume from 0 (silent) to 1 (full volume)
+ * @returns {() => void} Function that plays the sound effect
+ */
+function mp3Sfx(src, vol = 0.5) {
+    const b = new Audio(src);
+    b.preload = 'auto';
+    if (muted) return;
+    const m = b.cloneNode();
+    m.volume = Math.max(0, Math.min(1.0, vol));
+    m.play().catch(() => {});
+}
+/**
  * Sound effects by name. Simulation events refer to these names ({e:'snd', s:'boom'}), so adding
  * a new sound only needs a new entry here. Each takes an optional numeric argument (e.g. radius).
  */
@@ -87,9 +102,8 @@ const SFX = {
   },
   tele: () => tone(1200, 200, 0.35, 'sine', 0.1),
   sheep: () => tone(420, 380, 0.12, 'triangle', 0.08),
-  holy: () => {
-    tone(300, 900, 0.8, 'sine', 0.12);
-  },
+  // holy: () => tone(300, 900, 0.8, 'sine', 0.12),
+  holy: () => mp3Sfx('sounds/hallelujah.mp3'),
   turn: () => {
     tone(500, 700, 0.12, 'triangle', 0.08);
   },

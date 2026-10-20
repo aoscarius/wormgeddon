@@ -252,7 +252,7 @@ $('wgrid').addEventListener('click', e => {
 });
 $('wtoggle').addEventListener('click', () => togglePanel());
 $('wclose').addEventListener('click', () => togglePanel(false));
-$('wback').addEventListener('click', () => togglePanel(false));
+$('wback').addEventListener('mousedown', () => togglePanel(false));
 // The current-weapon box doubles as the menu button (handy on phones).
 $('cur').addEventListener('click', () => isMyTurn() && togglePanel());
 $('cur').addEventListener('keydown', e => (e.key === 'Enter' ? togglePanel() : 0));

@@ -35,16 +35,13 @@ index.html        development entry point (menu markup, HUD, <script> list = loa
 css/style.css     all styles (HUD, menu, touch gamepad, weapon drawer)
 js/*.js           game modules, see below
 levels/           PNG levels + optional manifest.json (see section 6)
-tests/smoke.py    Playwright smoke test
-build.js          bundles everything into dist/ (and embeds levels/)
-dist/             build output: wormgeddon.html (standalone) and wormgeddon.fragment.html
 ```
 
 | Module | What lives there |
 | --- | --- |
 | `util.js` | `$`, `clamp`, `rnd`, `rndi`, `pick`, seeded RNG (`mulberry`, `hashStr`) |
 | `i18n.js`, `lang-it.js` | `tr()`, `wname()`, dictionaries |
-| `audio.js` | WebAudio helpers (`tone`, `noiseBurst`) and the `SFX` table |
+| `audio.js` | WebAudio helpers (`tone`, `noiseBurst`, `mp3Sfx`) and the `SFX` table |
 | `themes.js` | colour palettes (`THEMES`) |
 | `terrain.js` | terrain mask + canvas, level generation (`generateTerrain`), carving, girders |
 | `custommap.js`, `maplib.js` | importing PNG levels, the level library |
@@ -69,15 +66,7 @@ Workflow:
 ```bash
 # edit files, then open index.html directly (works from file://) or serve the folder:
 python3 -m http.server 8000
-node build.js            # -> dist/wormgeddon.html (+ .fragment.html), embeds levels/
-python3 tests/smoke.py   # needs Playwright + Chromium
 ```
-
-New `.js` files must be added to the `<script>` list in `index.html` (order = load order; the
-`Depends on:` line in each file header documents what a module needs). `build.js` picks the
-scripts up from that list automatically.
-
----
 
 ## 2. How the game runs
 
@@ -246,8 +235,6 @@ whose first palette colour is the sky; GIF/WebP/JPEG also work). Optionally desc
 { "levels": [ { "name": "Floating isles", "file": "floating-isles.png" }, "other.png" ] }
 ```
 
-* `node build.js` embeds the folder (manifest order, then remaining files alphabetically) into
-  `dist/*.html`, so levels also work from `file://`, in the artifact and for online hosts.
 * When the page is served over http(s), `levels/manifest.json` (or the server's directory index) is
   read at start-up as well, so you can add levels to a running server without rebuilding.
 * The menu's **Level library** drop-down lists them; picking one imports it like "Load map
@@ -316,7 +303,7 @@ Online players each use their own language because events carry keys, not senten
 * **Crates** (`crates.js`): `CRATE_UTIL` (utilities) and `CRATE_WEAP` (weapons) are the pools a crate
   picks from; health crates are separate. `spawnCrate`, `updateObjs`, `collectCrate` hold the logic
   (progress watchdog, parachute handling).
-* **Sounds** (`audio.js`): add an entry to `SFX` (`name: r => tone(...)` or `noiseBurst(...)`), then
+* **Sounds** (`audio.js`): add an entry to `SFX` (`name: r => tone(...)` or `noiseBurst(...)` or `mp3Sfx(...)`), then
   `emit({e: 'snd', s: 'name', r: radius})` from the simulation.
 * **Icons** (`icons.js`): `ICON_DRAW[weaponId] = g => {...}` on a 64x64 canvas with helpers
   (`icRect`, `icCircle`, `icEllipse`, `icPoly`, `icLine`, `icFlame`, `icGrenade`, `icWormHead`, palette `IC`).
@@ -395,4 +382,3 @@ sandboxed iframes such as the artifact preview.
 * Use `stepBody` for anything that moves through terrain, `findFree` to place things, and
   `groundBelow` / `supported(w)` to ask whether something stands.
 * Translate every user-visible string (`tr`, dictionary entries, `data-nt` for generated nodes).
-* After changing code run `node build.js`; the artifact / standalone file is only updated by the build.

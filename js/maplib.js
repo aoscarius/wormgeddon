@@ -5,9 +5,9 @@
  *
  * Every picture in the project's `maps/` folder is offered in the menu's "Maps library"
  * drop-down. Sources, merged in this order (duplicates by file name are skipped):
- *   1. `window.MAPS_BUNDLE`, written by build.js from the maps folder (names from
- *      maps/manifest.json when it exists, otherwise from the file names). Because the images are
- *      embedded, this works from file://, inside the artifact and when hosting online games.
+ *   1. `window.MAPS_BUNDLE`, from the maps folder (names from maps/manifest.json when it exists, 
+ *      otherwise from the file names). Because the images are embedded, this works from file://, 
+ *      inside the artifact and when hosting online games.
  *   2. `maps/manifest.json` fetched at run time when the page is served over http(s), so a server
  *      admin can add maps without rebuilding. If there is no manifest, the server's directory
  *      index of `maps/` is scanned for image links.
