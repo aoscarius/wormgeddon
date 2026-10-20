@@ -481,9 +481,15 @@ kbd {
   font-size: 0.8rem;
 }
 #wtoggle {
+  right: max(10px, env(safe-area-inset-right) + 50px);
+  top: max(70px, calc(env(safe-area-inset-top) + 60px));
+  pointer-events: auto;
+}
+#wfull {
   right: max(10px, env(safe-area-inset-right));
   top: max(70px, calc(env(safe-area-inset-top) + 60px));
   pointer-events: auto;
+  font-size: 0.8rem;
 }
 /* Event log, and on-screen touch buttons */
 #log {

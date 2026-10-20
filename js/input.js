@@ -88,6 +88,8 @@ addEventListener('keydown', e => {
   } else if (e.key === 'm' || e.key === 'M') {
     muted = !muted;
     showMsg(tr(muted ? 'Sound off' : 'Sound on'), 900);
+  } else if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
   } else if (e.key === 'Escape') {
     if ($('wpanel').classList.contains('on')) togglePanel(false);
     else togglePause();
@@ -113,6 +115,18 @@ function togglePanel(open) {
   p.setAttribute('aria-hidden', on ? 'false' : 'true');
   $('wback').classList.toggle('on', on);
 }
+/** Toggles browser full screen (Fullscreen API; the iOS iPhone Safari has none, so nothing happens there). */
+function toggleFullscreen() {
+  const d = document, el = d.documentElement;
+  try {
+    if (d.fullscreenElement || d.webkitFullscreenElement)
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  } catch (e) {}
+}
+$('wfull').addEventListener('click', toggleFullscreen);
+if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen))
+  $('wfull').hidden = true;
 
 /** Zoom limits for the battlefield camera. */
 const ZOOM_MIN = 0.4,

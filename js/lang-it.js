@@ -194,6 +194,7 @@ I18N.it = {
   'Space stops digging': 'Spazio ferma lo scavo',
   'debug view (collision boxes)': 'vista debug (box di collisione)',
   or: 'o',
+  'full screen': 'schermo intero',
   Esc: 'Esc',
   pause: 'pausa',
   mute: 'muto',
