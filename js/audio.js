@@ -95,6 +95,11 @@ const SFX = {
   hurt: () => tone(500, 120, 0.25, 'sawtooth', 0.06),
   splash: () => noiseBurst(0.4, 0.14, 1400),
   beep: () => tone(900, 900, 0.05, 'square', 0.05),
+  rumble: () => noiseBurst(0.5, 0.22, 160),
+  zap: () => {
+    noiseBurst(0.3, 0.3, 5000);
+    tone(2600, 180, 0.25, 'sawtooth', 0.07);
+  },
   launch: () => tone(150, 60, 0.3, 'sawtooth', 0.07),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);
@@ -102,7 +107,6 @@ const SFX = {
   },
   tele: () => tone(1200, 200, 0.35, 'sine', 0.1),
   sheep: () => tone(420, 380, 0.12, 'triangle', 0.08),
-  // holy: () => tone(300, 900, 0.8, 'sine', 0.12),
   holy: () => mp3Sfx('sounds/hallelujah.mp3'),
   turn: () => {
     tone(500, 700, 0.12, 'triangle', 0.08);

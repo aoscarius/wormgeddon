@@ -35,6 +35,15 @@ function step(dt, inputs) {
       s.fn();
     }
   }
+  if (G.quake > 0) {
+    G.quake -= dt;
+    G.quakeT = (G.quakeT || 0) - dt;
+    if (G.quakeT <= 0) {
+      G.quakeT = 0.14;
+      quakeTick();
+    }
+  }
+  if (G.tsu) tsunamiTick(dt);
   if (G.arma > 0) {
     G.arma -= dt;
     G.armaT = (G.armaT || 0) - dt;
@@ -142,6 +151,8 @@ function step(dt, inputs) {
       G.fires.length = 0;
       G.projs = G.projs.filter(p => PTYPES[p.t].passive);
       G.arma = 0;
+      G.quake = 0;
+      G.tsu = null;
       G.sched.length = 0;
     }
   }

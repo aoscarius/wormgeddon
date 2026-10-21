@@ -20,11 +20,13 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 
 | File | Checks |
 | --- | --- |
-| `smoke.py` | all level styles, bot-only matches with 2 and 8 teams, missing Italian translations, 36+ weapons, donkey |
+| `smoke.py` | all level styles, bot-only matches with 2 and 8 teams, missing Italian translations, 41+ weapons, donkey |
 | `test_weapons.py` | every weapon fires without errors and the turn always ends |
 | `test_bots.py` | bots do not idle until the turn timer runs out |
 | `test_movement.py` | worm leaving the map dies; on rope / jet pack Jump fires the selected weapon, Space lets go |
 | `test_build.py` | `node build/build.js` output: one hashed minified js/css, `.gz`/`.br` copies, served over http the game loads, lists all maps and plays (skipped without `cd build && npm install`) |
+| `test_special_weapons.py` | Earthquake (cracks the ground, ends), Dragon Fire (dragon + flames), Thunderstorm (5 bolts, damage), Tornado (lifts a worm); each turn still ends |
+| `test_tsunami.py` | Tsunami from the left / right kills the worm at that coast, spares the one in the middle, and ends |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using

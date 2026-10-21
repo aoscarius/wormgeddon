@@ -42,7 +42,7 @@ const UI = {
   over: false,
 };
 /** Visual effect lists: particles, floating texts, tracers, planes, shock rings, target marks, log lines. */
-const FX = { p: [], txt: [], tracers: [], planes: [], rings: [], marks: [], logs: [], nuke: null };
+const FX = { p: [], txt: [], tracers: [], planes: [], bolts: [], waves: [], quake: 0, rings: [], marks: [], logs: [], nuke: null };
 /** Seconds the background mushroom cloud of the Nuclear Test stays on screen. */
 const NUKE_TIME = 9;
 /** Input record of the local keyboard / touch (shared by all human teams on this machine). */

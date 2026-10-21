@@ -446,6 +446,70 @@ function render() {
     }
   }
   ctx2.globalAlpha = 1;
+  for (const wv of FX.waves) {
+    // Giant wave: a wall of water whose height at the front shrinks the further inland it gets.
+    const front = TSU_START + TSU_SPEED * wv.t,
+      h0 = wv.H0 * Math.max(0, 1 - front / wv.D);
+    if (h0 < 4) continue;
+    const X = d => (wv.dir > 0 ? d : T.w - d),
+      base = G.waterY + 40,
+      L = 460,
+      N = 28;
+    const top = k => G.waterY - h0 * (0.22 + 0.78 * Math.pow(k, 1.8)) + Math.sin(k * 14 + wv.t * 9) * 5;
+    ctx2.save();
+    const gr = ctx2.createLinearGradient(0, G.waterY - h0, 0, base);
+    gr.addColorStop(0, 'rgba(150,215,255,.92)');
+    gr.addColorStop(0.35, 'rgba(40,130,200,.9)');
+    gr.addColorStop(1, 'rgba(10,60,120,.95)');
+    ctx2.fillStyle = gr;
+    ctx2.beginPath();
+    ctx2.moveTo(X(front - L), base);
+    for (let i = 0; i <= N; i++) {
+      const k = i / N;
+      ctx2.lineTo(X(front - L * (1 - k)), top(k));
+    }
+    ctx2.lineTo(X(front + 12), base);
+    ctx2.closePath();
+    ctx2.fill();
+    // foam along the crest and bubbles at the front
+    ctx2.strokeStyle = 'rgba(255,255,255,.95)';
+    ctx2.lineWidth = 6;
+    ctx2.lineJoin = 'round';
+    ctx2.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const k = i / N,
+        x = X(front - L * (1 - k));
+      i ? ctx2.lineTo(x, top(k)) : ctx2.moveTo(x, top(k));
+    }
+    ctx2.stroke();
+    ctx2.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < 14; i++) {
+      const k = 0.55 + 0.45 * ((i * 0.37 + wv.t * 1.3) % 1),
+        x = X(front - L * (1 - k)) + Math.sin(i * 5 + wv.t * 8) * 8;
+      ctx2.beginPath();
+      ctx2.arc(x, top(k) - 4 - (i % 3) * 6, 5 + (i % 4) * 2, 0, TAU);
+      ctx2.fill();
+    }
+    ctx2.restore();
+  }
+  for (const b of FX.bolts) {
+    ctx2.save();
+    ctx2.globalAlpha = Math.max(0, 1 - b.t / 0.35);
+    ctx2.lineJoin = 'round';
+    ctx2.shadowColor = '#7fc4ff';
+    ctx2.shadowBlur = 14;
+    for (const [col, lw] of [
+      ['#9fd2ff', 6],
+      ['#ffffff', 2.2],
+    ]) {
+      ctx2.strokeStyle = col;
+      ctx2.lineWidth = lw;
+      ctx2.beginPath();
+      b.pts.forEach(([x, y], i) => (i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y)));
+      ctx2.stroke();
+    }
+    ctx2.restore();
+  }
   for (const p of FX.planes) {
     ctx2.save();
     ctx2.translate(p.x, -110);

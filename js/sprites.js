@@ -171,6 +171,97 @@ function spriteProj(p) {
       ctx2.fillRect(14, -12, 1.8, 1.8);
       break;
     }
+    case 'dragon': {
+      // Green dragon seen from the side, flapping its wings; a flame cone comes out while it breathes.
+      ctx2.scale((p.face || 1) * 1.5, 1.5);
+      const fl = Math.sin(G.time * 9);
+      ctx2.lineCap = 'round';
+      ctx2.lineJoin = 'round';
+      ctx2.strokeStyle = '#2a5f25';
+      ctx2.lineWidth = 5;
+      ctx2.beginPath();
+      ctx2.moveTo(-12, 3);
+      ctx2.quadraticCurveTo(-26, 10 + fl * 2, -36, -3 + fl * 3);
+      ctx2.stroke();
+      ctx2.fillStyle = '#3d8a35';
+      ctx2.strokeStyle = '#1b3a14';
+      ctx2.lineWidth = 1;
+      ctx2.beginPath(); // wing
+      ctx2.moveTo(-4, -4);
+      ctx2.lineTo(-20, -26 - fl * 12);
+      ctx2.lineTo(-8, -18 - fl * 8);
+      ctx2.lineTo(-3, -30 - fl * 12);
+      ctx2.lineTo(6, -6);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = '#4fa545';
+      ctx2.beginPath();
+      ctx2.ellipse(0, 0, 16, 8, 0, 0, TAU);
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = '#d9c46a';
+      ctx2.beginPath();
+      ctx2.ellipse(1, 3, 12, 4, 0, 0, Math.PI);
+      ctx2.fill();
+      ctx2.fillStyle = '#4fa545';
+      ctx2.beginPath(); // neck + head
+      ctx2.moveTo(10, -2);
+      ctx2.quadraticCurveTo(18, -12, 22, -8);
+      ctx2.lineTo(34, -6);
+      ctx2.lineTo(34, 0);
+      ctx2.lineTo(23, 1);
+      ctx2.quadraticCurveTo(18, 6, 10, 5);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = '#ffe14a';
+      ctx2.fillRect(22, -8, 3, 3);
+      ctx2.fillStyle = '#c33';
+      ctx2.beginPath(); // horn
+      ctx2.moveTo(19, -10);
+      ctx2.lineTo(14, -18);
+      ctx2.lineTo(23, -11);
+      ctx2.fill();
+      if (p.walk) {
+        const f = 0.8 + 0.2 * Math.sin(G.time * 40);
+        for (const [col, k] of [
+          ['rgba(255,90,20,.85)', 1],
+          ['rgba(255,210,70,.9)', 0.6],
+        ]) {
+          ctx2.fillStyle = col;
+          ctx2.beginPath();
+          ctx2.moveTo(34, -2);
+          ctx2.lineTo(34 + 40 * k * f, -10 * k);
+          ctx2.lineTo(34 + 52 * k * f, 6 * k);
+          ctx2.lineTo(34 + 30 * k * f, 14 * k);
+          ctx2.closePath();
+          ctx2.fill();
+        }
+      }
+      break;
+    }
+    case 'tornado': {
+      // Funnel drawn as stacked rings, widest at the top, with debris orbiting it. (0,0) is the foot.
+      const n = 12;
+      for (let i = 0; i < n; i++) {
+        const k = i / (n - 1),
+          y = -k * 150,
+          rx = 6 + k * 54,
+          ox = Math.sin(G.time * 6 + i * 0.7) * 7 * k;
+        ctx2.fillStyle = `rgba(${150 - k * 30 | 0},${140 - k * 25 | 0},${132 - k * 20 | 0},${0.7 - k * 0.2})`;
+        ctx2.beginPath();
+        ctx2.ellipse(ox, y, rx, 5 + k * 4, 0, 0, TAU);
+        ctx2.fill();
+      }
+      ctx2.fillStyle = '#5b4632';
+      for (let i = 0; i < 9; i++) {
+        const k = (i * 0.37 + G.time * 0.4) % 1,
+          a = G.time * 7 + i * 2.1;
+        ctx2.fillRect(Math.cos(a) * (10 + k * 62) - 1.5, -k * 150 + Math.sin(a) * 6 - 1.5, 3, 3);
+      }
+      break;
+    }
     case 'meteor': {
       const g2 = ctx2.createRadialGradient(0, 0, 1, 0, 0, 9);
       g2.addColorStop(0, '#fff3a0');

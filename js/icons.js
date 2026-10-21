@@ -351,6 +351,55 @@ const ICON_DRAW = {
     icLine(g, 14, 30, 14, 38, 2.5, IC.steel);
     icLine(g, 50, 28, 50, 36, 2.5, IC.steel);
   },
+  tsunami(g) {
+    g.beginPath();
+    g.moveTo(4, 58);
+    g.lineTo(4, 40);
+    g.quadraticCurveTo(14, 36, 22, 24);
+    g.quadraticCurveTo(32, 4, 52, 8);
+    g.quadraticCurveTo(44, 12, 46, 20);
+    g.quadraticCurveTo(56, 26, 60, 40);
+    g.lineTo(60, 58);
+    g.closePath();
+    icPaint(g, IC.blue);
+    icCircle(g, 50, 11, 4, IC.white);
+    icCircle(g, 44, 18, 3, IC.white);
+    icCircle(g, 36, 12, 3.2, IC.white);
+    icLine(g, 8, 50, 20, 46, 2.5, IC.white);
+    icLine(g, 28, 54, 44, 48, 2.5, IC.white);
+  },
+  earthquake(g) {
+    icRect(g, 6, 34, 52, 24, IC.brown, 3);
+    icLine(g, 32, 34, 26, 44, 3, IC.ink);
+    icLine(g, 26, 44, 36, 50, 3, IC.ink);
+    icLine(g, 36, 50, 30, 58, 3, IC.ink);
+    icLine(g, 10, 24, 14, 16, 3, IC.orange);
+    icLine(g, 24, 22, 28, 10, 3, IC.orange);
+    icLine(g, 40, 22, 36, 10, 3, IC.orange);
+    icLine(g, 54, 24, 50, 16, 3, IC.orange);
+  },
+  dragonfire(g) {
+    icFlame(g, 50, 36, 15);
+    icPoly(g, [8, 20, 14, 8, 20, 18], IC.red);
+    icPoly(g, [6, 26, 30, 14, 44, 26, 44, 40, 20, 46, 8, 38], IC.green);
+    icPoly(g, [20, 14, 26, 4, 32, 14], IC.dgreen);
+    icCircle(g, 28, 24, 3, IC.yellow);
+    icPoly(g, [36, 34, 46, 36, 36, 40], IC.white);
+  },
+  thunder(g) {
+    icCircle(g, 20, 20, 12, IC.steel);
+    icCircle(g, 34, 14, 13, IC.steel);
+    icCircle(g, 46, 22, 10, IC.steel);
+    icRect(g, 12, 20, 42, 12, IC.steel, 5);
+    icPoly(g, [34, 28, 22, 46, 31, 46, 26, 62, 46, 38, 36, 38, 42, 28], IC.yellow);
+  },
+  tornado(g) {
+    icEllipse(g, 32, 12, 26, 7, IC.steel, 0);
+    icEllipse(g, 32, 24, 20, 6, IC.steel, 0);
+    icEllipse(g, 33, 35, 14, 5, IC.dsteel, 0);
+    icEllipse(g, 32, 45, 9, 4, IC.steel, 0);
+    icEllipse(g, 31, 55, 4, 3, IC.dsteel, 0);
+  },
   donkey(g) {
     icRect(g, 12, 44, 7, 14, '#6e7480', 2);
     icRect(g, 36, 44, 7, 14, '#6e7480', 2);

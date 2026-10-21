@@ -7,8 +7,8 @@
  * weapon selection and the fire/charge state machine.
  *
  * Depends on: core, projectiles, combat, worms
- * Globals defined: muzzle, throwP, ray, melee, strike, cycleWorm, selectWeapon, holdingOther, handleFire,
- *     clickTarget, doFire
+ * Globals defined: muzzle, throwP, ray, melee, strike, surfaceAt, lightningBolt, quakeTick, tsunamiTick, cycleWorm,
+ *     selectWeapon, holdingOther, handleFire, clickTarget, doFire
  */
 
 /* ===== Weapons ===== */
@@ -412,7 +412,7 @@ registerWeapon({
   instant: true,
   fire(c) {
     const tx = c.target.x;
-    emit({ e: 'snd', s: 'holy' });
+    emit({ e: 'snd', s: 'boom' });
     // The donkey falls straight down at the target and keeps digging down; facing only flips its sprite.
     sched(0.6, () => spawnProj('donkey', tx, -160, 0, 120, c.w, { ow: c.w.id }));
   },
@@ -454,6 +454,165 @@ registerWeapon({
     G.wind = G.wind > 0 ? 1 : -1;
     G.waterTarget -= 40;
     emit({ e: 'msg', t: 'Nuclear test!' });
+  },
+});
+/**
+ * Y of the first solid pixel at column x going down from `from` (null when there is none above the water).
+ * Used by the sky weapons to find where something lands.
+ */
+function surfaceAt(x, from = 0) {
+  for (let y = Math.max(0, from | 0); y < Math.min(T.h, G.waterY); y += 2) if (solid(x, y)) return y;
+  return null;
+}
+/** One lightning strike: finds the first worm or ground below `x`, flashes, and blows a small fiery crater. */
+function lightningBolt(x, owner) {
+  let y = surfaceAt(x);
+  for (let yy = 0; yy < (y == null ? G.waterY : y); yy += 3)
+    if (G.worms.some(o => !o.dead && Math.abs(o.x - x) < 9 && Math.abs(o.y - yy) < 8)) {
+      y = yy;
+      break;
+    }
+  if (y == null) y = G.waterY - 4;
+  emit({ e: 'bolt', x, y });
+  explode(x, y, 20, 32, 200, { src: owner ? owner.id : -1, fire: 3 });
+}
+// Thunderstorm: click a target; five lightning bolts strike in and around it.
+registerWeapon({
+  id: 'thunder',
+  name: 'Thunderstorm',
+  code: 'TS',
+  ammo: 1,
+  delay: 4,
+  click: true,
+  instant: true,
+  fire(c) {
+    const tx = c.target.x;
+    emit({ e: 'msg', t: 'THUNDERSTORM' });
+    for (let i = 0; i < 5; i++)
+      sched(0.6 + i * 0.4, () => lightningBolt(clamp(tx + (i ? rnd(-110, 110) : 0), 8, T.w - 8), c.w));
+  },
+});
+// Dragon Fire: click a target; a dragon crosses the top of the level and breathes fire around it.
+registerWeapon({
+  id: 'dragonfire',
+  name: 'Dragon Fire',
+  code: 'DF',
+  ammo: 1,
+  delay: 5,
+  click: true,
+  instant: true,
+  fire(c) {
+    const tx = clamp(c.target.x, 0, T.w),
+      face = c.w.face || 1,
+      span = 150;
+    // It flies just above the highest ground around the target, so it always sits "on top of the level".
+    let top = G.waterY;
+    for (let x = tx - span; x <= tx + span; x += 10) {
+      const s = surfaceAt(clamp(x, 0, T.w - 1));
+      if (s != null && s < top) top = s;
+    }
+    const y0 = clamp(top - 80, 30, G.waterY - 120);
+    emit({ e: 'msg', t: 'DRAGON FIRE' });
+    spawnProj('dragon', face > 0 ? -110 : T.w + 110, y0, 0, 0, c.w, { face, tx, span, y0, ow: c.w.id });
+  },
+});
+// Tornado: click a target; a twister walks along the ground for 8 s, lifting and flinging worms.
+registerWeapon({
+  id: 'tornado',
+  name: 'Tornado',
+  code: 'TN',
+  ammo: 1,
+  delay: 5,
+  click: true,
+  instant: true,
+  fire(c) {
+    const x = clamp(c.target.x, 20, T.w - 20),
+      y = surfaceAt(x, Math.max(0, c.target.y - 120));
+    emit({ e: 'msg', t: 'TORNADO' });
+    spawnProj('tornado', x, y == null ? c.target.y : y, 0, 0, c.w, { ow: c.w.id, face: c.w.face || 1 });
+  },
+});
+/** One earthquake tick (called every 0.14 s while G.quake runs): cracks in the ground and jolts for the worms. */
+function quakeTick() {
+  G.quakeN = (G.quakeN || 0) + 1;
+  for (let i = 0; i < 2; i++) {
+    const x = rnd(20, T.w - 20),
+      y = surfaceAt(x);
+    if (y != null) emit({ e: 'cv', x, y: y + rnd(0, 4), r: rnd(5, 11), s: 0 });
+  }
+  const live = G.worms.filter(o => !o.dead);
+  if (live.length && Math.random() < 0.3) {
+    // now and then the ground opens right under somebody
+    const v = pick(live),
+      x = clamp(v.x + rnd(-14, 14), 4, T.w - 4),
+      y = surfaceAt(x, v.y - 12);
+    if (y != null) emit({ e: 'cv', x, y: y + 2, r: rnd(8, 13), s: 0 });
+  }
+  if (G.quakeN % 3 === 0)
+    for (const o of live)
+      if (o.grounded) {
+        o.grounded = false;
+        o.vy = -rnd(70, 130);
+        o.vx += rnd(-30, 30);
+        if (o.hp > 3) hurt(o, rndi(1, 2), { noEnd: true });
+      }
+}
+// Earthquake: the whole map shakes for five seconds, cracking the ground and bouncing every worm.
+registerWeapon({
+  id: 'earthquake',
+  name: 'Earthquake',
+  code: 'EQ',
+  ammo: 1,
+  delay: 6,
+  instant: true,
+  fire(c) {
+    G.quake = 5;
+    G.quakeT = 0;
+    emit({ e: 'quake', t: 5 });
+    emit({ e: 'msg', t: 'EARTHQUAKE' });
+  },
+});
+/** Tsunami wave: speed (px/s) and start offset (the front begins this far outside the shore). */
+const TSU_SPEED = 360,
+  TSU_START = -220;
+/**
+ * One tick of the tsunami. The front runs inland from the chosen shore. A worm, crate, drum, loose
+ * projectile or flame it reaches is destroyed when it lies below the wave's height at that distance
+ * (`H0` at the shore, falling linearly to 0 at `D` px inland), so the coast is wiped out and the
+ * middle of the map is safe. Each thing is judged once, when the front passes it.
+ */
+function tsunamiTick(dt) {
+  const s = G.tsu;
+  s.t += dt;
+  const front = TSU_START + TSU_SPEED * s.t,
+    dist = x => (s.dir > 0 ? x : T.w - x),
+    below = (x, y) => G.waterY - y < s.H0 * Math.max(0, 1 - dist(x) / s.D);
+  for (const w of G.worms) {
+    if (w.dead || s.hit.includes(w.id) || dist(w.x) > front) continue;
+    s.hit.push(w.id);
+    if (below(w.x, w.y)) sinkWorm(w, '{0} was swept away');
+  }
+  for (const o of G.objs) if (!o.kill && dist(o.x) <= front && below(o.x, o.y)) o.kill = true;
+  for (const p of G.projs)
+    if (p.t !== 'dragon' && p.t !== 'tornado' && dist(p.x) <= front && below(p.x, p.y)) p.dead = true;
+  for (const f of G.fires) if (dist(f.x) <= front && below(f.x, f.y)) f.life = 0;
+  if (front > s.D + 150) G.tsu = null;
+}
+// Tsunami: a giant wave hits the map from the left or the right (random) and sweeps the coast clean.
+registerWeapon({
+  id: 'tsunami',
+  name: 'Tsunami',
+  code: 'TW',
+  ammo: 1,
+  delay: 7,
+  instant: true,
+  fire(c) {
+    const dir = Math.random() < 0.5 ? 1 : -1,
+      D = clamp(T.w * 0.4, 500, 1100),
+      H0 = G.waterY * 0.75;
+    G.tsu = { dir, D, H0, t: 0, hit: [] };
+    emit({ e: 'tsunami', dir, D, H0 });
+    emit({ e: 'msg', t: 'TSUNAMI' });
   },
 });
 // Scales of Justice: sets every worm to the average health.

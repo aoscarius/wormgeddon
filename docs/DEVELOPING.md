@@ -128,6 +128,23 @@ Helper functions in `weapons.js`: `muzzle(w)` (point in front of the hands + aim
 `throwP(type, lo, hi, extra)` (a `fire()` that launches a projectile, speed `lo..hi` by charge),
 `ray(...)` (hitscan), `melee(...)`, `strike(...)` (air strikes), `aimDir(w)`.
 
+### Sky and world weapons (examples in the code)
+
+Five weapons show the patterns that need more than a thrown projectile (all in `weapons.js` /
+`projectiles.js`, helpers `surfaceAt(x, from)` = first solid pixel going down, `sched(t, fn)`):
+
+| Weapon | How it works |
+| --- | --- |
+| **Thunderstorm** (`thunder`) | click weapon; `sched()` calls `lightningBolt(x)` five times. Each bolt emits a `bolt` event (jagged flash drawn from `FX.bolts`, `render.js`) and a small `explode()`. |
+| **Dragon Fire** (`dragonfire`) | click weapon; spawns the `dragon` projectile whose `tick()` flies it across the top of the level (just above the highest ground near the target), slows down near `tx` and drops flames with `spawnFire()`. `p.walk` is 1 while breathing so guests draw the flame. |
+| **Tornado** (`tornado`) | click weapon; the `tornado` projectile's `tick()` walks along the ground for 8 s and applies forces to worms in range (pull, lift, fling, 1 HP/0.5 s). |
+| **Tsunami** (`tsunami`) | instant weapon; sets `G.tsu = {dir, D, H0, t, hit}` with a random side. `tsunamiTick()` (called from `step.js`) moves the front inland at 360 px/s and, once per object, destroys worms, crates, drums, projectiles and flames lying below the wave height at their distance from the shore (`H0` at the shore, 0 at `D` px inland). Clients animate the wave from the `tsunami` event alone (`FX.waves`, `render.js`). |
+| **Earthquake** (`earthquake`) | instant weapon; sets `G.quake = 5`. `step.js` calls `quakeTick()` every 0.14 s: `cv` events carve small cracks, grounded worms are bounced. The `quake` event shakes every client's screen (`FX.quake`). `quietBlocker()` waits for `G.quake`. |
+
+Rules they follow: the host does the physics; guests only get positions (projectiles), terrain events
+(`cv`) and visual events (`bolt`, `quake`). Anything that hurts uses `hurt(w, n, {noEnd: true})`
+so damage in the middle of an action does not end the active worm's turn twice.
+
 ### Worked example: Pumpkin Bomb
 
 A bouncing, fused bomb that sets the ground on fire. Paste into the console to try it, or add the
@@ -165,7 +182,7 @@ Checklist for a *permanent* weapon:
 5. Translation in `lang-it.js` (the weapon name; the smoke test fails on untranslated menu text).
 6. `CRATE_WEAP` / `CRATE_UTIL` in `crates.js` if crates may contain it.
 7. Bots only use what `AI_SHOTS` / `aiPlan` in `ai.js` know about; add an entry to teach them.
-8. Add the id to `tests/smoke.py` if you track the weapon count (currently 36).
+8. Add the id to `tests/smoke.py` if you track the weapon count (currently 41).
 
 Online play needs nothing extra for ordinary weapons: the host simulates, guests only receive
 projectile positions (`id`, type, `x`, `y`, angle, fuse, ...). If a projectile needs more visible

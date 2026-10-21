@@ -44,6 +44,11 @@ const CRATE_WEAP = [
   'nuke',
   'scales',
   'dragonball',
+  'earthquake',
+  'dragonfire',
+  'thunder',
+  'tornado',
+  'tsunami',
 ];
 /** Drops a crate (35% health, 40% weapon, 25% utility) at a random x above the map. */
 function spawnCrate() {

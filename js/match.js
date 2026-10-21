@@ -251,6 +251,8 @@ function toSettle() {
 function quietBlocker() {
   if (G.sched.length) return 'scheduled actions';
   if (G.arma > 0) return 'armageddon';
+  if (G.quake > 0) return 'earthquake';
+  if (G.tsu) return 'tsunami';
   for (const p of G.projs) {
     const d = PTYPES[p.t];
     if (!(d.passive && p.fuse == null)) return 'projectile ' + p.t;

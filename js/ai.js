@@ -82,6 +82,27 @@ function aiPlan(w, t) {
     plan.err = 0;
     return plan;
   }
+  // Sky weapons: click on the target; the earthquake needs no target at all.
+  if (dist > 130 && Math.random() < 0.35) {
+    const sky = ['thunder', 'dragonfire', 'tornado'].filter(id => avail(t, id));
+    if (sky.length) {
+      plan.weapon = pick(sky);
+      plan.click = { x: tg.x, y: tg.y };
+      plan.err = 0;
+      return plan;
+    }
+  }
+  // Tsunami: the shore is wiped out, so only when the bot stands well inland.
+  if (avail(t, 'tsunami') && w.x > T.w * 0.4 && w.x < T.w * 0.6 && Math.random() < 0.25) {
+    plan.weapon = 'tsunami';
+    plan.err = 0;
+    return plan;
+  }
+  if (avail(t, 'earthquake') && Math.random() < 0.2) {
+    plan.weapon = 'earthquake';
+    plan.err = 0;
+    return plan;
+  }
   let best = null;
   for (const s of AI_SHOTS) {
     if (!avail(t, s.id)) continue;

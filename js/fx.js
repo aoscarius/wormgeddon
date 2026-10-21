@@ -56,7 +56,7 @@ function addLog(t, c) {
 /**
  * Turns one simulation event into visuals and sound. Runs on the host and on every guest.
  * Event types: x (explosion), dmg (floating damage), msg, log, nuke (background mushroom cloud), splash, snd, shot (tracer),
- * punch, tele, plane, flash, mark (homing target), turn, over, trail (particle trail).
+ * punch, tele, plane, quake, tsunami, bolt (lightning), flash, mark (homing target), turn, over, trail (particle trail).
  * Terrain edits (x, cv, gd) are applied separately by applyTerrain().
  */
 function applyEvent(e) {
@@ -133,6 +133,29 @@ function applyEvent(e) {
     case 'tele':
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
       break;
+    case 'quake':
+      FX.quake = e.t;
+      break;
+    case 'tsunami':
+      FX.waves.push({ dir: e.dir, D: e.D, H0: e.H0, t: 0 });
+      FX.quake = Math.max(FX.quake, 2);
+      break;
+    case 'bolt': {
+      // jagged line from above the map down to the strike point
+      const pts = [],
+        n = 9;
+      for (let i = 0; i <= n; i++) {
+        const k = i / n;
+        pts.push([e.x + (i === n ? 0 : rnd(-16, 16) * (1 - k * 0.4)), -40 + (e.y + 40) * k]);
+      }
+      FX.bolts.push({ pts, t: 0 });
+      puff(e.x, e.y, 16, 220, ['#ffffff', '#bfe3ff', '#7fc4ff'], 0.45, 2.5, 0);
+      UI.flash = '#dfeeff';
+      UI.flashA = 0.5;
+      UI.shake = Math.min(16, UI.shake + 4);
+      SFX.zap();
+      break;
+    }
     case 'plane':
       FX.planes.push({ x: e.x - e.dir * 380, dir: e.dir, t: 0 });
       break;
@@ -232,6 +255,19 @@ function fxUpdate(dt) {
     p.x += p.dir * 520 * dt;
   }
   FX.planes = FX.planes.filter(p => p.t < 2.4);
+  for (const wv of FX.waves) wv.t += dt;
+  FX.waves = FX.waves.filter(wv => TSU_START + TSU_SPEED * wv.t < wv.D + 150);
+  for (const b of FX.bolts) b.t += dt;
+  FX.bolts = FX.bolts.filter(b => b.t < 0.35);
+  if (FX.quake > 0) {
+    FX.quake -= dt;
+    UI.shake = Math.max(UI.shake, 5);
+    FX.qs = (FX.qs || 0) - dt;
+    if (FX.qs <= 0) {
+      FX.qs = 0.35;
+      SFX.rumble();
+    }
+  }
   for (const r of FX.rings) r.t += dt;
   FX.rings = FX.rings.filter(r => r.t < 0.45);
   for (const m of FX.marks) m.l -= dt;

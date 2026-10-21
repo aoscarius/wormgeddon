@@ -31,7 +31,7 @@ with game_page() as (pg, errors):
 
     n = pg.evaluate("window.__wh.WLIST.length")
     print("weapons:", n)
-    assert n >= 36
+    assert n >= 41
 
     hops = pg.evaluate("""() => {
       const w = window.__wh;

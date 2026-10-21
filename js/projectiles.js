@@ -321,6 +321,81 @@ registerProj('donkey', {
     return false; // we integrated the motion ourselves
   },
 });
+/**
+ * Dragon (Dragon Fire weapon): flies straight across the top of the level, slows down near the target
+ * x (`tx`, within `span` px) and breathes flames downwards there. It never collides with anything.
+ * `walk` is 1 while breathing so guests can draw the flame at its mouth.
+ */
+registerProj('dragon', {
+  r: 12,
+  spr: 'dragon',
+  fixedAngle: true,
+  tick(p, dt) {
+    const near = Math.abs(p.x - p.tx) < p.span;
+    p.x += p.face * (near ? 150 : 460) * dt;
+    p.y = p.y0 + Math.sin(p.age * 3) * 6;
+    p.walk = near ? 1 : 0;
+    if (near) {
+      p.acc = (p.acc || 0) + dt * 46;
+      for (; p.acc >= 1; p.acc--)
+        spawnFire(p.x + p.face * 34, p.y + 8, p.face * rnd(50, 150) + rnd(-50, 50), rnd(40, 220), rnd(3, 6));
+      p.snd = (p.snd || 0) - dt;
+      if (p.snd <= 0) {
+        p.snd = 0.25;
+        emit({ e: 'snd', s: 'launch' });
+      }
+    }
+    if ((p.face > 0 && p.x > T.w + 140) || (p.face < 0 && p.x < -140)) p.dead = true;
+    return false;
+  },
+});
+/**
+ * Tornado: wanders along the ground for 8 s. Worms near it are pulled in, lifted and flung out again;
+ * the ones in the funnel take a little damage.
+ */
+registerProj('tornado', {
+  r: 10,
+  spr: 'tornado',
+  fixedAngle: true,
+  tick(p, dt) {
+    if (p.age > 8) {
+      p.dead = true;
+      return false;
+    }
+    if (Math.random() < dt * 0.5) p.face = -p.face;
+    p.x += p.face * 38 * dt;
+    if (p.x < 20 || p.x > T.w - 20) p.face = -p.face;
+    p.x = clamp(p.x, 20, T.w - 20);
+    const gy = surfaceAt(p.x, p.y - 70);
+    if (gy != null) p.y += clamp(gy - p.y, -80 * dt, 80 * dt);
+    for (const w of G.worms) {
+      if (w.dead) continue;
+      const dx = p.x - w.x,
+        h = p.y - w.y; // height above the funnel's foot
+      if (Math.abs(dx) > 95 || h < -30 || h > 190) continue;
+      w.grounded = false;
+      w.rope = null;
+      w.tw = (w.tw || 0) - dt;
+      // inward pull plus a lift that fades out near the top, and a sideways swirl
+      w.vx += clamp(dx, -60, 60) * 5 * dt + Math.sin(p.age * 5 + w.id) * 160 * dt;
+      if (h < 150 && w.vy > -190) w.vy -= 1500 * dt;
+      if (h >= 150 && w.tw <= 0) {
+        // thrown out from the top
+        w.tw = 1.2;
+        w.vx = (dx > 0 ? -1 : 1) * rnd(160, 300);
+        w.vy = -rnd(60, 160);
+      }
+      if (Math.abs(dx) < 40) {
+        w.twd = (w.twd || 0) - dt;
+        if (w.twd <= 0) {
+          w.twd = 0.5;
+          if (w.hp > 2) hurt(w, 1, { noEnd: true });
+        }
+      }
+    }
+    return false;
+  },
+});
 // Armageddon meteor: fast, fiery, small blast plus a few flames.
 registerProj('meteor', {
   r: 3,
