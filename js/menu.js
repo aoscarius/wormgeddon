@@ -46,6 +46,7 @@ function readCfg() {
     seed,
     style,
     theme: $('oTheme').value,
+    sky: $('oSky').value === 'random' ? pick(SKIES) : $('oSky').value,
     size: $('oSize').value,
     hp: +$('oHp').value,
     turnTime: +$('oTime').value,
@@ -104,6 +105,7 @@ function showDemo() {
     seed: Math.random().toString(36).slice(2, 8),
     style: pick(STYLES),
     theme: pick(['grass', 'desert', 'snow', 'hell', 'neon']),
+    sky: pick(SKIES),
     size: 'm',
   });
   G = {

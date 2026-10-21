@@ -8,7 +8,7 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 
 - **2-8 teams**, each human or bot, up to 40 worms in total. Humans share the keyboard in turns.
 - **Random level generator** with 7 styles (rolling hills, floating islands, caverns, terraces, mountains, archipelago,
-  canyon), 5 themes (meadow, desert, arctic, inferno, neon), 3 sizes and a text seed (same seed =
+  canyon), 5 themes (meadow, desert, arctic, inferno, neon), 4 skies (day, night, cloudy, rainy) or a random one, 3 sizes and a text seed (same seed =
   same level, also online).
 - **Custom maps**: load your own picture as the battlefield (menu, Battlefield, "Load map
   image", or drop a file on the window). PNG with an alpha channel (transparent = sky) or an

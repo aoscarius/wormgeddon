@@ -119,6 +119,7 @@ function chooseTheme(cfg, rng) {
         ? cfg.theme
         : 'grass';
   T.theme = THEMES[T.themeName];
+  T.sky = SKIES.includes(cfg.sky) ? cfg.sky : 'day';
 }
 
 /**

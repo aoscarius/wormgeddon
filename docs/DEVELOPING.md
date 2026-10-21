@@ -296,6 +296,15 @@ level. To add a style: add the branch, add the id to `STYLES` in `menu.js`, add 
 Add an `<option>` to `#oTheme` in `index.html` and a translation. PNG levels keep their own
 colours; the theme still colours sky, sun, clouds and water.
 
+### 6.4 Sky
+
+`cfg.sky` is one of `SKIES` (`themes.js`): `day`, `night`, `cloudy`, `rainy` (the menu's *Random* is
+resolved by `readCfg()` on the host, so guests get a concrete value). `chooseTheme()` copies it to `T.sky`;
+`drawSky()` (`render.js`) picks the gradient, sun / moon + stars, cloud layers and mountain shading, and
+`drawSkyOverlay()` adds the screen tint and, for rain, the slanted drops and the occasional distant flash.
+It is purely visual: no gameplay depends on it. To add a sky: add the id to `SKIES`, an `<option>` to `#oSky`,
+a branch in `drawSky()` / `drawSkyOverlay()`, a translation, and a line in `tests/test_sky.py`.
+
 ---
 
 ## 7. Menu options and match settings

@@ -7,10 +7,12 @@
  * here and an <option> in index.html.
  *
  * Depends on: none
- * Globals defined: THEMES
+ * Globals defined: THEMES, SKIES
  */
 
 /* ===== Themes ===== */
+/** Sky conditions (the "Sky" menu option; cfg.sky). 'random' is resolved by the host before the match starts. */
+const SKIES = ['day', 'night', 'cloudy', 'rainy'];
 /**
  * Visual themes. Per theme:
  *   sky    [top, bottom] CSS colours of the sky gradient

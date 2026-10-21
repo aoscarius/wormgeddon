@@ -6,7 +6,7 @@
  * Per-frame drawing: parallax sky, water, terrain, entities, effects and targeting previews.
  *
  * Depends on: sprites, worm-art, fx, terrain
- * Globals defined: SKY_CLOUDS, drawSky, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, render
+ * Globals defined: SKY_CLOUDS, SKY_CLOUDS2, SKY_STARS, SKY_RAIN, mixHex, drawSky, drawSkyOverlay, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, render
  */
 
 /* ---- Rendering ---- */
@@ -16,27 +16,92 @@ const SKY_CLOUDS = Array.from({ length: 9 }, (_, i) => ({
   y: 40 + ((i * 61) % 160),
   s: 0.7 + (i % 4) * 0.25,
 }));
-/** Screen-space background: gradient, sun, drifting clouds (move with the wind) and two parallax mountain layers. */
+/** Extra clouds for the overcast skies, stars for the night and raindrops (positions as fractions of the screen). */
+const SKY_CLOUDS2 = Array.from({ length: 9 }, (_, i) => ({
+  x: i * 330 + 170 + ((i * 53) % 160),
+  y: 20 + ((i * 43) % 120),
+  s: 1.1 + (i % 3) * 0.3,
+}));
+const SKY_STARS = Array.from({ length: 120 }, (_, i) => ({
+  x: ((i * 0.618034) % 1),
+  y: ((i * 0.381966 * 7.13) % 1) * 0.75,
+  s: 0.6 + (i % 4) * 0.5,
+  p: i * 1.7,
+}));
+const SKY_RAIN = Array.from({ length: 170 }, (_, i) => ({
+  x: (i * 0.754877) % 1,
+  y: (i * 0.569840) % 1,
+  l: 12 + (i % 7) * 3,
+  v: 900 + (i % 5) * 170,
+}));
+/** Mixes two '#rrggbb' colours: k = 0 gives a, 1 gives b. Returns a CSS rgb() string. */
+function mixHex(a, b, k) {
+  const x = hexRgb(a),
+    y = hexRgb(b);
+  return rgbStr(x.map((v, i) => v + (y[i] - v) * k));
+}
+/**
+ * Screen-space background for the chosen sky (T.sky: day, night, cloudy, rainy): gradient, sun / moon /
+ * stars, drifting clouds (move with the wind) and two parallax mountain layers.
+ */
 function drawSky() {
   const th = T.theme,
+    sky = T.sky || 'day',
     g = ctx2.createLinearGradient(0, 0, 0, VH);
-  g.addColorStop(0, th.sky[0]);
-  g.addColorStop(1, th.sky[1]);
+  let c0 = th.sky[0],
+    c1 = th.sky[1];
+  if (sky === 'night') {
+    c0 = mixHex(c0, '#04081c', 0.92);
+    c1 = mixHex(c1, '#1c2c5c', 0.8);
+  } else if (sky === 'cloudy') {
+    c0 = mixHex(c0, '#7d8794', 0.6);
+    c1 = mixHex(c1, '#c5ccd4', 0.6);
+  } else if (sky === 'rainy') {
+    c0 = mixHex(c0, '#262d39', 0.8);
+    c1 = mixHex(c1, '#667080', 0.7);
+  }
+  g.addColorStop(0, c0);
+  g.addColorStop(1, c1);
   ctx2.fillStyle = g;
   ctx2.fillRect(0, 0, VW, VH);
   const px = CAM.x * 0.04,
-    py = CAM.y * 0.04;
-  ctx2.fillStyle = th.sun;
-  ctx2.globalAlpha = 0.9;
-  ctx2.beginPath();
-  ctx2.arc(VW * 0.8 - px, VH * 0.2 - py, 46, 0, TAU);
-  ctx2.fill();
-  ctx2.globalAlpha = 1;
-  const t = G ? G.time : 0,
+    py = CAM.y * 0.04,
+    t = G ? G.time : 0,
     wind = G ? G.wind : 0;
-  ctx2.fillStyle = th.cloud;
-  ctx2.globalAlpha = 0.55;
-  for (const c of SKY_CLOUDS) {
+  if (sky === 'night') {
+    ctx2.fillStyle = '#ffffff';
+    for (const s of SKY_STARS) {
+      ctx2.globalAlpha = 0.45 + 0.45 * Math.sin(t * 1.7 + s.p);
+      const x = (((s.x * VW - px * 0.3) % VW) + VW) % VW;
+      ctx2.fillRect(x, s.y * VH - py * 0.3, s.s, s.s);
+    }
+    // moon with a few craters
+    const mx = VW * 0.8 - px,
+      my = VH * 0.2 - py;
+    ctx2.globalAlpha = 0.95;
+    ctx2.fillStyle = '#eef2ff';
+    ctx2.beginPath();
+    ctx2.arc(mx, my, 38, 0, TAU);
+    ctx2.fill();
+    ctx2.fillStyle = 'rgba(150,160,190,.5)';
+    for (const [dx, dy, r] of [[-12, -8, 8], [10, 6, 11], [-4, 16, 5], [16, -14, 4]]) {
+      ctx2.beginPath();
+      ctx2.arc(mx + dx, my + dy, r, 0, TAU);
+      ctx2.fill();
+    }
+    ctx2.globalAlpha = 1;
+  } else if (sky !== 'rainy') {
+    ctx2.fillStyle = th.sun;
+    ctx2.globalAlpha = sky === 'cloudy' ? 0.35 : 0.9;
+    ctx2.beginPath();
+    ctx2.arc(VW * 0.8 - px, VH * 0.2 - py, 46, 0, TAU);
+    ctx2.fill();
+    ctx2.globalAlpha = 1;
+  }
+  const over = sky === 'cloudy' || sky === 'rainy';
+  ctx2.fillStyle = sky === 'night' ? '#2b3a66' : sky === 'cloudy' ? '#e6eaee' : sky === 'rainy' ? '#586170' : th.cloud;
+  ctx2.globalAlpha = sky === 'night' ? 0.7 : over ? 0.85 : 0.55;
+  for (const c of over ? SKY_CLOUDS.concat(SKY_CLOUDS2) : SKY_CLOUDS) {
     const x =
         ((((c.x + t * (8 + wind * 114) - CAM.x * 0.12) % (VW + 500)) + VW + 500) % (VW + 500)) - 250,
       y = c.y * 1.3 - CAM.y * 0.06;
@@ -50,7 +115,7 @@ function drawSky() {
   for (let L = 0; L < 2; L++) {
     const par = 0.1 + L * 0.12,
       base = VH * (0.72 + L * 0.08) - CAM.y * par * 0.4;
-    ctx2.fillStyle = L ? 'rgba(10,20,40,.22)' : 'rgba(10,20,40,.13)';
+    ctx2.fillStyle = sky === 'night' ? (L ? 'rgba(2,6,24,.5)' : 'rgba(2,6,24,.35)') : L ? 'rgba(10,20,40,.22)' : 'rgba(10,20,40,.13)';
     ctx2.beginPath();
     ctx2.moveTo(0, VH);
     for (let x = 0; x <= VW; x += 24) {
@@ -63,6 +128,40 @@ function drawSky() {
     ctx2.lineTo(VW, VH);
     ctx2.fill();
   }
+}
+/**
+ * Screen-space weather drawn over the finished world (device pixels): a colour tint for night / overcast
+ * skies and, when rainy, slanted raindrops (they lean with the wind) and now and then a distant flash.
+ */
+function drawSkyOverlay() {
+  const sky = T.sky || 'day';
+  if (sky === 'day') return;
+  const w = cvs.width,
+    h = cvs.height;
+  ctx2.save();
+  ctx2.setTransform(1, 0, 0, 1, 0, 0);
+  ctx2.fillStyle = sky === 'night' ? 'rgba(6,12,44,.30)' : sky === 'cloudy' ? 'rgba(110,120,135,.12)' : 'rgba(30,45,70,.22)';
+  ctx2.fillRect(0, 0, w, h);
+  if (sky === 'rainy') {
+    const t = G ? G.time : 0,
+      lean = 0.2 + (G ? G.wind : 0) * 0.35,
+      d = typeof DPR === 'number' ? DPR : 1;
+    ctx2.strokeStyle = 'rgba(200,220,245,.5)';
+    ctx2.lineWidth = Math.max(1, 1.2 * d);
+    ctx2.beginPath();
+    for (const r of SKY_RAIN) {
+      const y = (((r.y * h + t * r.v * d) % (h + 40 * d)) + h + 40 * d) % (h + 40 * d) - 20 * d,
+        x = (((r.x * w + y * lean * 0.6) % w) + w) % w;
+      ctx2.moveTo(x, y);
+      ctx2.lineTo(x - r.l * lean * d, y + r.l * d);
+    }
+    ctx2.stroke();
+    if (G && !G.demo && Math.random() < 0.0007) {
+      UI.flash = '#cfd8ff';
+      UI.flashA = 0.35;
+    }
+  }
+  ctx2.restore();
 }
 /** Animated water body. Drawn twice: behind the terrain and, semi-transparent, in front of it. */
 function drawWater(front) {
@@ -591,6 +690,7 @@ function render() {
     ctx2.fillText(t.t, t.x, t.y);
     ctx2.globalAlpha = 1;
   }
+  drawSkyOverlay();
   if (UI.flashA > 0) {
     ctx2.setTransform(1, 0, 0, 1, 0, 0);
     ctx2.globalAlpha = UI.flashA * 0.8;
