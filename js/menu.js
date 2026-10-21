@@ -64,6 +64,7 @@ function enterGame() {
   $('hud').hidden = false;
   $('over').classList.remove('on');
   UI.over = false;
+  chatSync();
   UI.sig = '';
   FX.p.length = 0;
   FX.nuke = null;

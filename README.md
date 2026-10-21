@@ -28,7 +28,8 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 - **English and Italian**: the language follows the browser by default and can be changed in the
   menu (top right). Team names, weapon names, HUD, messages and help are all translated.
 - **Bots** that simulate shots to pick weapon, angle and power.
-- **Online play**: the host runs the game, friends join with a short room code.
+- **Online play**: the host runs the game, friends join with a short room code, and everyone can
+  chat in the lobby and during the match (`T`).
 - Touch controls for phones and tablets: a slide-able d-pad, a big fire button with a power ring,
   jump and back-flip buttons, a fuse/girder button, pinch to zoom and a tap on the weapon box to
   open the weapon drawer. The HUD adapts to portrait and landscape phones.
@@ -60,6 +61,7 @@ runs offline without them (only online play and the display font are lost).
 | Right-click            | open or close the weapon menu                                                                    |
 | Drag / two-finger drag | pan the camera (C re-centres)                                                                    |
 | Tab                    | switch worm (Select Worm)                                                                        |
+| T                      | chat (online games; Enter sends, Esc closes)                                                     |
 | Esc / M                | pause (offline) / mute                                                                           |
 
 ## Rules in short

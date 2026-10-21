@@ -46,6 +46,7 @@ const NET = {
     this.conns = [];
     this.conn = null;
     this.role = 'local';
+    if (typeof chatReset === 'function') chatReset();
   },
 };
 const r1 = v => Math.round(v * 10) / 10;
@@ -263,6 +264,7 @@ function renderLobby() {
     `<li>${esc(tr('{0} (host)', nm))}</li>` +
     lobby.guests.map(g => `<li>${esc(tr('{0} (online)', g.name))}</li>`).join('');
   $('bHostStart').disabled = !NET.peer;
+  if (typeof chatSync === 'function') chatSync();
 }
 /** Opens a PeerJS room with a short random code (ids look like 'wormgeddon-ABCDE') and accepts guest connections. */
 function hostCreate() {
@@ -330,6 +332,10 @@ function hostMsg(g, m) {
   if (m.t === 'hello') {
     g.name = String(m.name || 'Guest').slice(0, 14);
     renderLobby();
+    return;
+  }
+  if (m.t === 'chat') {
+    chatHostMsg(g, m);
     return;
   }
   if (!G || g.team < 0) return;
@@ -408,6 +414,7 @@ function joinRoom() {
   }
   NET.close();
   NET.role = 'client';
+  chatSync();
   $('joinNote').textContent = tr('Connecting...');
   const peer = new Peer();
   NET.peer = peer;
@@ -449,6 +456,7 @@ function clientMsg(m) {
       applyTerrain(e);
       applyEvent(e);
     }
+  else if (m.t === 'chat') chatReceive(m);
   else if (m.t === 'full') {
     $('joinNote').textContent = tr('Room is full or already started.');
   }

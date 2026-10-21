@@ -40,8 +40,18 @@
         <b id="curName" data-nt>Bazooka</b><small id="curHint" data-nt>Hold Space to charge</small>
       </div>
     </div>
-    <button id="wtoggle" class="btn sm" type="button">Weapons [W]</button>
-    <button id="wfull" class="btn sm" type="button">&#x26F6;</button>
+    <div class="actionsbox">
+      <button id="wfull" class="btn sm" type="button">&#x26F6;</button>
+      <button id="wchat" class="btn sm" type="button" hidden>Chat [T]</button>
+      <button id="wtoggle" class="btn sm" type="button">Weapons [W]</button>
+    </div>
+    <div id="chat">
+      <div id="chatlog" data-chatlog data-nt></div>
+      <form id="chatform" hidden autocomplete="off">
+        <input id="chatin" type="text" maxlength="140" placeholder="Say something…" enterkeyhint="send" />
+        <button class="btn sm go" type="submit">Send</button>
+      </form>
+    </div>
     <div id="wback"></div>
     <aside id="wpanel" aria-label="Weapons" aria-hidden="true">
       <div class="wphead">
@@ -216,6 +226,13 @@
             id="hostCode">----</span><button class="btn sm" id="bCopy" type="button">Copy code</button>
         </div>
         <ul id="lobbyList"></ul>
+        <div class="chatbox" id="hostChat" hidden>
+          <div class="chatlog" id="hostChatLog" data-chatlog data-nt></div>
+          <form id="hostChatForm" autocomplete="off">
+            <input id="hostChatIn" type="text" maxlength="140" placeholder="Chat with your friends…" />
+            <button class="btn sm" type="submit">Send</button>
+          </form>
+        </div>
         <p class="note" id="hostNote">
           Set rules and level in the Local tab first, then come back here. Teams not taken by a
           friend stay as bots or local players.
@@ -235,6 +252,13 @@
         <div class="row">
           <button class="btn go" id="bJoin" type="button">Join room</button><span class="note" id="joinNote"></span>
         </div>
+        <div class="chatbox" id="joinChat" hidden>
+          <div class="chatlog" id="joinChatLog" data-chatlog data-nt></div>
+          <form id="joinChatForm" autocomplete="off">
+            <input id="joinChatIn" type="text" maxlength="140" placeholder="Chat with the room…" />
+            <button class="btn sm" type="submit">Send</button>
+          </form>
+        </div>
       </section>
 
       <section id="tab-help" hidden>
@@ -252,6 +276,7 @@
           <div><b>Tab</b> cycle worm (Select Worm)</div>
           <div><b>Esc</b> pause</div>
           <div><b>M</b> mute</div>
+          <div><b>T</b> chat (online games)</div>
           <div><b>F</b> or <b>F11</b> full screen</div>
           <div><b>F3</b> or <b>`</b> debug view (collision boxes)</div>
           <div><b>F4</b> (in debug view) show trajectories</div>
@@ -295,6 +320,7 @@
   <script src="js/input.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/net.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/menu.js"></script>
   <script src="js/maplib.js"></script>
   <script src="js/main.js"></script>

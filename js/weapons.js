@@ -739,7 +739,9 @@ function handleFire(w, t, inp, dt) {
     emit({ e: 'snd', s: 'beep' });
     return;
   }
-  if (inp.fireP && w.jet) {
+  // Fire switches the jet pack off only while the jet pack itself is the selected weapon; with any
+  // other weapon selected it fires that weapon while flying.
+  if (inp.fireP && w.jet && W.id === 'jetpack') {
     w.jet = null;
     inp.fireP = 0;
     return;
@@ -754,7 +756,7 @@ function handleFire(w, t, inp, dt) {
     !w.tool &&
     avail(t, W.id) &&
     !d.noFire &&
-    !w.jet &&
+    !(w.jet && W.id === 'jetpack') &&
     !(d.needTarget && W.tx == null);
   if (d.charge) {
     if (can && !W.ch && inp.fireP && !G.fired) {
@@ -814,6 +816,9 @@ function doFire(w, t, d, power, target) {
     /* out of ammo, fall back */
   }
   if (!d.noEnd) {
+    // A turn-ending shot fired from the rope / jet pack lets go of them: the turn is over.
+    w.rope = null;
+    w.jet = null;
     if (G.phase === 'turn') {
       G.phase = 'retreat';
       G.timer = 3;

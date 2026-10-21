@@ -85,6 +85,12 @@ addEventListener('keydown', e => {
   } else if (e.key === 'r' || e.key === 'R') UI.ang = (UI.ang + 1) % 8;
   else if (e.key === 'c' || e.key === 'C') {
     UI.panT = -9;
+  } else if (e.key === 't' || e.key === 'T') {
+    // Chat (online games only): the key is swallowed so it is not typed into the input.
+    if (chatAvailable()) {
+      e.preventDefault();
+      chatOpen();
+    }
   } else if (e.key === 'm' || e.key === 'M') {
     muted = !muted;
     showMsg(tr(muted ? 'Sound off' : 'Sound on'), 900);
