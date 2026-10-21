@@ -1,3 +1,9 @@
 # Ignore Folders
 .vscode
 .trash
+
+# Build output, dependencies and Python caches
+dist/
+node_modules/
+__pycache__/
+*.pyc

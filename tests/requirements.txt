@@ -1,0 +1,4 @@
+# Python dependencies of the browser tests (pip install -r tests/requirements.txt)
+# After installing run once:  playwright install chromium
+# (or point CHROMIUM_PATH at an existing Chromium/Chrome binary, see tests/README.md)
+playwright>=1.40

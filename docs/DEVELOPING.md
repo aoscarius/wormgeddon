@@ -34,7 +34,10 @@ every top-level `function` / `const` is a global and you can try things in the b
 index.html        development entry point (menu markup, HUD, <script> list = load order)
 css/style.css     all styles (HUD, menu, touch gamepad, weapon drawer)
 js/*.js           game modules, see below
-levels/           PNG levels + optional manifest.json (see section 6)
+maps/             PNG levels + optional manifest.json (see section 6)
+build/            build.js (minify + compress for deployment), package.json, README.md
+tests/            Playwright browser tests, README.md, requirements.txt
+dist/             build output (git-ignored): the deployable folder (index.html, assets/, maps/, sounds/)
 ```
 
 | Module | What lives there |
@@ -66,7 +69,17 @@ Workflow:
 ```bash
 # edit files, then open index.html directly (works from file://) or serve the folder:
 python3 -m http.server 8000
+(cd build && npm install)        # once: esbuild + html-minifier-terser, build-time only
+node build/build.js              # -> dist/: minified html/css/js (hashed), maps/, sounds/, .gz/.br
+pip install -r tests/requirements.txt && playwright install chromium   # once
+python3 tests/run_all.py         # every test; or one: python3 tests/smoke.py (see tests/README.md)
 ```
+
+New `.js` files must be added to the `<script>` list in `index.html` (order = load order; the
+`Depends on:` line in each file header documents what a module needs). `build/build.js` picks the
+scripts up from that list automatically.
+
+---
 
 ## 2. How the game runs
 
@@ -215,6 +228,10 @@ put state on the worm and `controlWorm()` / `physWorm()` in `worms.js` act on it
   switches the jet pack off (`handleFire`, `selectWeapon` in `weapons.js`); Enter / Backspace
   (Jump / Back on touch) also release the rope. Aiming and weapon changes work again afterwards.
   `toSettle()` always drops rope, jet pack and tool at the end of the turn.
+* **Firing another weapon while attached.** With the rope or jet pack active and a different weapon
+  selected (`holdingOther(w)`), Jump fires that weapon (charging weapons at 65 % power, since the
+  charge cannot be held), Space lets go of the rope / jet pack, and a small icon box is drawn next to
+  the worm (`drawHeldWeaponBox`, `worm-art.js`). A shot that ends the turn also drops rope and jet pack.
 * **Falling out of the world.** `sinkWorm()` (`worms.js`) handles both the water and the map's left/right
   edges: splash, log line, "died" banner, and the turn ends.
 * When you add a new held state, add it to: `toSettle` (drop it), `processDeaths` and
@@ -235,6 +252,8 @@ whose first palette colour is the sky; GIF/WebP/JPEG also work). Optionally desc
 { "levels": [ { "name": "Floating isles", "file": "floating-isles.png" }, "other.png" ] }
 ```
 
+* `node build/build.js` copies the folder (manifest order, then remaining files alphabetically) into
+  `dist/maps/` and writes a complete `manifest.json` there (`--single` embeds the pictures instead).
 * When the page is served over http(s), `levels/manifest.json` (or the server's directory index) is
   read at start-up as well, so you can add levels to a running server without rebuilding.
 * The menu's **Level library** drop-down lists them; picking one imports it like "Load map
@@ -292,7 +311,7 @@ English text. `wname(id)` translates weapon names.
 3. Add the script after `i18n.js` in `index.html`.
 
 Static HTML text is translated by `translateDom()`; text built by code must go through `tr()`;
-elements whose content is generated and already translated get `data-nt`. `tests/smoke.py` fails
+elements whose content is generated and already translated get `data-nt`. the smoke test fails
 if a page text has no Italian translation, so keep dictionaries complete when you add text.
 Online players each use their own language because events carry keys, not sentences.
 
@@ -342,12 +361,19 @@ guests send inputs and render what they receive.
 | guest -> host | `e` | key edge (`fireP`, `jump`, `back`, `tab`) |
 | guest -> host | `c` | map click |
 | guest -> host | `w` / `f` | weapon choice / fuse change |
+| guest -> host | `chat` | `{x}`: chat text (the host cleans it, stamps name and team, rate-limits it) |
+| host -> all | `chat` | `{n, k, x}`: sender name, team index (-1 in the lobby), text |
 
 Adding **visible per-worm or per-projectile state**: add it to the arrays in `snapshot()` and read it
 back in `applySnapshot()` (`net.js`). Anything guests only need for drawing belongs there;
 simulation-only fields never need to be sent. Guests regenerate generated terrain from the seed
 and receive crater/carve/girder events, so terrain stays identical. Levels from the levels folder
 are sent as `cfg.mapData` by the host: put your PNG in `levels/` *before* hosting.
+
+**Chat** (`chat.js`): lobby boxes in the Host/Join tabs and an in-game overlay (`T` or the Chat
+button; Esc closes). Only online games have it. Guests never choose their own name or team: the host
+re-stamps every line, cleans it (control characters, 140 chars) and rebroadcasts it, so all clients
+show the same order. Text is rendered with `textContent` only. `NET.close()` calls `chatReset()`.
 
 Online play needs a normal web page (WebRTC through PeerJS' cloud broker); it does not work inside
 sandboxed iframes such as the artifact preview.
@@ -365,9 +391,12 @@ sandboxed iframes such as the artifact preview.
   Weapons built with `throwP()` are predicted automatically (`fire.launch`); for others set
   `fn.launch = {type, lo, hi}` on the `fire` function.
 * **Console:** `window.__wh` gives `newGame(cfg, teams)`, `G`, `stepOnce(dt)`; handy for scripted
-  scenarios (see `tests/smoke.py`).
-* **Smoke test** (`tests/smoke.py`): generates every level style, plays full bot matches, checks
-  translations and counts weapons. Run it after every change; add scenarios for new features.
+  scenarios (see `tests/`).
+* **Tests** (`tests/`, setup and the list of tests in `tests/README.md`): `smoke.py` generates every
+  level style, plays full bot matches, checks translations and counts weapons; `test_weapons.py`
+  fires every weapon; `test_bots.py` checks bots never idle; `test_movement.py` covers map-edge
+  death and rope/jet pack; `test_chat.py` covers the chat. Run `python3 tests/run_all.py` after every
+  change and add a test for new features.
 * **Stress ideas:** run many seeds with 8 bot teams and assert that `G.settleT` never exceeds a few
   seconds and that no worm/crate stays un-grounded (`quietBlocker()` tells you why a settle drags on).
 
@@ -382,3 +411,4 @@ sandboxed iframes such as the artifact preview.
 * Use `stepBody` for anything that moves through terrain, `findFree` to place things, and
   `groundBelow` / `supported(w)` to ask whether something stands.
 * Translate every user-visible string (`tr`, dictionary entries, `data-nt` for generated nodes).
+* After changing code run `node build/build.js`; the artifact / standalone file is only updated by the build.

@@ -38,7 +38,8 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 ## Quick start
 
 To work on the source, open `index.html` instead (it loads `css/style.css` and `js/*.js`
-directly, no build step needed).
+directly, no build step needed), then run `node build/build.js` to create the minified, compressed folder `dist/` that you
+upload to a web host (see [build/README.md](build/README.md)). Browser tests live in [tests/](tests/README.md).
 
 Online play needs the page to be opened from a normal web address or file (not inside an
 embedded viewer that blocks WebRTC). The PeerJS library and fonts load from a CDN; the game also

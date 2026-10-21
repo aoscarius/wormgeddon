@@ -1,0 +1,13 @@
+{
+  "name": "wormgeddon-build",
+  "private": true,
+  "description": "Build tooling for Wormgeddon (the game itself has no dependencies)",
+  "scripts": {
+    "build": "node build.js",
+    "build:single": "node build.js --single"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "html-minifier-terser": "^7.2.0"
+  }
+}
