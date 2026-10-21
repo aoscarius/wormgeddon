@@ -290,6 +290,9 @@ function controlWorm(w, inp, dt) {
       w.jet = null;
       inp.fireP = 0;
     }
+    // Jump / back-flip do nothing in flight; drop them so they do not fire after landing.
+    inp.jump = 0;
+    inp.back = 0;
     return;
   }
   // 3) Ninja rope: Enter/Backspace lets go.

@@ -477,6 +477,7 @@ function render() {
     drawAim(aw);
   }
   for (const w of G.worms) drawWormLabel(w);
+  if (aw) drawHeldWeaponBox(aw);
   // targeting previews
   const myTurn = isMyTurn();
   if (myTurn && aw && G.phase === 'turn') {

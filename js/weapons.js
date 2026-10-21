@@ -7,7 +7,7 @@
  * weapon selection and the fire/charge state machine.
  *
  * Depends on: core, projectiles, combat, worms
- * Globals defined: muzzle, throwP, ray, melee, strike, cycleWorm, selectWeapon, handleFire,
+ * Globals defined: muzzle, throwP, ray, melee, strike, cycleWorm, selectWeapon, holdingOther, handleFire,
  *     clickTarget, doFire
  */
 
@@ -713,6 +713,14 @@ function selectWeapon(team, id, fuse) {
   if (d.onSelect) d.onSelect(w, t);
 }
 
+/**
+ * True while the worm hangs on the ninja rope or flies with the jet pack and has another weapon
+ * selected: Jump then fires that weapon and Space lets go of the rope / jet pack.
+ */
+function holdingOther(w) {
+  return !!(w.rope || w.jet) && G.weapon.id !== 'rope' && G.weapon.id !== 'jetpack';
+}
+
 /* Fire handling for the active team's input */
 /**
  * Fire/charge state machine for the active worm. Space pressed: charging weapons start charging,
@@ -732,16 +740,11 @@ function handleFire(w, t, inp, dt) {
       return;
     }
   }
-  // A second press on the rope lets go of it, which frees aiming and weapon changes again.
-  if (inp.fireP && w.rope && W.id === 'rope') {
-    w.rope = null;
-    inp.fireP = 0;
+  // Space always lets go of the rope / jet pack, whatever weapon is selected; that frees aiming
+  // and weapon changes again.
+  if (inp.fireP && (w.rope || w.jet)) {
     emit({ e: 'snd', s: 'beep' });
-    return;
-  }
-  // Fire switches the jet pack off only while the jet pack itself is the selected weapon; with any
-  // other weapon selected it fires that weapon while flying.
-  if (inp.fireP && w.jet && W.id === 'jetpack') {
+    w.rope = null;
     w.jet = null;
     inp.fireP = 0;
     return;
@@ -758,7 +761,13 @@ function handleFire(w, t, inp, dt) {
     !d.noFire &&
     !(w.jet && W.id === 'jetpack') &&
     !(d.needTarget && W.tx == null);
-  if (d.charge) {
+  // On the rope / jet pack with another weapon selected, Jump is the fire button (charging weapons
+  // go out at 65% power, there is no way to hold the charge). The press never lets go of the rope/jetpack.
+  if (inp.jump && holdingOther(w)) {
+    inp.jump = 0;
+    if (can && !d.click && !W.ch && !(d.charge && G.fired)) doFire(w, t, d, d.charge ? 0.65 : 1);
+    return;
+  } if (d.charge) {
     if (can && !W.ch && inp.fireP && !G.fired) {
       W.ch = true;
       W.pw = 0;
@@ -817,8 +826,10 @@ function doFire(w, t, d, power, target) {
   }
   if (!d.noEnd) {
     // A turn-ending shot fired from the rope / jet pack lets go of them: the turn is over.
-    w.rope = null;
-    w.jet = null;
+    if (!holdingOther(w)) {
+      w.rope = null;
+      w.jet = null;
+    }
     if (G.phase === 'turn') {
       G.phase = 'retreat';
       G.timer = 3;

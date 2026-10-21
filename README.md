@@ -51,7 +51,7 @@ runs offline without them (only online play and the display font are lost).
 | Left / Right           | walk, swing the rope, steer a super sheep (all four arrows steer it in 8 directions)             |
 | F3 or `                | debug view: collision circles, probe points, bounding boxes, velocities, settle blocker          |
 | Up / Down              | aim (rope: reel in / out; jet pack: thrust)                                                      |
-| Enter / Backspace      | jump / back-flip (Enter also lets go of the rope)                                                |
+| Enter / Backspace      | jump / back-flip (Enter lets go of the rope; with another weapon selected on the rope or jet pack it fires that weapon)                                                |
 | Space                  | hold to charge, release to fire; fires instant weapons; detonates sheep                          |
 | W                      | weapon panel (click a weapon to arm it)                                                          |
 | 1-5                    | grenade fuse in seconds                                                                          |

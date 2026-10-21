@@ -174,6 +174,8 @@ I18N.it = {
   recentre: 'ricentra',
   'cycle worm (Select Worm)': 'cambia verme (Scegli verme)',
   Tab: 'Tab',
+  'JUMP fires the selected weapon \u00b7 FIRE lets go': 'SALTO spara l\u2019arma scelta \u00b7 FUOCO molla',
+  'Enter fires the selected weapon \u00b7 Space lets go': 'Invio spara l\u2019arma scelta \u00b7 Spazio molla',
   'Chat [T]': 'Chat [T]',
   'Say something…': 'Scrivi qualcosa…',
   Send: 'Invia',

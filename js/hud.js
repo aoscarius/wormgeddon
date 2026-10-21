@@ -100,6 +100,9 @@ function weaponHint(d) {
 function activeHint(w) {
   const touch = matchMedia('(pointer:coarse)').matches;
   if (!w) return '';
+  // Another weapon selected while hanging / flying: Jump fires it, Space / FIRE lets go.
+  if ((w.rope || w.jet) && holdingOther(w))
+    return tr(touch ? 'JUMP fires the selected weapon \u00b7 FIRE lets go' : 'Enter fires the selected weapon \u00b7 Space lets go');
   if (w.rope)
     return tr(
       touch

@@ -13,7 +13,7 @@
  *
  * Depends on: view (ctx2, CAM), core (G, aimDir, WEAPONS)
  * Globals defined: TEAM_HATS, WORM_INK, WORM_SKIN, HELD_ITEMS, hexRgb, rgbStr, wormBodyColor,
- *     wCircle, drawHat, drawHeld, drawGrave, drawWorm, drawWormLabel, drawAim
+ *     wCircle, drawHat, drawHeld, drawGrave, drawWorm, drawWormLabel, drawHeldWeaponBox, drawAim
  */
 
 /** Accessory per team index (matches TEAM_COLORS order). */
@@ -544,6 +544,37 @@ function drawWormLabel(w) {
   ctx2.restore();
 }
 
+/** Weapon icons as Image objects for canvas drawing (the PNG data URLs come from weaponIconURL). */
+const ICON_IMGS = {};
+/**
+ * While the worm hangs on the rope / flies with the jet pack and another weapon is selected, a small
+ * box next to it shows that weapon's icon: Jump fires it, Space lets go.
+ */
+function drawHeldWeaponBox(w) {
+  if (w.dead || !(G.phase === 'turn' || G.phase === 'retreat') || !holdingOther(w)) return;
+  const id = G.weapon.id,
+    s = 1 / CAM.s,
+    sz = 26 * s;
+  let im = ICON_IMGS[id];
+  if (!im) {
+    im = ICON_IMGS[id] = new Image();
+    im.src = weaponIconURL(id);
+  }
+  const t = G.teams[w.team],
+    x = w.x + 14 * s,
+    y = w.y - 14 * s - sz / 2;
+  ctx2.save();
+  ctx2.fillStyle = 'rgba(8,16,30,.78)';
+  ctx2.strokeStyle = t.color;
+  ctx2.lineWidth = 1.5 * s;
+  ctx2.beginPath();
+  ctx2.roundRect(x, y, sz, sz, 5 * s);
+  ctx2.fill();
+  ctx2.stroke();
+  if (im.complete && im.naturalWidth) ctx2.drawImage(im, x + 2 * s, y + 2 * s, sz - 4 * s, sz - 4 * s);
+  ctx2.restore();
+}
+
 /**
  * Draws the aim reticle and the charge dots for the active worm. Nothing is drawn for weapons
  * that are not aimed (click-targeted, instant or tool weapons).
@@ -551,7 +582,7 @@ function drawWormLabel(w) {
 function drawAim(w) {
   const W = G.weapon,
     d = WEAPONS[W.id];
-  if (!d || G.phase !== 'turn' || w.tool || w.jet || w.dead) return;
+  if (!d || G.phase !== 'turn' || w.tool || ((w.jet || w.rope) && !holdingOther(w)) || w.dead) return;
   if (d.click || d.instant || d.id === 'jetpack' || d.id === 'blowtorch' || d.id === 'drill')
     return;
   if (w.rope && d.id === 'rope') return;
