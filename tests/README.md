@@ -29,6 +29,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_tsunami.py` | Tsunami from the left / right kills the worm at that coast, spares the one in the middle, and ends |
 | `test_sky.py` | day / night / cloudy / rainy render (night much darker, rain darker than cloud), defaults to day, `random` yields concrete skies |
 | `test_audio.py` | Holy Hand Grenade choir starts `fuse - 2 s` after the throw (once, before the blast), MP3s respect mute and stop, the dragon roars instead of singing |
+| `test_damage_display.py` | a hit keeps the old health on screen (label, team bars, guest snapshot) until `-N` is announced, then counts down; heals show at once |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using

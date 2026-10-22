@@ -12,7 +12,7 @@
  * about y = +7.5, and `f` (= worm.face, +1 or -1) mirrors everything horizontally.
  *
  * Depends on: view (ctx2, CAM), core (G, aimDir, WEAPONS)
- * Globals defined: TEAM_HATS, WORM_INK, WORM_SKIN, HELD_ITEMS, hexRgb, rgbStr, wormBodyColor,
+ * Globals defined: TEAM_HATS, WORM_INK, WORM_SKIN, HELD_ITEMS, HP_HOLD, shownHp, hexRgb, rgbStr, wormBodyColor,
  *     wCircle, drawHat, drawHeld, drawGrave, drawWorm, drawWormLabel, drawHeldWeaponBox, drawAim
  */
 
@@ -40,6 +40,31 @@ const HELD_ITEMS = {
   mine: '#3e4048',
   dynamite: 'stick',
 };
+
+/**
+ * Health as it is *shown* (label, team bars, paleness). A hit lowers `w.hp` at once in the simulation, but
+ * the damage is only announced (floating "-N") when the turn settles; until then, and for HP_HOLD more
+ * seconds, the old value stays on screen, and then it counts down to the real one. Heals show at once.
+ * `w.pend` (damage not announced yet) is part of the online snapshot, so guests behave the same.
+ */
+const HP_HOLD = 0.9;
+function shownHp(w) {
+  const now = performance.now() / 1000,
+    real = Math.max(0, w.hp),
+    pend = w.pend > 0 ? w.pend : 0;
+  if (w.sh === undefined) {
+    w.sh = real + pend;
+    w.shT = now;
+  }
+  const dt = Math.min(0.1, now - w.shT);
+  w.shT = now;
+  if (pend > 0) {
+    w.shHold = now + HP_HOLD;
+    w.sh = Math.max(w.sh, real);
+  } else if (w.sh < real) w.sh = real;
+  else if (w.sh > real && now >= (w.shHold || 0)) w.sh = Math.max(real, w.sh - Math.max(30, (w.sh - real) * 1.5) * dt);
+  return Math.ceil(w.sh);
+}
 
 /** Parses '#rrggbb' into [r, g, b]. */
 function hexRgb(hex) {
@@ -303,7 +328,7 @@ function drawWorm(w) {
   const f = w.face,
     t = G.time,
     act = w.id === G.active,
-    hurt = w.hp < 30,
+    hurt = shownHp(w) < 30,
     aiming = act && G.phase === 'turn' && !w.tool && !w.jet && !w.rope;
   // Walk cycle phase advances with horizontal travel.
   const moved = Math.abs(w.x - (w._px === undefined ? w.x : w._px));
@@ -357,7 +382,7 @@ function drawWorm(w) {
     { x: f * 0.8, y: -2.2 + bob, r: 5.3 }, // head
   ];
   const head = segs[2],
-    body = wormBodyColor(team, w.hp);
+    body = wormBodyColor(team, shownHp(w));
   // Outline pass first so the three circles merge into a single silhouette.
   g.fillStyle = 'rgba(70,24,50,0.95)';
   for (const s of segs) {
@@ -523,7 +548,7 @@ function drawWormLabel(w) {
   ctx2.fillStyle = t.color;
   ctx2.strokeText(w.name, 0, -14 * s);
   ctx2.fillText(w.name, 0, -14 * s);
-  const hp = String(Math.max(0, Math.ceil(w.hp))),
+  const hp = String(shownHp(w)),
     tw = ctx2.measureText(hp).width + 8 * s;
   ctx2.fillStyle = t.color;
   ctx2.globalAlpha = 0.95;

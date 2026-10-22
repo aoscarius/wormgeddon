@@ -65,7 +65,7 @@ function hudTeams(t) {
   const maxTotal = G.cfg.hp * G.cfg.worms;
   let html = '';
   for (const tm of G.teams) {
-    const hp = tm.worms.reduce((sum, id) => sum + Math.max(0, wById(id).hp), 0);
+    const hp = tm.worms.reduce((sum, id) => sum + shownHp(wById(id)), 0);
     const pct = clamp((hp / maxTotal) * 100, 0, 100);
     html +=
       `<div class="tb${t && tm.id === t.id ? ' act' : ''}">` +

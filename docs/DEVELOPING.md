@@ -145,6 +145,15 @@ Rules they follow: the host does the physics; guests only get positions (project
 (`cv`) and visual events (`bolt`, `quake`). Anything that hurts uses `hurt(w, n, {noEnd: true})`
 so damage in the middle of an action does not end the active worm's turn twice.
 
+### Damage and shown health
+
+`hurt(w, n)` lowers `w.hp` at once and adds `n` to `w.pend`; `flushDamage()` (when the turn settles) emits the
+floating `-N` and clears `pend`. Everything that *displays* health (worm label, paleness / hurt face, team
+bars) uses `shownHp(w)` (`worm-art.js`), not `w.hp`: the old value stays until the number has been shown,
+then it counts down (`HP_HOLD` = 0.9 s of holding). `pend` is the 11th field of the worm tuple in the online
+snapshot so guests behave identically. Anything that changes `w.hp` without `hurt()` (scales, crates,
+`sinkWorm`) simply shows at once. Use `w.hp` for game rules and `shownHp(w)` for drawing.
+
 ### Worked example: Pumpkin Bomb
 
 A bouncing, fused bomb that sets the ground on fire. Paste into the console to try it, or add the

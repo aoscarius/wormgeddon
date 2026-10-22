@@ -75,6 +75,7 @@ function snapshot(withAmmo) {
       w.rope ? [w.rope.ax | 0, w.rope.ay | 0] : 0,
       w.jet ? (w.jet.on ? 2 : 1) : 0,
       w.tool ? w.tool.k : 0,
+      Math.round(w.pend || 0), // damage not announced yet (the shown health lags behind hp)
     ]),
     p: G.projs.map(p => [
       p.id,
@@ -132,6 +133,7 @@ function applySnapshot(s) {
     w.rope = a[7] ? { ax: a[7][0], ay: a[7][1] } : null;
     w.jet = a[8] ? { on: a[8] === 2 } : null;
     w.tool = a[9] ? { k: a[9] } : null;
+    w.pend = a[10] || 0;
   }
   const old = new Map(G.projs.map(p => [p.id, p]));
   G.projs = s.p.map(a => {
