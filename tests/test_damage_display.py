@@ -15,7 +15,7 @@ with game_page() as (pg, errors):
     assert s["hp"] == 70 and s["pend"] == 30 and s["shown"] == 100, "health must not change on screen yet"
 
     # team bar uses the shown value too
-    bar = pg.evaluate("""() => { render(); hudTeams(null); const i = document.querySelectorAll('#teamsbar .bar i');
+    bar = pg.evaluate("""() => { render(); hudTeams(null); const i = [...document.querySelectorAll('#teamsbar .tb')].reduce((m, e) => (m[+e.dataset.t] = e.querySelector('.bar i'), m), []);
       const t = G.teams[__v.team], total = t.worms.reduce((s, id) => s + wById(id).hp, 0);
       return {pct: parseFloat(i[__v.team].style.width), real: total / (G.cfg.hp * G.cfg.worms) * 100}; }""")
     print(bar)

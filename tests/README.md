@@ -34,6 +34,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_invite.py` | host link + Copy / Share (stubbed clipboard and share sheet), cleared on close; `?join=CODE` joins at once with a saved name, drops the query, lobby chat visible (fake PeerJS) |
 | `test_fall.py` | jumps and back-flips are harmless, a long drop hurts |
 | `test_camera.py` | camera goes to impacts and flying worms, manual pan yields to action |
+| `test_teamsbar.py` | team bars sorted by total health, rows slide when two teams swap, ties keep team order |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using

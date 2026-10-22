@@ -108,7 +108,7 @@ js/*.js             one file per module, classic scripts sharing the global scop
 | `render.js`      | per-frame renderer (sky, water, world)                               |
 | `custommap.js`   | imports a picture (PNG/BMP/GIF/WebP/JPEG) as a level                 |
 | `icons.js`       | weapon icons                                                         |
-| `hud.js`         | DOM HUD and weapon panel                                             |
+| `hud.js`         | DOM HUD (team bars sorted by health, animated), weapon panel                                          |
 | `input.js`       | keyboard, pointer and touch input                                    |
 | `ai.js`          | bot                                                                  |
 | `net.js`         | PeerJS host/guest networking                                         |

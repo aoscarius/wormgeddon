@@ -181,6 +181,7 @@ I18N.it = {
   Tab: 'Tab',
   'Copy link': 'Copia link',
   'Share link': 'Condividi link',
+  'Copy invite link': 'Copia link di invito',
   'Invite link': 'Link di invito',
   'Link copied': 'Link copiato',
   'Select the link and copy it': 'Seleziona il link e copialo',

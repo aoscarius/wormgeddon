@@ -60,19 +60,51 @@ function hudWind() {
   fill.style.width = Math.abs(v) + '%';
 }
 
-/** One health bar per team (sum of its worms' health relative to the starting total). */
+/**
+ * One health bar per team (sum of its worms' health relative to the starting total), always sorted by
+ * total health, highest first. When two teams swap places the rows slide to their new positions (FLIP:
+ * rows are reordered, then animated from where they were). The rows are kept between calls.
+ */
 function hudTeams(t) {
-  const maxTotal = G.cfg.hp * G.cfg.worms;
-  let html = '';
-  for (const tm of G.teams) {
-    const hp = tm.worms.reduce((sum, id) => sum + shownHp(wById(id)), 0);
-    const pct = clamp((hp / maxTotal) * 100, 0, 100);
-    html +=
-      `<div class="tb${t && tm.id === t.id ? ' act' : ''}">` +
-      `<span class="n" style="color:${tm.color}">${esc(tm.name)}</span>` +
-      `<span class="bar"><i style="width:${pct}%;background:${tm.color}"></i></span></div>`;
+  const box = $('teamsbar'),
+    maxTotal = G.cfg.hp * G.cfg.worms;
+  if (box._g !== G || box.children.length !== G.teams.length) {
+    box._g = G; // a new match: build the rows again
+    box.innerHTML = G.teams
+      .map(
+        tm =>
+          `<div class="tb" data-t="${tm.id}"><span class="n" style="color:${tm.color}">${esc(tm.name)}</span>` +
+          `<span class="bar"><i style="background:${tm.color}"></i></span></div>`
+      )
+      .join('');
   }
-  setHTML('teamsbar', html);
+  const rows = new Map([...box.children].map(el => [+el.dataset.t, el])),
+    list = G.teams.map(tm => ({
+      tm,
+      el: rows.get(tm.id),
+      hp: tm.worms.reduce((sum, id) => sum + shownHp(wById(id)), 0),
+    }));
+  for (const r of list) {
+    r.el.classList.toggle('act', !!t && r.tm.id === t.id);
+    r.el.firstChild.textContent = r.tm.name;
+    r.el.lastChild.firstChild.style.width = clamp((r.hp / maxTotal) * 100, 0, 100) + '%';
+  }
+  list.sort((x, y) => y.hp - x.hp || x.tm.id - y.tm.id);
+  if (list.every((r, i) => box.children[i] === r.el)) return;
+  const before = new Map(list.map(r => [r.el, r.el.getBoundingClientRect()]));
+  list.forEach(r => box.appendChild(r.el));
+  for (const r of list) {
+    const o = before.get(r.el),
+      n = r.el.getBoundingClientRect(),
+      dx = o.left - n.left,
+      dy = o.top - n.top;
+    if (!dx && !dy) continue;
+    r.el.style.transition = 'none';
+    r.el.style.transform = `translate(${dx}px,${dy}px)`;
+    r.el.getBoundingClientRect(); // commit the start position
+    r.el.style.transition = 'transform 0.45s ease';
+    r.el.style.transform = '';
+  }
 }
 
 /** Usage hint shown under the weapon name. */
