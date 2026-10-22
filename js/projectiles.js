@@ -79,7 +79,18 @@ function updateProj(p, dt) {
   }
   p.vy += GRAV * (d.grav == null ? 1 : d.grav) * dt;
   if (d.wind) p.vx += G.wind * WIND_ACC * d.wind * dt;
+  const oldX = p.x, oldY = p.y;
   const c = stepBody(p, dt);
+  // Only impact-detonating projectiles (for example, rockets) stop on worm contact.
+  if (d.hit) {
+    const hit = projectileWormHit(p, oldX, oldY, p.x, p.y);
+    if (hit) {
+      p.x = hit.x;
+      p.y = hit.y;
+      detonate(p);
+      return;
+    }
+  }
   if (!d.fixedAngle) p.a = Math.atan2(p.vy, p.vx);
   if (c) {
     if (d.hit) {

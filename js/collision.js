@@ -36,6 +36,32 @@ function normalAt(x, y) {
   const l = Math.hypot(nx, ny);
   return l ? [nx / l, ny / l] : [0, -1];
 }
+/** Finds the first living worm intersected by the projectile's movement segment. */
+function projectileWormHit(p, x0, y0, x1, y1) {
+  const worms = G.worms || [];
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len2 = dx * dx + dy * dy;
+  let best = null;
+
+  for (const w of worms) {
+    if (w.dead || w.sunk) continue;
+
+    const t = len2
+      ? Math.max(0, Math.min(1, ((w.x - x0) * dx + (w.y - y0) * dy) / len2))
+      : 0;
+    const x = x0 + t * dx;
+    const y = y0 + t * dy;
+    const radius = (p.r || 0) + (w.r || 0);
+    const dist2 = (w.x - x) ** 2 + (w.y - y) ** 2;
+
+    if (dist2 <= radius * radius && (!best || t < best.t)) {
+      best = { t, x, y };
+    }
+  }
+
+  return best;
+}
 /**
  * Moves a body for dt seconds, sub-stepping in <= 2 px increments so fast bodies cannot tunnel
  * through thin terrain.
