@@ -21,7 +21,7 @@
  */
 const GRAV = 600,
   WIND_ACC = 90,
-  FALLV = 330,
+  FALLV = 460,
   WORM_R = 6;
 /** Registries filled by registerWeapon()/registerProj(): lookup by id, weapon list in menu order, projectile types. */
 const WEAPONS = {},

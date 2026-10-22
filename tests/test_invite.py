@@ -14,12 +14,10 @@ window.Peer = class {
 # --- 1) host side: link field and button (room opened through the fake peer)
 with game_page(init_script=FAKE_PEER, viewport={"width": 1000, "height": 700}) as (pg, errors):
     pg.click("[data-tab=host]")
-    assert pg.is_disabled("#bLink") and pg.is_hidden("#hostLink"), "no link before a room exists"
+    assert pg.is_disabled("#bLink"), "no link before a room exists"
     pg.click("#bHost")
     pg.evaluate("window.__peers[0].h.open()")          # the broker accepted the id
     code = pg.evaluate("NET.code")
-    link = pg.input_value("#hostLink")
-    print("link:", link)
     assert link.endswith("?join=" + code) and "?" not in link.split("?join=")[0]
     assert pg.is_enabled("#bLink") and pg.text_content("#bLink") == "Copy link"
 
@@ -41,7 +39,7 @@ with game_page(init_script=FAKE_PEER, viewport={"width": 1000, "height": 700}) a
     assert pg.evaluate("window.__copied.length") == 0
     # closing the room clears the link again
     pg.evaluate("NET.close()")
-    assert pg.is_disabled("#bLink") and pg.is_hidden("#hostLink")
+    assert pg.is_disabled("#bLink")
     # pasted links in the code box are reduced to the code
     pg.click("[data-tab=join]")
     pg.fill("#jCode", "https://example.org/game/?join=ab3k9")

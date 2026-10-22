@@ -6,7 +6,7 @@
  * Canvas/DPR sizing, camera, shared UI state and the per-team input record.
  *
  * Depends on: util
- * Globals defined: cvs, ctx2, VW, VH, DPR, CAM, UI, FX, NUKE_TIME, LOCAL, makeInp, applyTerrain, resize,
+ * Globals defined: camImpact, fastestWorm, cvs, ctx2, VW, VH, DPR, CAM, UI, FX, NUKE_TIME, LOCAL, makeInp, applyTerrain, resize,
  *     camFocus, toWorld
  */
 
@@ -42,7 +42,7 @@ const UI = {
   over: false,
 };
 /** Visual effect lists: particles, floating texts, tracers, planes, shock rings, target marks, log lines. */
-const FX = { p: [], txt: [], tracers: [], planes: [], bolts: [], waves: [], quake: 0, rings: [], marks: [], logs: [], nuke: null };
+const FX = { p: [], txt: [], tracers: [], planes: [], bolts: [], storms: [], waves: [], quake: 0, rings: [], marks: [], logs: [], nuke: null };
 /** Seconds the background mushroom cloud of the Nuclear Test stays on screen. */
 const NUKE_TIME = 9;
 /** Input record of the local keyboard / touch (shared by all human teams on this machine). */
@@ -70,9 +70,30 @@ function resize() {
   cvs.height = VH * DPR;
 }
 addEventListener('resize', resize);
+/** Tells the camera where something just hit (explosion, lightning, teleport): it looks there for a moment. */
+function camImpact(x, y) {
+  CAM.fx = x;
+  CAM.fy = y;
+  CAM.fT = G.time || 0;
+}
+/** The worm (any team, also one that is being blown away) moving faster than `min` px/s, the fastest first; null if none. */
+function fastestWorm(min = 45) {
+  let best = null,
+    bv = min;
+  for (const o of G.worms) {
+    const v = o.dead && o.sunk ? 0 : Math.hypot(o.vx || 0, o.vy || 0);
+    if (v > bv && (!o.dead || o.y < G.waterY)) {
+      bv = v;
+      best = o;
+    }
+  }
+  return best;
+}
 /**
- * Moves the camera towards what matters: a moving projectile, else the last explosion (while the
- * match settles), else the active worm. Manual dragging pauses the auto-follow for 2.5 s.
+ * Moves the camera towards the action, in this order: a moving projectile, a fresh impact (explosion,
+ * bolt, teleport: 2.2 s), a worm that is flying or sliding, else the active worm. Manual dragging pauses
+ * the auto-follow for 2.5 s, but only while nothing is happening: any action takes the camera back.
+ * With the zoom at its minimum the whole level is in view and the camera has nothing to follow.
  */
 function camFocus(dt) {
   if (!G) return;
@@ -87,16 +108,22 @@ function camFocus(dt) {
     if (moving && !UI.moving) UI.panT = -9;
     UI.moving = moving;
   } else UI.moving = false;
-  if (G.time - UI.panT < 2.5 && UI.panT > 0) {
-    /* user is panning */
+  const p = [...G.projs].reverse().find(q => !PTYPES[q.t].passive || q.fuse != null),
+    hit = CAM.fx != null && G.time - CAM.fT < 2.2,
+    fl = p || hit ? null : fastestWorm();
+  if (G.time - UI.panT < 2.5 && UI.panT > 0 && !p && !hit && !fl) {
+    /* user is panning and nothing is going on */
   } else {
-    const p = [...G.projs].reverse().find(q => !PTYPES[q.t].passive || q.fuse != null);
+    if (p || hit || fl) UI.panT = -9; // the action wins over a manual view
     if (p) {
       tx = p.x;
       ty = p.y;
-    } else if (CAM.fx != null && G.phase === 'settle' && G.time - CAM.fT < 2.2) {
+    } else if (hit) {
       tx = CAM.fx;
       ty = CAM.fy;
+    } else if (fl) {
+      tx = fl.x;
+      ty = fl.y - 10;
     } else if (w) {
       tx = w.x;
       ty = w.y - 20;

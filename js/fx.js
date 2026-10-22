@@ -91,9 +91,7 @@ function applyEvent(e) {
       FX.rings.push({ x: e.x, y: e.y, r, t: 0, big: e.k === 1 });
       UI.shake = Math.min(16, UI.shake + r / 7);
       SFX.boom(r);
-      CAM.fx = e.x;
-      CAM.fy = e.y;
-      CAM.fT = G.time || 0;
+      camImpact(e.x, e.y);
       break;
     }
     case 'dmg':
@@ -131,6 +129,7 @@ function applyEvent(e) {
       SFX.hurt();
       break;
     case 'tele':
+      camImpact(e.x, e.y);
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
       break;
     case 'quake':
@@ -149,6 +148,7 @@ function applyEvent(e) {
         pts.push([e.x + (i === n ? 0 : rnd(-16, 16) * (1 - k * 0.4)), -40 + (e.y + 40) * k]);
       }
       FX.bolts.push({ pts, t: 0 });
+      camImpact(e.x, e.y);
       puff(e.x, e.y, 16, 220, ['#ffffff', '#bfe3ff', '#7fc4ff'], 0.45, 2.5, 0);
       UI.flash = '#dfeeff';
       UI.flashA = 0.5;
@@ -156,6 +156,9 @@ function applyEvent(e) {
       SFX.zap();
       break;
     }
+    case 'storm':
+      FX.storms.push({ x: e.x, l: e.l, t: 0 });
+      break;
     case 'plane':
       FX.planes.push({ x: e.x - e.dir * 380, dir: e.dir, t: 0 });
       break;
@@ -257,6 +260,8 @@ function fxUpdate(dt) {
   FX.planes = FX.planes.filter(p => p.t < 2.4);
   for (const wv of FX.waves) wv.t += dt;
   FX.waves = FX.waves.filter(wv => TSU_START + TSU_SPEED * wv.t < wv.D + 150);
+  for (const s of FX.storms) s.t += dt;
+  FX.storms = FX.storms.filter(s => s.t < s.l);
   for (const b of FX.bolts) b.t += dt;
   FX.bolts = FX.bolts.filter(b => b.t < 0.35);
   if (FX.quake > 0) {
