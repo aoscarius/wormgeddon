@@ -137,6 +137,8 @@ Five weapons show the patterns that need more than a thrown projectile (all in `
 | Weapon | How it works |
 | --- | --- |
 | **Thunderstorm** (`thunder`) | click weapon; `sched()` calls `lightningBolt(x)` five times. Each bolt emits a `bolt` event (jagged flash drawn from `FX.bolts`, `render.js`) and a small `explode()`. |
+| **Thor's Hammer** (`hammer`) | click weapon; targets the worm nearest the click. Spawns `mjolnir`, which hovers over the caster for `HAMMER_CHARGE` s (`p.walk` = charge, drawn as sparks; a `storm` event draws the cloud over the target), then strikes the worm (followed until the last moment) with a big `explode()` plus four `lightningBolt()`s. |
+| **Time Car** (`timecar`) | fires in the facing direction; the `timecar` projectile appears behind the caster, follows the ground, burns everything in front with `spawnFire()`, knocks worms away once each (`p.hits`) and blasts through walls. |
 | **Dragon Fire** (`dragonfire`) | click weapon; spawns the `dragon` projectile whose `tick()` flies it across the top of the level (just above the highest ground near the target), slows down near `tx` and drops flames with `spawnFire()`. `p.walk` is 1 while breathing so guests draw the flame. |
 | **Tornado** (`tornado`) | click weapon; the `tornado` projectile's `tick()` walks along the ground for 8 s and applies forces to worms in range (pull, lift, fling, 1 HP/0.5 s). |
 | **Tsunami** (`tsunami`) | instant weapon; sets `G.tsu = {dir, D, H0, t, hit}` with a random side. `tsunamiTick()` (called from `step.js`) moves the front inland at 360 px/s and, once per object, destroys worms, crates, drums, projectiles and flames lying below the wave height at their distance from the shore (`H0` at the shore, 0 at `D` px inland). Clients animate the wave from the `tsunami` event alone (`FX.waves`, `render.js`). |
@@ -192,7 +194,7 @@ Checklist for a *permanent* weapon:
 5. Translation in `lang-it.js` (the weapon name; the smoke test fails on untranslated menu text).
 6. `CRATE_WEAP` / `CRATE_UTIL` in `crates.js` if crates may contain it.
 7. Bots only use what `AI_SHOTS` / `aiPlan` in `ai.js` know about; add an entry to teach them.
-8. Add the id to `tests/smoke.py` if you track the weapon count (currently 41).
+8. Add the id to `tests/smoke.py` if you track the weapon count (currently 43).
 
 Online play needs nothing extra for ordinary weapons: the host simulates, guests only receive
 projectile positions (`id`, type, `x`, `y`, angle, fuse, ...). If a projectile needs more visible

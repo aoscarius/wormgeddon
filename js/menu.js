@@ -70,6 +70,7 @@ function enterGame() {
   FX.p.length = 0;
   FX.nuke = null;
   FX.bolts.length = 0;
+  FX.storms.length = 0;
   FX.waves.length = 0;
   FX.quake = 0;
   FX.txt.length = 0;

@@ -393,6 +393,21 @@ const ICON_DRAW = {
     icRect(g, 12, 20, 42, 12, IC.steel, 5);
     icPoly(g, [34, 28, 22, 46, 31, 46, 26, 62, 46, 38, 36, 38, 42, 28], IC.yellow);
   },
+  hammer(g) {
+    icLine(g, 22, 58, 40, 24, 5, IC.brown);
+    icPoly(g, [26, 10, 56, 6, 60, 22, 30, 26], IC.steel);
+    icPoly(g, [26, 10, 56, 6, 57, 11, 27, 15], IC.white);
+    icPoly(g, [50, 28, 42, 40, 47, 40, 41, 54, 56, 36, 49, 36, 54, 28], IC.yellow);
+  },
+  timecar(g) {
+    icFlame(g, 8, 38, 12);
+    icPoly(g, [14, 44, 14, 34, 26, 32, 32, 20, 46, 20, 52, 32, 60, 36, 60, 44], IC.steel);
+    icPoly(g, [32, 32, 35, 24, 44, 24, 48, 32], IC.blue);
+    icCircle(g, 24, 46, 6, IC.ink);
+    icCircle(g, 24, 46, 3, IC.orange);
+    icCircle(g, 50, 46, 6, IC.ink);
+    icCircle(g, 50, 46, 3, IC.orange);
+  },
   tornado(g) {
     icEllipse(g, 32, 12, 26, 7, IC.steel, 0);
     icEllipse(g, 32, 24, 20, 6, IC.steel, 0);

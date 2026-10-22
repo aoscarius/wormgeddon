@@ -84,7 +84,7 @@ function aiPlan(w, t) {
   }
   // Sky weapons: click on the target; the earthquake needs no target at all.
   if (dist > 130 && Math.random() < 0.35) {
-    const sky = ['thunder', 'dragonfire', 'tornado'].filter(id => avail(t, id));
+    const sky = ['thunder', 'dragonfire', 'tornado', 'hammer'].filter(id => avail(t, id));
     if (sky.length) {
       plan.weapon = pick(sky);
       plan.click = { x: tg.x, y: tg.y };

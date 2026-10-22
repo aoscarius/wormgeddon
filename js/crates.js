@@ -47,6 +47,8 @@ const CRATE_WEAP = [
   'earthquake',
   'dragonfire',
   'thunder',
+  'hammer',
+  'timecar',
   'tornado',
   'tsunami',
 ];

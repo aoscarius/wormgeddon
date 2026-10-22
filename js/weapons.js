@@ -533,6 +533,55 @@ registerWeapon({
     spawnProj('tornado', x, y == null ? c.target.y : y, 0, 0, c.w, { ow: c.w.id, face: c.w.face || 1 });
   },
 });
+// Thor's Hammer: click on a worm (or the ground); the hammer rises over the caster, charges with sparks
+// while a storm gathers over the target, then a huge bolt hits it and lesser ones follow.
+registerWeapon({
+  id: 'hammer',
+  name: "Thor's Hammer",
+  code: 'TH',
+  ammo: 1,
+  delay: 5,
+  click: true,
+  instant: true,
+  fire(c) {
+    // the target is the living worm closest to the click (within 70 px), otherwise the clicked spot
+    let tw = null,
+      best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o === c.w) continue;
+      const d = Math.hypot(o.x - c.target.x, o.y - c.target.y);
+      if (d < best) {
+        best = d;
+        tw = o;
+      }
+    }
+    const tx = clamp(tw ? tw.x : c.target.x, 8, T.w - 8);
+    emit({ e: 'msg', t: "THOR'S HAMMER" });
+    emit({ e: 'storm', x: tx, l: HAMMER_CHARGE + 0.4 });
+    spawnProj('mjolnir', c.w.x, c.w.y - 38, 0, 0, c.w, { tw: tw ? tw.id : -1, tx, ow: c.w.id, walk: 0 });
+  },
+});
+// Time Car: a car comes back from the future behind the caster and drives off in the facing direction,
+// setting fire to everything in front of it.
+registerWeapon({
+  id: 'timecar',
+  name: 'Time Car',
+  code: 'TC',
+  ammo: 1,
+  delay: 6,
+  instant: true,
+  fire(c) {
+    const face = c.w.face || 1,
+      x = clamp(c.w.x - face * 46, 10, T.w - 10),
+      y = (surfaceAt(x, c.w.y - 40) ?? c.w.y + 8) - 8;
+    emit({ e: 'msg', t: 'BACK FROM THE FUTURE' });
+    emit({ e: 'tele', x, y: y - 4 });
+    emit({ e: 'flash', c: '#cfe8ff' });
+    emit({ e: 'snd', s: 'roar' });
+    for (let i = 0; i < 14; i++) spawnFire(x, y, -face * rnd(20, 90), -rnd(20, 120), rnd(1, 3));
+    spawnProj('timecar', x, y, 0, 0, c.w, { face, ow: c.w.id, hits: {} });
+  },
+});
 /** One earthquake tick (called every 0.14 s while G.quake runs): cracks in the ground and jolts for the worms. */
 function quakeTick() {
   G.quakeN = (G.quakeN || 0) + 1;

@@ -591,6 +591,24 @@ function render() {
     }
     ctx2.restore();
   }
+  for (const s of FX.storms) {
+    // a dark cloud gathers above the target and flickers before the strike
+    const k = Math.min(1, s.t / 0.6) * Math.min(1, (s.l - s.t) / 0.3 + 0.2);
+    ctx2.save();
+    ctx2.globalAlpha = 0.85 * k;
+    for (let i = 0; i < 7; i++) {
+      const gx = s.x + (i - 3) * 22 + Math.sin(s.t * 2 + i) * 6;
+      ctx2.fillStyle = i % 2 ? '#3b4352' : '#2a303c';
+      ctx2.beginPath();
+      ctx2.arc(gx, -34 + Math.abs(i - 3) * 4, 26 - Math.abs(i - 3) * 2, 0, TAU);
+      ctx2.fill();
+    }
+    if (Math.sin(s.t * 23) > 0.7) {
+      ctx2.fillStyle = 'rgba(200,225,255,.35)';
+      ctx2.fillRect(s.x - 80, -62, 160, 50);
+    }
+    ctx2.restore();
+  }
   for (const b of FX.bolts) {
     ctx2.save();
     ctx2.globalAlpha = Math.max(0, 1 - b.t / 0.35);

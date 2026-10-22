@@ -262,6 +262,96 @@ function spriteProj(p) {
       }
       break;
     }
+    case 'mjolnir': {
+      // A stout hammer held up over the caster; it shakes and crackles more and more while it charges.
+      const k = p.walk || 0,
+        sh = Math.sin(G.time * 50) * k * 1.4;
+      ctx2.translate(sh, 0);
+      ctx2.rotate(-0.35);
+      ctx2.fillStyle = '#7a5230';
+      ctx2.strokeStyle = '#2b1c10';
+      ctx2.lineWidth = 1;
+      ctx2.fillRect(-1.8, -4, 3.6, 22);
+      ctx2.strokeRect(-1.8, -4, 3.6, 22);
+      ctx2.fillStyle = '#9aa8ba';
+      ctx2.beginPath();
+      ctx2.rect(-10, -12, 20, 11);
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = '#cfd8e4';
+      ctx2.fillRect(-9, -11, 18, 3);
+      ctx2.save();
+      ctx2.rotate(0.35);
+      ctx2.strokeStyle = `rgba(190,225,255,${0.4 + 0.6 * k})`;
+      ctx2.lineWidth = 1.4;
+      ctx2.shadowColor = '#7fc4ff';
+      ctx2.shadowBlur = 6 + 10 * k;
+      for (let i = 0; i < 2 + Math.round(5 * k); i++) {
+        const a = G.time * 9 + i * 2.4,
+          r0 = 10;
+        ctx2.beginPath();
+        ctx2.moveTo(Math.cos(a) * r0, -8 + Math.sin(a) * r0);
+        ctx2.lineTo(Math.cos(a + 0.2) * (r0 + 7 + 6 * Math.sin(G.time * 31 + i)), -8 + Math.sin(a + 0.2) * (r0 + 9));
+        ctx2.stroke();
+      }
+      ctx2.restore();
+      break;
+    }
+    case 'timecar': {
+      // A low retro wedge-shaped sports car seen from the side, wheels glowing, flames out of the back.
+      ctx2.scale(p.face || 1, 1);
+      const fl = 0.8 + 0.2 * Math.sin(G.time * 45);
+      for (const [col, k] of [
+        ['rgba(255,110,30,.9)', 1],
+        ['rgba(255,225,110,.95)', 0.55],
+      ]) {
+        ctx2.fillStyle = col;
+        ctx2.beginPath();
+        ctx2.moveTo(-14, 2);
+        ctx2.lineTo(-14 - 30 * k * fl, -3 * k);
+        ctx2.lineTo(-14 - 44 * k * fl, 4);
+        ctx2.lineTo(-14 - 28 * k * fl, 9 * k);
+        ctx2.closePath();
+        ctx2.fill();
+      }
+      ctx2.fillStyle = '#b9c2cc';
+      ctx2.strokeStyle = '#2a323c';
+      ctx2.lineWidth = 1;
+      ctx2.beginPath();
+      ctx2.moveTo(-15, 3);
+      ctx2.lineTo(-15, -3);
+      ctx2.lineTo(-6, -5);
+      ctx2.lineTo(-2, -10);
+      ctx2.lineTo(8, -10);
+      ctx2.lineTo(13, -4);
+      ctx2.lineTo(18, -2);
+      ctx2.lineTo(18, 4);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = '#6cc3ff';
+      ctx2.beginPath();
+      ctx2.moveTo(-1, -4);
+      ctx2.lineTo(1, -8.5);
+      ctx2.lineTo(7, -8.5);
+      ctx2.lineTo(10, -4);
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.fillStyle = '#ffe14a';
+      ctx2.fillRect(16, -2, 3, 2);
+      for (const wx of [-8, 11]) {
+        ctx2.fillStyle = '#222';
+        ctx2.beginPath();
+        ctx2.arc(wx, 4, 4.2, 0, TAU);
+        ctx2.fill();
+        ctx2.strokeStyle = '#ff9a3a';
+        ctx2.lineWidth = 1.2;
+        ctx2.beginPath();
+        ctx2.arc(wx, 4, 2.6, 0, TAU);
+        ctx2.stroke();
+      }
+      break;
+    }
     case 'meteor': {
       const g2 = ctx2.createRadialGradient(0, 0, 1, 0, 0, 9);
       g2.addColorStop(0, '#fff3a0');

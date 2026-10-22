@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS
+ * Globals defined: spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -397,6 +397,91 @@ registerProj('tornado', {
           w.twd = 0.5;
           if (w.hp > 2) hurt(w, 1, { noEnd: true });
         }
+      }
+    }
+    return false;
+  },
+});
+/** Seconds Thor's Hammer charges before the strike. */
+const HAMMER_CHARGE = 1.8;
+/**
+ * Thor's Hammer: hovers over its caster while charging (`walk` goes 0..1, guests draw the sparks from it),
+ * then strikes the chosen worm (it follows him until the last moment) with a big bolt, and lesser bolts
+ * around it a moment later.
+ */
+registerProj('mjolnir', {
+  r: 8,
+  spr: 'mjolnir',
+  fixedAngle: true,
+  tick(p, dt) {
+    const o = wById(p.ow);
+    if (o && !o.dead) {
+      p.x = o.x;
+      p.y = o.y - 38 - Math.sin(p.age * 4) * 2;
+    }
+    p.walk = Math.min(1, p.age / HAMMER_CHARGE);
+    if (!p.struck && p.age >= HAMMER_CHARGE) {
+      p.struck = true;
+      const t = p.tw >= 0 ? wById(p.tw) : null;
+      if (t && !t.dead) p.tx = t.x;
+      const x = clamp(p.tx, 8, T.w - 8);
+      let y = surfaceAt(x);
+      if (t && !t.dead) y = t.y;
+      if (y == null) y = G.waterY - 4;
+      emit({ e: 'bolt', x, y });
+      emit({ e: 'flash', c: '#e8f2ff' });
+      explode(x, y, 42, 70, 360, { k: 1, src: p.ow, fire: 5 });
+      for (let i = 0; i < 4; i++) sched(0.25 + i * 0.25, () => lightningBolt(clamp(x + rnd(-90, 90), 8, T.w - 8), o));
+    }
+    if (p.age >= HAMMER_CHARGE + 0.2) p.dead = true;
+    return false;
+  },
+});
+/** Time Car: drives forward along the ground, burning and knocking away every worm it meets. */
+const CAR_MAX_AGE = 3.6;
+registerProj('timecar', {
+  r: 10,
+  spr: 'timecar',
+  fixedAngle: true,
+  tick(p, dt) {
+    const speed = 120 + Math.min(p.age, 0.9) * 480,
+      nx = p.x + p.face * speed * dt,
+      gy = surfaceAt(clamp(nx, 0, T.w - 1), p.y - 26);
+    if (nx < -30 || nx > T.w + 30 || gy == null || gy > G.waterY - 6 || p.age > CAR_MAX_AGE) {
+      if (p.age > 0.3) {
+        p.dead = true;
+        return false;
+      }
+    }
+    if (gy != null) {
+      p.wall = (p.wall || 0) - dt;
+      if (gy < p.y - 18 && p.wall <= 0) {
+        p.wall = 0.3; // a wall: blast through
+        explode(p.x + p.face * 14, p.y - 4, 26, 18, 160, { src: p.ow, fire: 3 });
+      }
+      p.y += clamp(gy - 8 - p.y, -300 * dt, 1800 * dt);
+    }
+    p.x = nx;
+    p.walk = 1;
+    // flames: a fiery trail behind and a burning jet in front
+    p.acc = (p.acc || 0) + dt * 40;
+    for (; p.acc >= 1; p.acc--) {
+      spawnFire(p.x - p.face * 14, p.y + 4, -p.face * rnd(10, 60), -rnd(10, 60), rnd(1.5, 3));
+      spawnFire(p.x + p.face * 16, p.y - 2, p.face * rnd(80, 200), -rnd(10, 90), rnd(1, 2.5));
+    }
+    p.snd = (p.snd || 0) - dt;
+    if (p.snd <= 0) {
+      p.snd = 0.3;
+      emit({ e: 'snd', s: 'launch' });
+    }
+    for (const w of G.worms) {
+      if (w.dead || w.id === p.ow || p.hits[w.id]) continue;
+      if (Math.abs(w.x - p.x) < 20 && Math.abs(w.y - p.y) < 38) {
+        p.hits[w.id] = 1;
+        explode(p.x + p.face * 10, p.y + 4, 16, 28, 420, { src: p.ow, fire: 6 });
+        w.grounded = false;
+        w.vx = p.face * 320;
+        w.vy = Math.min(w.vy, -240);
       }
     }
     return false;
