@@ -28,7 +28,7 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 - **English and Italian**: the language follows the browser by default and can be changed in the
   menu (top right). Team names, weapon names, HUD, messages and help are all translated.
 - **Bots** that simulate shots to pick weapon, angle and power.
-- **Online play**: the host runs the game, friends join with a short room code, and everyone can
+- **Online play**: the host runs the game, friends join with a short room code or an invite link (copy it, or share it from your phone: opening it enters the room directly), and everyone can
   chat in the lobby and during the match (`T`).
 - Touch controls for phones and tablets: a slide-able d-pad, a big fire button with a power ring,
   jump and back-flip buttons, a fuse/girder button, pinch to zoom and a tap on the weapon box to
@@ -112,6 +112,7 @@ js/*.js             one file per module, classic scripts sharing the global scop
 | `input.js`       | keyboard, pointer and touch input                                    |
 | `ai.js`          | bot                                                                  |
 | `net.js`         | PeerJS host/guest networking                                         |
+| `invite.js`      | invite links: copy / share button, `?join=CODE` auto-join            |
 | `menu.js`        | setup form, demo backdrop, pause                                     |
 | `main.js`        | fixed-timestep loop and boot                                         |
 

@@ -24,7 +24,7 @@ def chromium_path():
 
 
 @contextlib.contextmanager
-def game_page(url=None, viewport=None, wait=500, mobile=False):
+def game_page(url=None, viewport=None, wait=500, mobile=False, init_script=None):
     """Yields (page, errors). `errors` collects uncaught page exceptions; tests should assert it is empty.
 
     Set WH_BUILD=1 to test dist/wormgeddon.html instead of the development index.html.
@@ -43,6 +43,8 @@ def game_page(url=None, viewport=None, wait=500, mobile=False):
         else:
             page = browser.new_page(**({"viewport": viewport} if viewport else {}))
         page.on("pageerror", lambda e: errors.append(str(e)))
+        if init_script:
+            page.add_init_script(init_script)
         page.goto(url)
         page.wait_for_timeout(wait)
         try:

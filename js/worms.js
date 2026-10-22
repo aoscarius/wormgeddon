@@ -209,18 +209,22 @@ function controlWorm(w, inp, dt) {
     if (inp.u) w.aim = clamp(w.aim - 1.2 * dt, -1.5, 1.5);
     if (inp.d) w.aim = clamp(w.aim + 1.2 * dt, -1.5, 1.5);
     if (tl.k === 'torch') {
+      if (tl.dx === undefined) {
+        tl.dx = dx; tl.dy = 0;
+      }
+      const tx = tl.dx, ty = tl.dy;
       tl.c = (tl.c || 0) + dt;
       if (tl.c > 0.04) {
         tl.c = 0;
-        emit({ e: 'cv', x: w.x + dx * 11, y: w.y + dy * 11, r: 8, s: 0 });
+        emit({ e: 'cv', x: w.x + tx * 11, y: w.y + ty * 11, r: 10, s: 0 });
       }
-      const nx = w.x + dx * 38 * dt,
-        ny = w.y + dy * 38 * dt;
+      const nx = w.x + tx * 38 * dt, ny = w.y + ty * 38 * dt;
       if (!hitC(nx, ny, w.r)) {
         w.x = nx;
         w.y = ny;
       }
       w.grounded = false;
+      w.vx = 0; w.vy = 0;
       physWorm(w, dt, true);
     } else if (tl.k === 'drill') {
       tl.c = (tl.c || 0) + dt;

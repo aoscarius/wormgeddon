@@ -31,6 +31,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_audio.py` | Holy Hand Grenade choir starts `fuse - 2 s` after the throw (once, before the blast), MP3s respect mute and stop, the dragon roars instead of singing |
 | `test_damage_display.py` | a hit keeps the old health on screen (label, team bars, guest snapshot) until `-N` is announced, then counts down; heals show at once |
 | `test_touch.py` | touch emulation (`game_page(mobile=True)`): on rope / jet pack with another weapon, Jump shows the weapon icon + FIRE tag and Fire becomes "let go"; reverts afterwards, Italian labels |
+| `test_invite.py` | host link + Copy / Share (stubbed clipboard and share sheet), cleared on close; `?join=CODE` joins at once with a saved name, drops the query, lobby chat visible (fake PeerJS) |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using

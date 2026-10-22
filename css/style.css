@@ -81,11 +81,11 @@ input:focus-visible {
   color: #2a0a17;
   border-color: #ffc2d6;
   font-size: 1.2rem;
-  padding: 10px 22px;
+  padding: 8px 22px;
 }
 .btn.exit {
   font-size: 1.2rem;
-  padding: 10px 22px;
+  padding: 8px 22px;
 }
 .btn.sm {
   padding: 3px 9px;
@@ -230,8 +230,8 @@ label.f input[type='text'] {
 }
 .code {
   font-family: var(--display);
-  font-size: 1.6rem;
-  letter-spacing: 0.12em;
+  font-size: 1.0rem;
+  letter-spacing: 0.1em;
   color: var(--hit);
   background: var(--ground);
   padding: 4px 12px;
@@ -1154,7 +1154,20 @@ label.chk input {
   width: auto;
   flex: none;
 }
-
+/* --- Share Icon (online games) --- */
+#bLink {
+  width: clamp(40px, 12vw, 40px);
+  height: clamp(40px, 12vw, 40px);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+#bLink svg {
+  display: block;
+  width: 60%;
+  height: 60%;
+}
 /* ---- Chat (online games) ---- */
 #wchat {
   /* right: max(10px, env(safe-area-inset-right) + 50px);

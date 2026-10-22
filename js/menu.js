@@ -239,14 +239,6 @@ $('bStart').addEventListener('click', () => {
 $('bHost').addEventListener('click', hostCreate);
 $('bHostStart').addEventListener('click', hostStart);
 $('bJoin').addEventListener('click', joinRoom);
-$('bCopy').addEventListener('click', () => {
-  const c = NET.code;
-  if (!c) return;
-  try {
-    navigator.clipboard.writeText(c).catch(() => {});
-  } catch (e) {}
-  showMsg(tr('Code copied: {0}', c), 1200);
-});
 $('bResume').addEventListener('click', togglePause);
 $('bQuit').addEventListener('click', backToMenu);
 $('bAgain').addEventListener('click', backToMenu);

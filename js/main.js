@@ -88,6 +88,7 @@ setLang(initLang());
 resize();
 showDemo();
 renderLobby();
+inviteBoot();
 requestAnimationFrame(frame);
 // Handy handle for debugging and automated tests.
 window.__wh = {

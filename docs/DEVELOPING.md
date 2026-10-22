@@ -61,6 +61,7 @@ dist/             build output (git-ignored): the deployable folder (index.html,
 | `sprites.js`, `worm-art.js`, `icons.js`, `render.js` | all drawing |
 | `hud.js`, `input.js`, `menu.js` | HUD, keyboard/mouse/touch input, menu |
 | `ai.js` | bot |
+| `invite.js` | invite link: `?join=CODE` auto-join, copy / share button (`inviteSync`, `inviteAction`, `inviteBoot`) |
 | `net.js` | PeerJS host/guest |
 | `main.js` | main loop (`stepOnce`, `frame`) and `window.__wh` |
 
@@ -412,6 +413,14 @@ back in `applySnapshot()` (`net.js`). Anything guests only need for drawing belo
 simulation-only fields never need to be sent. Guests regenerate generated terrain from the seed
 and receive crater/carve/girder events, so terrain stays identical. Levels from the levels folder
 are sent as `cfg.mapData` by the host: put your PNG in `levels/` *before* hosting.
+
+**Invite links** (`invite.js`): once a room is open the host gets `<page>?join=CODE` in a read-only field and a
+button: *Share link* on touch devices that have `navigator.share` (falls back to copying), *Copy link*
+elsewhere (clipboard API, or select + `execCommand` on plain http). Opening such a link runs `inviteBoot()` at
+start-up: it opens the Join tab, fills the code, uses the name saved in `localStorage` (`wormgeddon.name`, a
+`Player##` default is created the first time), removes the query from the address and calls `joinRoom()`, so
+the guest is in the lobby (connection status and chat) without typing anything. Pasting a link into the code
+box reduces it to the code. Tests fake PeerJS (`tests/test_invite.py`).
 
 **Chat** (`chat.js`): lobby boxes in the Host/Join tabs and an in-game overlay (`T` or the Chat
 button; Esc closes). Only online games have it. Guests never choose their own name or team: the host

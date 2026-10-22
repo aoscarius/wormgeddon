@@ -47,6 +47,7 @@ const NET = {
     this.conn = null;
     this.role = 'local';
     if (typeof chatReset === 'function') chatReset();
+    if (typeof inviteSync === 'function') inviteSync();
   },
 };
 const r1 = v => Math.round(v * 10) / 10;
@@ -267,6 +268,7 @@ function renderLobby() {
     lobby.guests.map(g => `<li>${esc(tr('{0} (online)', g.name))}</li>`).join('');
   $('bHostStart').disabled = !NET.peer;
   if (typeof chatSync === 'function') chatSync();
+  if (typeof inviteSync === 'function') inviteSync();
 }
 /** Opens a PeerJS room with a short random code (ids look like 'wormgeddon-ABCDE') and accepts guest connections. */
 function hostCreate() {
