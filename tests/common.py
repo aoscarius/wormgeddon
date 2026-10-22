@@ -24,7 +24,7 @@ def chromium_path():
 
 
 @contextlib.contextmanager
-def game_page(url=None, viewport=None, wait=500):
+def game_page(url=None, viewport=None, wait=500, mobile=False):
     """Yields (page, errors). `errors` collects uncaught page exceptions; tests should assert it is empty.
 
     Set WH_BUILD=1 to test dist/wormgeddon.html instead of the development index.html.
@@ -37,7 +37,11 @@ def game_page(url=None, viewport=None, wait=500):
         if exe:
             kw["executable_path"] = exe
         browser = p.chromium.launch(**kw)
-        page = browser.new_page(**({"viewport": viewport} if viewport else {}))
+        if mobile:  # touch device: coarse pointer, so the on-screen gamepad is built
+            ctx = browser.new_context(viewport=viewport or {"width": 740, "height": 360}, has_touch=True, is_mobile=True)
+            page = ctx.new_page()
+        else:
+            page = browser.new_page(**({"viewport": viewport} if viewport else {}))
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(url)
         page.wait_for_timeout(wait)

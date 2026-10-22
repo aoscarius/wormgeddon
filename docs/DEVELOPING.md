@@ -258,6 +258,8 @@ put state on the worm and `controlWorm()` / `physWorm()` in `worms.js` act on it
   selected (`holdingOther(w)`), Jump fires that weapon (charging weapons at 65 % power, since the
   charge cannot be held), Space lets go of the rope / jet pack, and a small icon box is drawn next to
   the worm (`drawHeldWeaponBox`, `worm-art.js`). A shot that ends the turn also drops rope and jet pack.
+  On touch screens `touchFx()` (`input.js`) turns the Jump button into a glowing, labelled "FIRE" button showing the
+  weapon's icon and the Fire button into a "let go" (broken link) button while `holdingOther()` is true.
 * **Falling out of the world.** `sinkWorm()` (`worms.js`) handles both the water and the map's left/right
   edges: splash, log line, "died" banner, and the turn ends.
 * When you add a new held state, add it to: `toSettle` (drop it), `processDeaths` and

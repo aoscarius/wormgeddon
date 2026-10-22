@@ -273,6 +273,9 @@ const TOUCH_ICONS = {
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a7 7 0 1 1 10 0M7 18l-1-5M7 18l5-1" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   fire: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2L19 19M19 5l-2.8 2.8M7.8 16.2L5 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
 };
+/** Icon of the fire button while it means "let go" (rope / jet pack with another weapon selected): a broken link. */
+const TOUCH_RELEASE =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14l-2 2a3.5 3.5 0 0 1-5-5l2-2M14 10l2-2a3.5 3.5 0 0 1 5 5l-2 2M9 5V3M5 7L3.5 5.5M15 21v-2M19 17l1.5 1.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 /**
  * Creates the on-screen gamepad (shown on devices with a coarse pointer): a slide-able d-pad on
  * the left (walk and aim, diagonals allowed) and, on the right, a big fire button with a power
@@ -401,6 +404,23 @@ function touchFx() {
     box.style.setProperty('--curh', c.height.toFixed(0) + 'px');
   }
   f.style.setProperty('--pw', G.weapon.pw > 0 ? (G.weapon.pw * 100).toFixed(0) : 0);
+  // On the rope / jet pack with another weapon selected the buttons change meaning: Jump becomes a
+  // glowing "fire the selected weapon" button showing that weapon's icon, and Fire becomes "let go".
+  const aw = activeWorm(),
+    alt = !!(aw && isMyTurn() && holdingOther(aw)),
+    j = document.getElementById('tjump'),
+    mode = alt ? G.weapon.id : '';
+  if (j && j.dataset.mode !== mode) {
+    j.dataset.mode = mode;
+    j.classList.toggle('shoot', alt);
+    j.innerHTML = alt
+      ? `<img src="${weaponIconURL(G.weapon.id)}" alt="" /><span class="tag" data-nt>${tr('FIRE')}</span>`
+      : TOUCH_ICONS.jump;
+    j.setAttribute('aria-label', tr(alt ? 'Fire selected weapon' : 'Jump'));
+    f.classList.toggle('release', alt);
+    f.innerHTML = alt ? TOUCH_RELEASE : TOUCH_ICONS.fire;
+    f.setAttribute('aria-label', tr(alt ? 'Let go' : 'Fire'));
+  }
   const d = WEAPONS[G.weapon.id],
     label = d && d.id === 'girder' ? '\u27F3' : d && d.fuse ? G.weapon.fuse + 's' : '';
   aux.hidden = !label;
