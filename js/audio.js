@@ -3,13 +3,13 @@
 /**
  * @file audio.js - Audio
  *
- * Tiny Web-Audio synthesiser. No audio assets: every sound is a short oscillator or noise burst.
+ * Tiny Web-Audio synthesiser (oscillator and noise bursts) plus a few MP3 effects from `sounds/`.
  *
  * Depends on: none
- * Globals defined: AC, muted, ac, tone, noiseBurst, SFX
+ * Globals defined: AC, muted, ac, tone, noiseBurst, MP3_FILES, mp3Entry, mp3Sfx, mp3Stop, SFX
  */
 
-/* ===== Audio (tiny synth, no assets) ===== */
+/* ===== Audio ===== */
 /** Lazily created AudioContext (browsers only allow audio after a user gesture) and the mute flag. */
 let AC = null,
   muted = false;
@@ -53,7 +53,7 @@ function tone(f1, f2, dur, type = 'square', vol = 0.08) {
 function noiseBurst(dur, vol = 0.2, lp = 800) {
   const a = ac();
   if (!a || muted) return;
-  const n = Math.floor(a.sampleRate * dur),
+  const n = Math.max(1, Math.floor(a.sampleRate * dur) || 1), // never 0 frames (createBuffer throws)
     buf = a.createBuffer(1, n, a.sampleRate),
     d = buf.getChannelData(0);
   for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
@@ -69,27 +69,76 @@ function noiseBurst(dur, vol = 0.2, lp = 800) {
   g.connect(a.destination);
   s.start();
 }
+/* ---- MP3 sound effects ---- */
+/** Files preloaded at start-up (see mp3Entry). Paths are relative to the page; `sounds/` ships with the build. */
+const MP3_FILES = ['sounds/hallelujah.mp3'];
+/** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
+const MP3 = {},
+  MP3_VOICES = new Set();
 /**
- * Creates an MP3 sound-effect function. Each call plays a separate voice so
- * overlapping playback is supported.
- * @param {string} src URL or path to the MP3 file
- * @param {number} [vol=1] Playback volume from 0 (silent) to 1 (full volume)
- * @returns {() => void} Function that plays the sound effect
+ * Loads (once) an MP3 and keeps it ready. An <audio> element is always created (it works from file://
+ * too); on http(s) pages the file is additionally decoded into an AudioBuffer, which starts instantly
+ * and exactly on cue. A single-file build can supply the bytes as `window.SOUNDS_BUNDLE[src]` (data URL).
  */
-function mp3Sfx(src, vol = 0.5) {
-    const b = new Audio(src);
-    b.preload = 'auto';
-    if (muted) return;
-    const m = b.cloneNode();
-    m.volume = Math.max(0, Math.min(1.0, vol));
-    m.play().catch(() => {});
+function mp3Entry(src) {
+  if (MP3[src]) return MP3[src];
+  const url = (window.SOUNDS_BUNDLE && window.SOUNDS_BUNDLE[src]) || src,
+    e = (MP3[src] = { el: new Audio(url), buf: null });
+  e.el.preload = 'auto';
+  e.el.load();
+  if (typeof fetch === 'function')
+    fetch(url)
+      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+      .then(b => ac().decodeAudioData(b))
+      .then(buf => (e.buf = buf))
+      .catch(() => {}); // file:// or no Web Audio: the <audio> element is used instead
+  return e;
 }
+/**
+ * Plays an MP3 sound effect now, as its own voice (overlapping calls are fine). Does nothing while
+ * muted. Returns a handle with stop(), or null.
+ * @param {string} src path of the file (one of MP3_FILES, or any path: it is loaded on first use)
+ * @param {number} [vol=0.6] volume 0..1
+ */
+function mp3Sfx(src, vol = 0.6) {
+  if (muted) return null;
+  const e = mp3Entry(src),
+    a = AC;
+  vol = Math.max(0, Math.min(1, vol));
+  let v;
+  if (e.buf && a) {
+    if (a.state === 'suspended') a.resume();
+    const s = a.createBufferSource(),
+      g = a.createGain();
+    s.buffer = e.buf;
+    g.gain.value = vol;
+    s.connect(g);
+    g.connect(a.destination);
+    s.onended = () => MP3_VOICES.delete(v);
+    s.start();
+    v = { stop: () => { try { s.stop(); } catch (err) {} } };
+  } else {
+    const m = e.el.cloneNode();
+    m.volume = vol;
+    m.onended = () => MP3_VOICES.delete(v);
+    m.play().catch(() => MP3_VOICES.delete(v));
+    v = { stop: () => m.pause() };
+  }
+  MP3_VOICES.add(v);
+  return v;
+}
+/** Silences every MP3 sound that is still playing (used by the mute key). */
+function mp3Stop() {
+  for (const v of MP3_VOICES) v.stop();
+  MP3_VOICES.clear();
+}
+MP3_FILES.forEach(mp3Entry);
 /**
  * Sound effects by name. Simulation events refer to these names ({e:'snd', s:'boom'}), so adding
  * a new sound only needs a new entry here. Each takes an optional numeric argument (e.g. radius).
  */
 const SFX = {
-  boom: r => noiseBurst(0.35 + r / 120, 0.35, 250 + r * 6),
+  boom: (r = 40) => noiseBurst(0.35 + r / 120, 0.35, 250 + r * 6),
   shot: () => noiseBurst(0.1, 0.18, 3000),
   jump: () => tone(220, 520, 0.12, 'sine', 0.1),
   hurt: () => tone(500, 120, 0.25, 'sawtooth', 0.06),
@@ -107,7 +156,12 @@ const SFX = {
   },
   tele: () => tone(1200, 200, 0.35, 'sine', 0.1),
   sheep: () => tone(420, 380, 0.12, 'triangle', 0.08),
+  // Holy Hand Grenade choir: ~2 s of singing; the projectile starts it so that it ends with the blast.
   holy: () => mp3Sfx('sounds/hallelujah.mp3'),
+  roar: () => {
+    noiseBurst(0.6, 0.25, 500);
+    tone(110, 55, 0.6, 'sawtooth', 0.1);
+  },
   turn: () => {
     tone(500, 700, 0.12, 'triangle', 0.08);
   },

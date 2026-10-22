@@ -205,15 +205,21 @@ registerProj(
 );
 // Fragment of a banana bomb.
 registerProj('bananaling', gr({ bounce: 0.8, spr: 'banana', expl: { r: 34, d: 60 } }));
-// Holy Hand Grenade: biggest grenade explosion, with a flash and a choir-like tone.
+/** Length in seconds of the audible part of sounds/hallelujah.mp3 (2.53 s file, silence after 2.0 s). */
+const HOLY_SONG = 2.0;
+// Holy Hand Grenade: biggest grenade explosion, with a flash; the choir sings during the last seconds of the fuse.
 registerProj(
   'holy',
   gr({
     bounce: 0.35,
     spr: 'holy',
     r: 4,
+    tick(p) {},
     boom(p) {
-      emit({ e: 'snd', s: 'holy' });
+      if (!p.sung && p.fuse != null && p.fuse <= HOLY_SONG) {
+        p.sung = true;
+        emit({ e: 'snd', s: 'holy' });
+      }
       emit({ e: 'flash', c: '#fff6c0' });
       explode(p.x, p.y, 72, 100, 420, { k: 1, src: p.ow });
     },

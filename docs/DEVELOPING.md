@@ -350,6 +350,12 @@ Online players each use their own language because events carry keys, not senten
   (progress watchdog, parachute handling).
 * **Sounds** (`audio.js`): add an entry to `SFX` (`name: r => tone(...)` or `noiseBurst(...)` or `mp3Sfx(...)`), then
   `emit({e: 'snd', s: 'name', r: radius})` from the simulation.
+  **MP3 effects:** put the file in `sounds/`, list its path in `MP3_FILES` (preloaded at start-up) and play it
+  with `mp3Sfx(path, volume)`. It uses a decoded `AudioBuffer` (exact start) on http(s) and falls back to an
+  `<audio>` element on `file://`; mute stops running voices (`mp3Stop`). The build copies `sounds/` to `dist/`
+  (`--single` embeds it as `window.SOUNDS_BUNDLE`). *Timing:* a sound is a normal `snd` event, so emit it when
+  it should be heard: the Holy Hand Grenade projectile emits `holy` when `HOLY_SONG` (2.0 s) of fuse is left, so
+  the choir ends with the blast. Guests hear it when the event arrives.
 * **Icons** (`icons.js`): `ICON_DRAW[weaponId] = g => {...}` on a 64x64 canvas with helpers
   (`icRect`, `icCircle`, `icEllipse`, `icPoly`, `icLine`, `icFlame`, `icGrenade`, `icWormHead`, palette `IC`).
   Missing icons fall back to a badge with the weapon `code`.

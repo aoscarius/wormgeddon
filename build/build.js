@@ -9,7 +9,7 @@
  *   --out DIR        write to DIR instead of ./dist
  *   --no-compress    skip the pre-compressed .gz / .br copies
  *   --single         instead of a folder, write ONE self-contained dist/wormgeddon.html (+ .fragment.html)
- *                    with every image of maps/ embedded; handy for a quick share, bigger and uncached
+ *                    with every image of maps/ and every sound of sounds/ embedded; handy for a quick share, bigger and uncached
  *
  * Deploy output (default):
  *   dist/index.html                    minified page (menu markup, HUD, links to the files below)
@@ -122,16 +122,20 @@ const htmlOpts = {
       ...m,
       data: `data:${MIME[m.file.split('.').pop().toLowerCase()]};base64,` + fs.readFileSync(path.join(root, 'maps', m.file)).toString('base64'),
     }));
+    // sounds/*.mp3 as data URLs (audio.js reads window.SOUNDS_BUNDLE[path])
+    const sounds = {};
+    const sdir = path.join(root, 'sounds');
+    if (fs.existsSync(sdir))
+      for (const f of fs.readdirSync(sdir).filter(f => /\.(mp3|ogg|wav)$/i.test(f)))
+        sounds['sounds/' + f] = `data:audio/${f.split('.').pop().toLowerCase().replace('mp3', 'mpeg')};base64,` + fs.readFileSync(path.join(sdir, f)).toString('base64');
     let page = html.replace('@@CSS@@', () => `<style>${css}</style>`);
-    page = page.replace('</body>', () => `<script>window.MAPS_BUNDLE=${JSON.stringify(bundle)};</script><script>${js}</script></body>`);
+    page = page.replace('</body>', () => `<script>window.MAPS_BUNDLE=${JSON.stringify(bundle)};window.SOUNDS_BUNDLE=${JSON.stringify(sounds)};</script><script>${js}</script></body>`);
     page = await htmlMin.minify(page, htmlOpts);
     fs.writeFileSync(path.join(outDir, 'wormgeddon.html'), page);
     const body = page.match(/<body[^>]*>([\s\S]*)<\/body>/)[1];
     const head = [page.match(/<title>.*?<\/title>/)[0], ...(page.match(/<link[^>]*fonts\.googleapis\.com[^>]*>/g) || []), page.match(/<style>[\s\S]*?<\/style>/)[0]].join('');
     fs.writeFileSync(path.join(outDir, 'wormgeddon.fragment.html'), head + body);
     written.push('wormgeddon.html', 'wormgeddon.fragment.html');
-    if (fs.existsSync(path.join(root, 'sounds')))
-      console.warn('note: sounds/ is not embedded in --single; copy it next to the page for audio files.');
   } else {
     const assets = path.join(outDir, 'assets');
     fs.mkdirSync(assets, { recursive: true });

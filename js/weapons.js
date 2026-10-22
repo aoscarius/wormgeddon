@@ -513,6 +513,7 @@ registerWeapon({
     }
     const y0 = clamp(top - 80, 30, G.waterY - 120);
     emit({ e: 'msg', t: 'DRAGON FIRE' });
+    emit({ e: 'snd', s: 'roar' });
     spawnProj('dragon', face > 0 ? -110 : T.w + 110, y0, 0, 0, c.w, { face, tx, span, y0, ow: c.w.id });
   },
 });

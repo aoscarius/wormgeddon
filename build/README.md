@@ -43,9 +43,8 @@ Upload the whole folder. Hints for the server:
 ## `--single`: one self-contained file
 
 `node build/build.js --single` writes `dist/wormgeddon.html` (and `wormgeddon.fragment.html`, without the
-document wrappers) with minified code and **every map embedded** as `window.MAPS_BUNDLE` (about 2.8 MB). Handy for
-sending the game as one file or running it from `file://`; it is bigger and cached as a whole, and `sounds/` is not
-embedded. For a real deployment use the default folder build.
+document wrappers) with minified code and **every map and sound embedded** (`window.MAPS_BUNDLE`, `window.SOUNDS_BUNDLE`; about 2.9 MB). Handy for
+sending the game as one file or running it from `file://`; it is bigger and cached as a whole; for a real deployment use the default folder build.
 
 ## Testing the build
 

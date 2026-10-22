@@ -93,6 +93,7 @@ addEventListener('keydown', e => {
     }
   } else if (e.key === 'm' || e.key === 'M') {
     muted = !muted;
+    if (muted) mp3Stop();
     showMsg(tr(muted ? 'Sound off' : 'Sound on'), 900);
   } else if (e.key === 'f' || e.key === 'F') {
     toggleFullscreen();
