@@ -48,7 +48,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["dragonfire"]["sawDragon"] and r["dragonfire"]["maxFires"] >= 25
     assert r["thunder"]["ev"].get("bolt") == 5 and r["thunder"]["hpLost"] > 0
     assert r["tornado"]["sawTornado"] and r["tornado"]["lift"] > 25, "the tornado must lift the worm"
-    assert r["hammer"]["seen"].get("mjolnir", 0) > 60 and r["hammer"]["ev"].get("storm") == 1, "the hammer charges first"
-    assert r["hammer"]["ev"].get("bolt", 0) >= 5 and r["hammer"]["hpLost"] > 20 and r["hammer"]["secs"] > 1.8, r["hammer"]
+    assert r["hammer"]["seen"].get("mjolnir", 0) > 60 and r["hammer"]["ev"].get("storm", 0) >= 1 and r["hammer"]["ev"].get("arc", 0) >= 3, "the hammer charges first (sky arcs), then discharges"
+    assert r["hammer"]["ev"].get("bolt", 0) == 0 and r["hammer"]["hpLost"] > 15 and r["hammer"]["secs"] > 1.8, r["hammer"]
     assert r["timecar"]["seen"].get("timecar", 0) > 20 and r["timecar"]["hpLost"] > 10 and r["timecar"]["pushed"] > 15, r["timecar"]
     finish(errors)

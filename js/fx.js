@@ -128,6 +128,9 @@ function applyEvent(e) {
       );
       SFX.hurt();
       break;
+    case 'rad':
+      puff(e.x, e.y - 6, 10, 60, ['#9f6', '#cf8', '#6c3'], 0.8, 2, -50, 'c');
+      break;
     case 'tele':
       camImpact(e.x, e.y);
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
@@ -159,6 +162,26 @@ function applyEvent(e) {
     case 'storm':
       FX.storms.push({ x: e.x, l: e.l, t: 0 });
       break;
+    case 'arc': {
+      // jagged lightning between two points (Thor's Hammer: sky -> hammer while charging, hammer -> target)
+      const pts = [],
+        n = 8;
+      for (let i = 0; i <= n; i++) {
+        const k = i / n,
+          j = i === 0 || i === n ? 0 : rnd(-9, 9);
+        pts.push([e.x1 + (e.x2 - e.x1) * k + j, e.y1 + (e.y2 - e.y1) * k + (i === 0 || i === n ? 0 : rnd(-9, 9))]);
+      }
+      FX.bolts.push({ pts, t: 0 });
+      puff(e.x2, e.y2, e.soft ? 4 : 16, 220, ['#ffffff', '#bfe3ff', '#7fc4ff'], 0.4, 2.5, 0);
+      if (!e.soft) {
+        UI.flash = '#dfeeff';
+        UI.flashA = 0.5;
+        UI.shake = Math.min(16, UI.shake + 4);
+        camImpact(e.x2, e.y2);
+      }
+      SFX.zap();
+      break;
+    }
     case 'plane':
       FX.planes.push({ x: e.x - e.dir * 380, dir: e.dir, t: 0 });
       break;

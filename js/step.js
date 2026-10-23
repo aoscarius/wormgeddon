@@ -116,6 +116,23 @@ function step(dt, inputs) {
     if (Math.random() < 0.15) emit({ e: 'trail', x: f.x, y: f.y, k: 'fire', q: 1 });
   }
   G.fires = G.fires.filter(f => f.life > 0);
+  // Radiation (Nuclear Test): an infected worm loses RAD_DMG health every RAD_EVERY seconds for RAD_TIME seconds, never dying of it.
+  for (const o of G.worms)
+    if (o.rad > 0 && !o.dead) {
+      o.rad -= dt;
+      o.radT -= dt;
+      if (o.radT <= 0) {
+        o.radT += RAD_EVERY;
+        const d = Math.min(RAD_DMG, o.hp - 1);
+        if (d > 0) {
+          // applied and announced at once (not held back until the turn settles), so the health visibly drops every tick
+          o.hp -= d;
+          emit({ e: 'dmg', x: o.x, y: o.y - 14, v: d, c: '#9f6' });
+          emit({ e: 'snd', s: 'hurt', q: 1 });
+        }
+        emit({ e: 'rad', x: o.x, y: o.y });
+      }
+    }
   updateObjs(dt);
   // water motion
   if (G.waterY > G.waterTarget) G.waterY = Math.max(G.waterTarget, G.waterY - 14 * dt);

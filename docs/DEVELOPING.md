@@ -11,6 +11,8 @@ every top-level `function` / `const` is a global and you can try things in the b
   - [1. Project layout and workflow](#1-project-layout-and-workflow)
   - [2. How the game runs](#2-how-the-game-runs)
   - [3. Adding a weapon](#3-adding-a-weapon)
+    - [Sky and world weapons (examples in the code)](#sky-and-world-weapons-examples-in-the-code)
+    - [Damage and shown health](#damage-and-shown-health)
     - [Worked example: Pumpkin Bomb](#worked-example-pumpkin-bomb)
   - [4. Adding a projectile type](#4-adding-a-projectile-type)
   - [5. Tool-like weapons](#5-tool-like-weapons)
@@ -18,6 +20,7 @@ every top-level `function` / `const` is a global and you can try things in the b
     - [6.1 Levels folder (PNG levels)](#61-levels-folder-png-levels)
     - [6.2 Generated level styles](#62-generated-level-styles)
     - [6.3 Themes](#63-themes)
+    - [6.4 Sky](#64-sky)
   - [7. Menu options and match settings](#7-menu-options-and-match-settings)
   - [8. Languages](#8-languages)
   - [9. Crates, sounds, icons, sprites, worm art](#9-crates-sounds-icons-sprites-worm-art)
@@ -137,9 +140,10 @@ Five weapons show the patterns that need more than a thrown projectile (all in `
 | Weapon | How it works |
 | --- | --- |
 | **Thunderstorm** (`thunder`) | click weapon; `sched()` calls `lightningBolt(x)` five times. Each bolt emits a `bolt` event (jagged flash drawn from `FX.bolts`, `render.js`) and a small `explode()`. |
-| **Thor's Hammer** (`hammer`) | click weapon; targets the worm nearest the click. Spawns `mjolnir`, which hovers over the caster for `HAMMER_CHARGE` s (`p.walk` = charge, drawn as sparks; a `storm` event draws the cloud over the target), then strikes the worm (followed until the last moment) with a big `explode()` plus four `lightningBolt()`s. |
+| **Thor's Hammer** (`hammer`) | click weapon; targets the worm nearest the click. Spawns `mjolnir`, held in the caster's hand for `HAMMER_CHARGE` s (`p.walk` = charge, drawn as sparks; a `storm` event draws dark clouds over the caster and soft `arc` events bring lightning from them into the hammer), then an `arc` leaps from the hammer to the marked worm (followed until the last moment) with a small `explode()`. |
 | **Time Car** (`timecar`) | fires in the facing direction; the `timecar` projectile appears behind the caster, follows the ground, burns everything in front with `spawnFire()`, knocks worms away once each (`p.hits`) and blasts through walls. |
 | **Dragon Fire** (`dragonfire`) | click weapon; spawns the `dragon` projectile whose `tick()` flies it across the top of the level (just above the highest ground near the target), slows down near `tx` and drops flames with `spawnFire()`. `p.walk` is 1 while breathing so guests draw the flame. |
+| **Nuclear Test** (`nuke`) | instant damage to every worm, then each is infected: `w.rad` (seconds left) and `w.radT`; `stepOnce()` removes `RAD_DMG` health every `RAD_EVERY` s for `RAD_TIME` s (never lethal, `rad` event draws green puffs). |
 | **Tornado** (`tornado`) | click weapon; the `tornado` projectile's `tick()` walks along the ground for 8 s and applies forces to worms in range (pull, lift, fling, 1 HP/0.5 s). |
 | **Tsunami** (`tsunami`) | instant weapon; sets `G.tsu = {dir, D, H0, t, hit}` with a random side. `tsunamiTick()` (called from `step.js`) moves the front inland at 360 px/s and, once per object, destroys worms, crates, drums, projectiles and flames lying below the wave height at their distance from the shore (`H0` at the shore, 0 at `D` px inland). Clients animate the wave from the `tsunami` event alone (`FX.waves`, `render.js`). |
 | **Earthquake** (`earthquake`) | instant weapon; sets `G.quake = 5`. `step.js` calls `quakeTick()` every 0.14 s: `cv` events carve small cracks, grounded worms are bounced. The `quake` event shakes every client's screen (`FX.quake`). `quietBlocker()` waits for `G.quake`. |
@@ -251,6 +255,7 @@ put state on the worm and `controlWorm()` / `physWorm()` in `worms.js` act on it
 
 * `w.rope = {ax, ay, len}` (pendulum, `ropePhys`), `w.jet = {fuel, on}`, `w.tool = {k, t}`
   (`k`: `torch`, `drill`, `kami`), `w.chute`.
+  Blowtorch and drill hurt the other worms touching their head (`toolHurt`, every 0.25 s); the blowtorch heads straight and obeys gravity.
 * Their weapons return `'keep'` from `fire()` and set `noEnd: true` (and `anyPhase: true` for rope /
   jet pack, which may also be used while retreating).
 * **Letting go.** Fire again (or pick the same weapon in the menu again) detaches the rope and

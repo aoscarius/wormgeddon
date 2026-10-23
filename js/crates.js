@@ -124,10 +124,16 @@ function updateObjs(dt) {
           break;
         }
     } else if (o.k === 'drum') {
-      if (!groundBelow(o.x, o.y, o.r)) {
+      // standing drums stay put; a falling one, or one lifted by a tornado (`air`), moves
+      if (o.air > 0 || !groundBelow(o.x, o.y, o.r)) {
+        o.air = Math.max(0, (o.air || 0) - dt);
         o.vy += GRAV * dt;
         const c = stepBody(o, dt);
-        if (c) o.vx = 0;
+        if (c) {
+          if (c.speed > 280 && !o.lit) o.lit = 0.1; // a hard landing sets it off
+          if (c.n[1] < -0.4) o.air = 0;
+          o.vx *= 0.3;
+        }
       }
       if (o.y > G.waterY + 4) o.kill = true;
       for (const f of G.fires)

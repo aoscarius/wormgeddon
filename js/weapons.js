@@ -450,6 +450,8 @@ registerWeapon({
           w.hp -= d;
           w.pend += d;
         }
+        w.rad = RAD_TIME; // infected: see stepOnce
+        w.radT = RAD_EVERY;
       }
     G.wind = G.wind > 0 ? 1 : -1;
     G.waterTarget -= 40;
@@ -533,8 +535,8 @@ registerWeapon({
     spawnProj('tornado', x, y == null ? c.target.y : y, 0, 0, c.w, { ow: c.w.id, face: c.w.face || 1 });
   },
 });
-// Thor's Hammer: click on a worm (or the ground); the hammer rises over the caster, charges with sparks
-// while a storm gathers over the target, then a huge bolt hits it and lesser ones follow.
+// Thor's Hammer: click on a worm (or the ground); the caster holds the hammer up and it charges with
+// lightning from the sky, then the charge leaps from the hammer to the marked worm.
 registerWeapon({
   id: 'hammer',
   name: "Thor's Hammer",
@@ -557,7 +559,9 @@ registerWeapon({
     }
     const tx = clamp(tw ? tw.x : c.target.x, 8, T.w - 8);
     emit({ e: 'msg', t: "THOR'S HAMMER" });
-    emit({ e: 'storm', x: tx, l: HAMMER_CHARGE + 0.4 });
+    if (tw) emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
+    // dark clouds gather over the caster, where the sky lightning feeds the hammer
+    emit({ e: 'storm', x: c.w.x, l: HAMMER_CHARGE + 0.4 });
     spawnProj('mjolnir', c.w.x, c.w.y - 38, 0, 0, c.w, { tw: tw ? tw.id : -1, tx, ow: c.w.id, walk: 0 });
   },
 });

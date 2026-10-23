@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: walkStep, physBody, supported, physWorm, sinkWorm, ropePhys, controlWorm
+ * Globals defined: walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -194,6 +194,22 @@ function ropePhys(w, dt, active) {
   }
 }
 /**
+ * Blowtorch / drill: every 0.25 s the other worms touching the tool's head (centre cx, cy, `reach` px) take
+ * `dmg` damage and are shoved a little along `push` (-1, 0, 1). Damage never ends the user's turn.
+ */
+function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
+  tl.hc = (tl.hc || 0) - dt;
+  if (tl.hc > 0) return;
+  tl.hc = 0.25;
+  for (const o of G.worms) {
+    if (o.dead || o === w || Math.hypot(o.x - cx, o.y - cy) > reach) continue;
+    hurt(o, dmg, { noEnd: true });
+    o.vx += push * 70;
+    o.grounded = false;
+    o.vy = Math.min(o.vy, -40);
+  }
+}
+/**
  * Applies the active player's input to their worm for one tick, in priority order:
  * digging tools / kamikaze, jet pack, rope, then normal walking, jumping and aiming.
  * @param {object} inp input record (l, r, u, d, jump, back, fireP, ...)
@@ -218,14 +234,13 @@ function controlWorm(w, inp, dt) {
         tl.c = 0;
         emit({ e: 'cv', x: w.x + tx * 11, y: w.y + ty * 11, r: 10, s: 0 });
       }
-      const nx = w.x + tx * 38 * dt, ny = w.y + ty * 38 * dt;
-      if (!hitC(nx, ny, w.r)) {
-        w.x = nx;
-        w.y = ny;
-      }
+      // Always straight ahead; gravity keeps working, so a hole in the way makes the worm drop (still moving forward).
+      const nx = w.x + tx * 38 * dt;
+      if (!hitC(nx, w.y, w.r)) w.x = nx;
       w.grounded = false;
-      w.vx = 0; w.vy = 0;
+      w.vx = 0;
       physWorm(w, dt, true);
+      toolHurt(w, tl, dt, w.x + tx * 12, w.y, 14, 4, tx);
     } else if (tl.k === 'drill') {
       tl.c = (tl.c || 0) + dt;
       if (tl.c > 0.03) {
@@ -235,6 +250,7 @@ function controlWorm(w, inp, dt) {
       w.grounded = false;
       physWorm(w, dt, true);
       if (w.vy > 70) w.vy = 70;
+      toolHurt(w, tl, dt, w.x, w.y + 10, 14, 5, 0);
     } else if (tl.k === 'kami') {
       w.vx = dx * 320;
       w.vy = dy * 320;

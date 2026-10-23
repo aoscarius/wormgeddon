@@ -7,7 +7,7 @@
  * accessors. Everything that wants to add content calls registerWeapon() / registerProj().
  *
  * Depends on: util
- * Globals defined: GRAV, WIND_ACC, FALLV, WORM_R, WEAPONS, WLIST, PTYPES, registerWeapon,
+ * Globals defined: GRAV, WIND_ACC, FALLV, WORM_R, RAD_TIME, RAD_DMG, RAD_EVERY, WEAPONS, WLIST, PTYPES, registerWeapon,
  *     registerProj, G, curInp, wById, teamOf, activeWorm, aimDir, teamAlive, emit, sched,
  *     MAX_WORMS_TOTAL, SEA_RISE_STEP, MAX_TEAMS, TEAM_COLORS, TEAM_NAMES, WORM_NAMES
  */
@@ -18,11 +18,15 @@
  *   WIND_ACC  acceleration at full wind, multiplied by each projectile type's `wind` factor
  *   FALLV     impact speed above which a worm takes fall damage
  *   WORM_R    collision radius of a worm
+ *   RAD_TIME, RAD_DMG, RAD_EVERY  Nuclear Test radiation: seconds it lasts, health lost, every how many seconds
  */
 const GRAV = 600,
   WIND_ACC = 90,
   FALLV = 460,
-  WORM_R = 6;
+  WORM_R = 6,
+  RAD_TIME = 60,
+  RAD_DMG = 1,
+  RAD_EVERY = 5;
 /** Registries filled by registerWeapon()/registerProj(): lookup by id, weapon list in menu order, projectile types. */
 const WEAPONS = {},
   WLIST = [],

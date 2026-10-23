@@ -97,6 +97,18 @@ function updateProj(p, dt) {
       detonate(p);
       return;
     }
+    if (d.impactSpeed != null && c.speed >= d.impactSpeed) {
+      if (d.impactFuse != null) {
+        if (p.fuse == null) {
+          p.fuse = d.impactFuse;
+          p.trig = true;
+          if (d.beep) emit({ e: 'snd', s: 'beep' });
+        }
+      } else {
+        detonate(p);
+        return;
+      }
+    }
     if (c.speed > 140) emit({ e: 'snd', s: 'beep', q: 1 });
     if (Math.hypot(p.vx, p.vy) < 14) {
       p.vx = p.vy = 0;
@@ -267,6 +279,8 @@ registerProj('mine', {
   mine: true,
   beep: true,
   expl: { r: 34, d: 50 },
+  impactSpeed: 260,
+  impactFuse: 0.9,
   tick(p, dt) {
     if (p.fuse == null && p.age > 1.2)
       for (const w of G.worms)
@@ -385,28 +399,33 @@ registerProj('tornado', {
     p.x = clamp(p.x, 20, T.w - 20);
     const gy = surfaceAt(p.x, p.y - 70);
     if (gy != null) p.y += clamp(gy - p.y, -80 * dt, 80 * dt);
-    for (const w of G.worms) {
-      if (w.dead) continue;
+    // Worms, mines and oil drums all get caught: pulled in, lifted, then flung out from the top.
+    const things = [...G.worms.filter(o => !o.dead), ...G.projs.filter(q => PTYPES[q.t].mine), ...G.objs.filter(o => o.k === 'drum')];
+    for (const w of things) {
       const dx = p.x - w.x,
         h = p.y - w.y; // height above the funnel's foot
       if (Math.abs(dx) > 95 || h < -30 || h > 190) continue;
+      const isW = w.hp != null;
       w.grounded = false;
       w.rope = null;
+      if (w.k === 'drum') w.air = 0.5;
       w.tw = (w.tw || 0) - dt;
       // inward pull plus a lift that fades out near the top, and a sideways swirl
-      w.vx += clamp(dx, -60, 60) * 5 * dt + Math.sin(p.age * 5 + w.id) * 160 * dt;
+      w.vx += clamp(dx, -60, 60) * 5 * dt + Math.sin(p.age * 5 + (w.id || 0)) * 160 * dt;
       if (h < 150 && w.vy > -190) w.vy -= 1500 * dt;
       if (h >= 150 && w.tw <= 0) {
         // thrown out from the top
         w.tw = 1.2;
         w.vx = (dx > 0 ? -1 : 1) * rnd(160, 300);
         w.vy = -rnd(60, 160);
+        if (isW) hurt(w, rndi(8, 14), { noEnd: true, src: p.ow });
       }
-      if (Math.abs(dx) < 40) {
+      if (isW && Math.abs(dx) < 40) {
+        // being spun in the funnel really hurts
         w.twd = (w.twd || 0) - dt;
         if (w.twd <= 0) {
-          w.twd = 0.5;
-          if (w.hp > 2) hurt(w, 1, { noEnd: true });
+          w.twd = 0.3;
+          hurt(w, rndi(3, 5), { noEnd: true });
         }
       }
     }
@@ -416,9 +435,9 @@ registerProj('tornado', {
 /** Seconds Thor's Hammer charges before the strike. */
 const HAMMER_CHARGE = 1.8;
 /**
- * Thor's Hammer: hovers over its caster while charging (`walk` goes 0..1, guests draw the sparks from it),
- * then strikes the chosen worm (it follows him until the last moment) with a big bolt, and lesser bolts
- * around it a moment later.
+ * Thor's Hammer: held up in the caster's hand while it charges (`walk` goes 0..1, guests draw the sparks
+ * from it; bolts from the sky keep hitting it). Then the charge leaps from the hammer to the marked worm
+ * (followed until the last moment); nothing else follows.
  */
 registerProj('mjolnir', {
   r: 8,
@@ -427,10 +446,17 @@ registerProj('mjolnir', {
   tick(p, dt) {
     const o = wById(p.ow);
     if (o && !o.dead) {
-      p.x = o.x;
-      p.y = o.y - 38 - Math.sin(p.age * 4) * 2;
+      p.x = o.x + (o.face || 1) * 7;
+      p.y = o.y - 30 - Math.sin(p.age * 4) * 1.5;
     }
     p.walk = Math.min(1, p.age / HAMMER_CHARGE);
+    if (!p.struck) {
+      p.zap = (p.zap || 0) - dt;
+      if (p.zap <= 0 && p.age < HAMMER_CHARGE) {
+        p.zap = 0.45 - 0.25 * p.walk; // faster and faster
+        emit({ e: 'arc', x1: p.x + rnd(-40, 40), y1: -10, x2: p.x, y2: p.y - 8, soft: 1 });
+      }
+    }
     if (!p.struck && p.age >= HAMMER_CHARGE) {
       p.struck = true;
       const t = p.tw >= 0 ? wById(p.tw) : null;
@@ -439,10 +465,8 @@ registerProj('mjolnir', {
       let y = surfaceAt(x);
       if (t && !t.dead) y = t.y;
       if (y == null) y = G.waterY - 4;
-      emit({ e: 'bolt', x, y });
-      emit({ e: 'flash', c: '#e8f2ff' });
-      explode(x, y, 42, 70, 360, { k: 1, src: p.ow, fire: 5 });
-      for (let i = 0; i < 4; i++) sched(0.25 + i * 0.25, () => lightningBolt(clamp(x + rnd(-90, 90), 8, T.w - 8), o));
+      emit({ e: 'arc', x1: p.x, y1: p.y - 8, x2: x, y2: y });
+      explode(x, y, 20, 32, 200, { src: p.ow, fire: 3 });
     }
     if (p.age >= HAMMER_CHARGE + 0.2) p.dead = true;
     return false;
