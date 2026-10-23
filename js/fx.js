@@ -53,6 +53,47 @@ function addLog(t, c) {
   if (FX.logs.length > 5) FX.logs.shift();
 }
 
+/** Spawns `n` particles from `(x, y)` with randomized direction, speed, lifespan, and size. */
+function puff(x, y, n, spd, cols, life, size, g, k) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * TAU,
+      s = Math.random() * spd;
+    addP({
+      x,
+      y,
+      vx: Math.cos(a) * s,
+      vy: Math.sin(a) * s,
+      l: life * (0.5 + Math.random() * 0.8),
+      m: life,
+      c: cols[(Math.random() * cols.length) | 0],
+      s: size * (0.6 + Math.random() * 0.8),
+      g: g || 0,
+      k: k || 'c',
+    });
+  }
+}
+/** Spawns a brief burst of red droplets when a worm takes damage. */
+function bloodSplat(x, y) {
+  const cols = ['#7d1020', '#b5122b', '#d21f3c'];
+  for (let i = 0; i < 18; i++) {
+    const a = Math.random() * TAU,
+      speed = 45 + Math.random() * 155,
+      life = 0.35 + Math.random() * 0.35;
+    addP({
+      x,
+      y,
+      vx: Math.cos(a) * speed,
+      vy: Math.sin(a) * speed - 35,
+      l: life,
+      m: life,
+      c: cols[(Math.random() * cols.length) | 0],
+      s: 1.5 + Math.random() * 2.5,
+      g: 520,
+      k: 'c',
+    });
+  }
+}
+
 /**
  * Turns one simulation event into visuals and sound. Runs on the host and on every guest.
  * Event types: x (explosion), dmg (floating damage), msg, log, nuke (background mushroom cloud), splash, snd, shot (tracer),
@@ -61,6 +102,9 @@ function addLog(t, c) {
  */
 function applyEvent(e) {
   switch (e.e) {
+    case 'blood':
+      if (UI.splatterMode) bloodSplat(e.x, e.y);
+      break;
     case 'x': {
       const r = e.r,
         k = r / 40 + 0.5;

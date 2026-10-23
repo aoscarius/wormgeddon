@@ -339,6 +339,8 @@ and sent verbatim to online guests. To add one (say `oFoo`):
 
 Per-player (client-side) options that are *not* match rules, like **Auto-centre the camera**, are
 kept in `UI` and `localStorage` (`wormgeddon.autocenter`); see the end of `menu.js`.
+**Splatter Mode**, are
+kept in `UI` and `localStorage` (`wormgeddon.splattermode`); see the end of `menu.js`.
 
 Other tunables: physics constants (`GRAV`, `WIND_ACC`, `FALLV`, `WORM_R`) in `core.js`;
 explosion data in `projectiles.js` / `weapons.js`; camera behaviour in `view.js` (`camFocus`);

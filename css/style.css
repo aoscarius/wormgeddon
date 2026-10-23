@@ -759,7 +759,7 @@ kbd {
 }
 .tact {
   position: absolute;
-  right: max(14px, env(safe-area-inset-right));
+  right: max(18px, env(safe-area-inset-right));
   bottom: var(--edge);
   width: calc(var(--fire) * 2.05);
   height: calc(var(--fire) * 2.05);

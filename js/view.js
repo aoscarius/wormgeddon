@@ -32,6 +32,7 @@ const UI = {
   debug: false,
   traj: false,
   autoCenter: true,
+  splatterMode: false,
   moving: false,
   shake: 0,
   flash: null,

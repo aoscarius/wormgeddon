@@ -34,6 +34,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_invite.py` | host link + Copy / Share (stubbed clipboard and share sheet), cleared on close; `?join=CODE` joins at once with a saved name, drops the query, lobby chat visible (fake PeerJS) |
 | `test_fall.py` | jumps and back-flips are harmless, a long drop hurts |
 | `test_camera.py` | camera goes to impacts and flying worms, manual pan yields to action |
+| `test_splatter.py` | blood particles appear when Splatter Mode is enabled and are suppressed when disabled |
 | `test_radiation.py` | Nuclear Test infects every worm: -5 health every 5 s for 60 s, never lethal |
 | `test_tools.py` | blowtorch keeps its heading and drops into holes; torch and drill hurt the worms they touch, not their user |
 | `test_tornado.py` | the tornado really hurts a worm in the funnel and lifts mines and oil drums |

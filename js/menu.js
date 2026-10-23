@@ -223,12 +223,20 @@ $('oTeams').addEventListener('change', buildTeamRows);
 // Client-side option (not a match rule): remembered between visits.
 try {
   UI.autoCenter = localStorage.getItem('wormgeddon.autocenter') !== '0';
+  UI.splatterMode = localStorage.getItem('wormgeddon.splattermode') === '0';
 } catch (e) {}
 $('oAuto').checked = UI.autoCenter;
 $('oAuto').addEventListener('change', e => {
   UI.autoCenter = e.target.checked;
   try {
     localStorage.setItem('wormgeddon.autocenter', UI.autoCenter ? '1' : '0');
+  } catch (err) {}
+});
+$('oSplatter').checked = UI.splatterMode;
+$('oSplatter').addEventListener('change', e => {
+  UI.splatterMode = e.target.checked;
+  try {
+    localStorage.setItem('wormgeddon.splattermode', UI.splatterMode ? '1' : '0');
   } catch (err) {}
 });
 $('bStart').addEventListener('click', () => {
