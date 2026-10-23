@@ -13,6 +13,15 @@ JS = """(id) => {
   Object.assign(LOCAL, {l:0,r:0,u:0,d:0,fire:0,fireP:0,jump:0,back:0});
   // put the foe in the open, well away from the shooter, and the click on it
   foe.x = a.x + 260 * dir; foe.y = (surfaceAt(foe.x, a.y - 40) || foe.y) - 10; foe.vx = foe.vy = 0;
+  if (id === 'hammer') {
+    // Thor's bolt ends at the first ground or worm in its way (see test_hammer_collision.py), so stand the foe
+    // where the hammer can actually see it (the shared placement above can leave a hill in between).
+    const hx = a.x + dir * 7, hy = a.y - 38;
+    for (let d = 260; d >= 40; d -= 10) {
+      const fx = clamp(a.x + d * dir, 20, T.w - 20), fy = (surfaceAt(fx, a.y - 40) || foe.y) - 10, r = lightningRay(hx, hy, fx, fy, a.id);
+      if (!r.hit || (r.hit === 'worm' && Math.hypot(r.x - fx, r.y - fy) < 14)) { foe.x = fx; foe.y = fy; break; }
+    }
+  }
   for (let i = 0; i < 60; i++) w.stepOnce(1/60);
   const fy0 = foe.y;
   if (d.click) { LOCAL.clicks.push({x: foe.x, y: foe.y}); w.stepOnce(1/60); } else { edge('fireP'); w.stepOnce(1/60); }

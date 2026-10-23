@@ -7,7 +7,7 @@
  * weapon selection and the fire/charge state machine.
  *
  * Depends on: core, projectiles, combat, worms
- * Globals defined: muzzle, throwP, ray, melee, strike, surfaceAt, lightningBolt, quakeTick, tsunamiTick, cycleWorm,
+ * Globals defined: muzzle, throwP, ray, melee, strike, surfaceAt, lightningRay, lightningBolt, quakeTick, tsunamiTick, cycleWorm,
  *     selectWeapon, holdingOther, handleFire, clickTarget, doFire
  */
 
@@ -466,6 +466,24 @@ function surfaceAt(x, from = 0) {
   for (let y = Math.max(0, from | 0); y < Math.min(T.h, G.waterY); y += 2) if (solid(x, y)) return y;
   return null;
 }
+/**
+ * Walks a lightning bolt from (x1, y1) towards (x2, y2) in 3 px steps and returns where it really ends: the first
+ * solid pixel or the first living worm (other than `skip`, the caster) on the way, else the aimed point itself.
+ * Uses the same worm hit box as lightningBolt(), so every kind of lightning stops at what it meets first.
+ * @param {number} skip id of a worm the bolt passes (the caster); -1 for none
+ * @returns {{x: number, y: number, hit: 'ground'|'worm'|null}}
+ */
+function lightningRay(x1, y1, x2, y2, skip = -1) {
+  const n = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 3));
+  for (let i = 0; i <= n; i++) {
+    const x = x1 + ((x2 - x1) * i) / n,
+      y = y1 + ((y2 - y1) * i) / n;
+    if (solid(x, y)) return { x, y, hit: 'ground' };
+    if (G.worms.some(o => !o.dead && o.id !== skip && Math.abs(o.x - x) < 9 && Math.abs(o.y - y) < 8))
+      return { x, y, hit: 'worm' };
+  }
+  return { x: x2, y: y2, hit: null };
+}
 /** One lightning strike: finds the first worm or ground below `x`, flashes, and blows a small fiery crater. */
 function lightningBolt(x, owner) {
   let y = surfaceAt(x);
@@ -490,6 +508,7 @@ registerWeapon({
   fire(c) {
     const tx = c.target.x;
     emit({ e: 'msg', t: 'THUNDERSTORM' });
+    emit({ e: 'storm', x: tx, l: 2.6 });
     for (let i = 0; i < 5; i++)
       sched(0.6 + i * 0.4, () => lightningBolt(clamp(tx + (i ? rnd(-110, 110) : 0), 8, T.w - 8), c.w));
   },

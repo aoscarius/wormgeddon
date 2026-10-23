@@ -437,7 +437,8 @@ const HAMMER_CHARGE = 1.8;
 /**
  * Thor's Hammer: held up in the caster's hand while it charges (`walk` goes 0..1, guests draw the sparks
  * from it; bolts from the sky keep hitting it). Then the charge leaps from the hammer to the marked worm
- * (followed until the last moment); nothing else follows.
+ * (followed until the last moment); nothing else follows. The bolt ends at the first ground or worm on the
+ * way (lightningRay), so a hill or another worm between hammer and target takes the hit instead.
  */
 registerProj('mjolnir', {
   r: 8,
@@ -465,8 +466,21 @@ registerProj('mjolnir', {
       let y = surfaceAt(x);
       if (t && !t.dead) y = t.y;
       if (y == null) y = G.waterY - 4;
-      emit({ e: 'arc', x1: p.x, y1: p.y - 8, x2: x, y2: y });
-      explode(x, y, 20, 32, 200, { src: p.ow, fire: 3 });
+      // The bolt stops at the first thing in its way (ground, or another worm), like the Thunderstorm's bolts do.
+      const end = lightningRay(p.x, p.y - 8, x, y, p.ow);
+      emit({ e: 'arc', x1: p.x, y1: p.y - 8, x2: end.x, y2: end.y });
+      // Impact scatters short lightning strikes in random directions.
+      const branches = 7, originY = end.y - 8;
+      for (let i = 0; i < branches; i++) {
+        const angle = Math.random() * TAU,
+          range = rnd(24, 58),
+          tx = clamp(end.x + Math.cos(angle) * range, 4, T.w - 4),
+          ty = clamp(originY + Math.sin(angle) * range, 4, G.waterY - 4),
+          branch = lightningRay(end.x, originY, tx, ty, p.ow);
+        emit({ e: 'arc', x1: end.x, y1: originY, x2: branch.x, y2: branch.y });
+        explode(branch.x, branch.y, 9, 8, 55, { src: p.ow });
+      }
+      explode(end.x, end.y, 20, 32, 200, { src: p.ow, fire: 3 });
     }
     if (p.age >= HAMMER_CHARGE + 0.2) p.dead = true;
     return false;

@@ -39,6 +39,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_tornado.py` | the tornado really hurts a worm in the funnel and lifts mines and oil drums |
 | `test_teamsbar.py` | team bars sorted by total health, rows slide when two teams swap, ties keep team order |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
+| `test_hammer_collision.py` | Thor's Hammer lightning ends at the first obstacle: a clear line reaches the target, a wall (girder) or another worm in between takes the strike and shields the target |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using
 `with game_page() as (page, errors): ...` and ending with `finish(errors)`; `run_all.py` finds it.

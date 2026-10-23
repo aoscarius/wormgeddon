@@ -597,7 +597,7 @@ function render() {
     ctx2.save();
     ctx2.globalAlpha = 0.85 * k;
     for (let i = 0; i < 7; i++) {
-      const gx = s.x + (i - 3) * 22 + Math.sin(s.t * 2 + i) * 6;
+      const gx = s.x + (i - 3) * 30 + Math.sin(s.t * 2 + i) * 6;
       ctx2.fillStyle = i % 2 ? '#3b4352' : '#2a303c';
       ctx2.beginPath();
       ctx2.arc(gx, -34 + Math.abs(i - 3) * 4, 26 - Math.abs(i - 3) * 2, 0, TAU);
@@ -605,7 +605,7 @@ function render() {
     }
     if (Math.sin(s.t * 23) > 0.7) {
       ctx2.fillStyle = 'rgba(200,225,255,.35)';
-      ctx2.fillRect(s.x - 80, -62, 160, 50);
+      ctx2.fillRect(s.x - 110, -62, 220, 50)
     }
     ctx2.restore();
   }
