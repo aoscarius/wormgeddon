@@ -6,7 +6,7 @@
  * Tiny Web-Audio synthesiser (oscillator and noise bursts) plus a few MP3 effects from `sounds/`.
  *
  * Depends on: none
- * Globals defined: AC, muted, ac, tone, noiseBurst, MP3_FILES, mp3Entry, mp3Sfx, mp3Stop, SFX
+ * Globals defined: AC, muted, ac, tone, noiseBurst, MP3_FILES, mp3Entry, mp3Sfx, mp3Stop, voice, SFX
  */
 
 /* ===== Audio ===== */
@@ -131,6 +131,24 @@ function mp3Sfx(src, vol = 0.6) {
 function mp3Stop() {
   for (const v of MP3_VOICES) v.stop();
   MP3_VOICES.clear();
+  if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+}
+/**
+ * Speaks `text` with the browser's speech synthesis (no sound files needed). Silent when muted or unsupported;
+ * `lang` picks the voice (e.g. 'en-EN'), `rate` and `pitch` shape it.
+ */
+function voice(text, lang = 'en-EN', rate = 1, pitch = 1, vol = 0.6) {
+  if (muted || typeof speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = Math.max(0, Math.min(1, vol));
+    speechSynthesis.speak(u);
+  } catch (err) {
+    /* speech is a bonus: never break the game over it */
+  }
 }
 MP3_FILES.forEach(mp3Entry);
 /**
@@ -150,6 +168,12 @@ const SFX = {
     tone(2600, 180, 0.25, 'sawtooth', 0.07);
   },
   launch: () => tone(150, 60, 0.3, 'sawtooth', 0.07),
+  // Hokuto Hyakuretsu Ken: a short thud per punch, and the verdict.
+  thud: () => {
+    noiseBurst(0.05, 0.12, 900);
+    tone(110, 50, 0.06, 'square', 0.06);
+  },
+  dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 0.8, 0.6),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);
     setTimeout(() => tone(900, 1300, 0.12, 'triangle', 0.1), 90);

@@ -525,7 +525,46 @@ function drawWorm(w) {
       g.moveTo(0, 6);
       g.lineTo(Math.sin(G.time * 60) * 2, 14);
       g.stroke();
+    } else if (w.tool.k === 'hyaku') {
+      if (!w.tool.p) {
+        // gatling of fists: a blur of fists flickering in front of the worm, with impact stars
+        for (let i = 0; i < 7; i++) {
+          const fx = f * (9 + Math.random() * 14),
+            fy = -2 + (Math.random() - 0.5) * 16;
+          g.fillStyle = 'rgba(255,230,160,.35)';
+          g.beginPath();
+          g.arc(fx - f * 5, fy, 3.4, 0, TAU);
+          g.fill();
+          g.fillStyle = '#f4b9a8';
+          g.strokeStyle = '#0c1524';
+          g.lineWidth = 0.8;
+          g.beginPath();
+          g.arc(fx, fy, 2.7, 0, TAU);
+          g.fill();
+          g.stroke();
+        }
+      } else if (w.tool.p === 1) {
+        // dash: speed lines streaming behind the worm
+        g.strokeStyle = 'rgba(255,255,255,.7)';
+        g.lineWidth = 1.2;
+        for (let i = 0; i < 6; i++) {
+          const ly = (i - 2.5) * 4;
+          g.beginPath();
+          g.moveTo(-f * 8, ly);
+          g.lineTo(-f * (22 + Math.random() * 22), ly);
+          g.stroke();
+        }
+      }
     }
+  }
+  // marked by the Hokuto Hyakuretsu Ken: a pulsing red aura until the blast
+  if (w.doom > 0) {
+    const pu = Math.sin(G.time * 14);
+    g.strokeStyle = `rgba(255,50,40,${0.55 + 0.35 * pu})`;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(0, 0, 12 + pu * 1.5, 0, TAU);
+    g.stroke();
   }
   g.restore();
 }

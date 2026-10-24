@@ -300,6 +300,8 @@ I18N.it = {
   'Dragon Ball': 'Sfera del drago',
   'Baseball Bat': 'Mazza da baseball',
   Kamikaze: 'Kamikaze',
+  'Hokuto Hyakuretsu Ken': 'Hokuto Hyakuretsu Ken',
+  'You\'re already dead!': 'Tu sei già morto!',
   'Air Strike': 'Attacco aereo',
   'Napalm Strike': 'Attacco al napalm',
   'Mine Strike': 'Attacco di mine',

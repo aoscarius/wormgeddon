@@ -72,11 +72,12 @@ function snapshot(withAmmo) {
       Math.round(w.hp),
       w.face,
       +w.aim.toFixed(2),
-      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0),
+      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0) | (w.doom > 0 ? 16 : 0),
       w.rope ? [w.rope.ax | 0, w.rope.ay | 0] : 0,
       w.jet ? (w.jet.on ? 2 : 1) : 0,
       w.tool ? w.tool.k : 0,
       Math.round(w.pend || 0), // damage not announced yet (the shown health lags behind hp)
+      w.tool && w.tool.p ? w.tool.p : 0, // phase of a multi-stage tool (Hokuto Hyakuretsu Ken, ...)
     ]),
     p: G.projs.map(p => [
       p.id,
@@ -131,9 +132,10 @@ function applySnapshot(s) {
     w.dead = !!(a[6] & 2);
     w.sunk = !!(a[6] & 4);
     w.chute = !!(a[6] & 8);
+    w.doom = a[6] & 16 ? 1 : 0;
     w.rope = a[7] ? { ax: a[7][0], ay: a[7][1] } : null;
     w.jet = a[8] ? { on: a[8] === 2 } : null;
-    w.tool = a[9] ? { k: a[9] } : null;
+    w.tool = a[9] ? { k: a[9], p: a[11] || 0 } : null;
     w.pend = a[10] || 0;
   }
   const old = new Map(G.projs.map(p => [p.id, p]));

@@ -259,6 +259,7 @@ function quietBlocker() {
   }
   for (const o of G.objs) if (o.lit) return 'burning drum';
   for (const w of G.worms) {
+    if (w.doom > 0 && !w.dead) return 'worm ' + w.name + ' doomed';
     if (w.dead && w.y > G.waterY) continue;
     if (!w.grounded) return 'worm ' + w.name + ' in the air';
     if (Math.abs(w.vx) > 6) return 'worm ' + w.name + ' sliding';

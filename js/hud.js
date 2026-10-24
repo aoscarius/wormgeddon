@@ -142,7 +142,7 @@ function activeHint(w) {
         : 'Left/Right swing \u00b7 Up/Down reel \u00b7 Enter, Backspace or Space lets go'
     );
   if (w.jet) return tr(touch ? 'Up/Left/Right thrust \u00b7 FIRE switches off' : 'Up/Left/Right thrust \u00b7 Space switches off');
-  if (w.tool && w.tool.k !== 'kami') return tr(touch ? 'FIRE stops digging' : 'Space stops digging');
+  if (w.tool && !TOOL_LOCKED[w.tool.k]) return tr(touch ? 'FIRE stops digging' : 'Space stops digging');
   return '';
 }
 

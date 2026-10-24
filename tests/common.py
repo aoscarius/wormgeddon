@@ -5,6 +5,7 @@ import pathlib
 import shutil
 
 from playwright.sync_api import sync_playwright
+from arena import ARENA_JS  # noqa: F401  (re-exported: tests import the flat-arena helper from here)
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 INDEX_URL = (ROOT / "index.html").as_uri()

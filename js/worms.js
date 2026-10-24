@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -209,6 +209,99 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
     o.vy = Math.min(o.vy, -40);
   }
 }
+/** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1 };
+/**
+ * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
+ * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
+ * victim's death (s), the lethal blast radius and how long the attacker stands after the voice line.
+ */
+const HYAKU_REACH = 34,
+  HYAKU_TIME = 1.4,
+  HYAKU_RATE = 0.07,
+  HYAKU_DMG = 2,
+  HYAKU_SPEED = 460,
+  HYAKU_SAFE = 90,
+  HYAKU_NOVIC = 120,
+  HYAKU_FUSE = 3,
+  HYAKU_BLAST = 48,
+  HYAKU_SAY = 0.7;
+/**
+ * One tick of the Hokuto Hyakuretsu Ken. Phases (tl.ph, shown to guests as tl.p): 0 = gatling punches on the worm
+ * right in front (picked on the first tick), 1 = dash past it to a safe distance (the victim is marked: `doom`),
+ * 2 = the voice line. The tool ends by setting tl.t = 0.
+ */
+function hyakuTick(w, tl, dt) {
+  tl.age = (tl.age || 0) + dt;
+  if (tl.ph === undefined) {
+    tl.ph = 0;
+    tl.p = 0;
+    tl.c = 0;
+    tl.vic = null;
+    let best = HYAKU_REACH + 1;
+    for (const o of G.worms) {
+      const rx = (o.x - w.x) * w.face;
+      if (o.dead || o === w || Math.abs(o.y - w.y) > 18 || rx < -4 || rx > HYAKU_REACH) continue;
+      if (rx < best) {
+        best = rx;
+        tl.vic = o.id;
+      }
+    }
+  }
+  const vic = tl.vic == null ? null : wById(tl.vic),
+    live = vic && !vic.dead;
+  if (tl.ph === 0) {
+    physWorm(w, dt, false);
+    tl.c += dt;
+    while (tl.c >= HYAKU_RATE) {
+      tl.c -= HYAKU_RATE;
+      emit({ e: 'punch', x: w.x + w.face * rnd(10, 20), y: w.y - 2 + rnd(-7, 7), k: 'hyaku', f: w.face });
+      if (live) hurt(vic, HYAKU_DMG, { src: w.id, noEnd: true });
+    }
+    if (live) vic.vx = 0;
+    if (tl.age >= HYAKU_TIME) {
+      tl.ph = 1;
+      tl.p = 1;
+      tl.d = Math.max(live ? (vic.x - w.x) * w.face + HYAKU_SAFE : HYAKU_NOVIC, 40);
+      if (live) {
+        vic.doom = HYAKU_FUSE;
+        vic.doomBy = w.id;
+      }
+    }
+  } else if (tl.ph === 1) {
+    const step = Math.min(tl.d, HYAKU_SPEED * dt);
+    let ok = true;
+    if (w.grounded) {
+      w.vx = 0;
+      ok = walkStep(w, w.face * step);
+    } else w.vx = w.face * HYAKU_SPEED;
+    physWorm(w, dt, true);
+    tl.d -= step;
+    emit({ e: 'trail', x: w.x, y: w.y, k: 'smoke', q: 1 });
+    if (tl.d <= 0.5 || !ok) {
+      tl.ph = 2;
+      tl.p = 2;
+      tl.age = 0;
+      w.vx = 0;
+      emit({ e: 'snd', s: 'dead' });
+      emit({ e: 'say', x: w.x, y: w.y - 24, t: tr('You\'re already dead!') });
+    }
+  } else {
+    physWorm(w, dt, false);
+    if (tl.age >= HYAKU_SAY) tl.t = 0;
+  }
+}
+/** The marked worm's time is up: a lethal explosion, and it dies on the spot. */
+function doomBlast(o) {
+  o.doom = 0;
+  explode(o.x, o.y, HYAKU_BLAST, 60, 420, { k: 1, noEnd: true, src: o.doomBy });
+  if (!o.dead) {
+    o.pend = (o.pend || 0) + Math.max(0, o.hp);
+    o.hp = 0;
+  }
+  processDeaths();
+}
 /**
  * Applies the active player's input to their worm for one tick, in priority order:
  * digging tools / kamikaze, jet pack, rope, then normal walking, jumping and aiming.
@@ -264,8 +357,8 @@ function controlWorm(w, inp, dt) {
         w.vx *= 0.2;
         toSettle();
       }
-    }
-    if (inp.fireP && tl.k !== 'kami') {
+    } else if (tl.k === 'hyaku') hyakuTick(w, tl, dt);
+    if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;
     }

@@ -65,7 +65,7 @@ function step(dt, inputs) {
         inp.tab = 0;
       }
       for (const c of inp.clicks.splice(0)) clickTarget(w, t, c.x, c.y);
-      if (G.timer <= 0) {
+      if (G.timer <= 0 && !(w.tool && TOOL_ATOMIC[w.tool.k])) {
         if (G.weapon.ch) {
           G.weapon.ch = false;
         }
@@ -85,6 +85,12 @@ function step(dt, inputs) {
     if (o.tool && o !== w) o.tool = null;
     physWorm(o, dt, false);
   }
+  // a worm marked by the Hokuto Hyakuretsu Ken dies when its countdown ends
+  for (const o of G.worms)
+    if (o.doom > 0 && !o.dead) {
+      o.doom -= dt;
+      if (o.doom <= 0) doomBlast(o);
+    }
   for (const p of G.projs) {
     updateProj(p, dt);
     if (!p.dead && p.y > G.waterY + 2) {

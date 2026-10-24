@@ -292,6 +292,22 @@ const ICON_DRAW = {
     icRect(g, 22, 36, 9, 20, IC.steel, 2);
     icRect(g, 38, 36, 8, 14, IC.dsteel, 2);
   },
+  // Hokuto Hyakuretsu Ken: the seven stars of the Big Dipper above a fist with motion lines.
+  hokuto(g) {
+    const stars = [[8, 14], [18, 11], [27, 15], [35, 12], [40, 6], [52, 7], [54, 17]];
+    g.beginPath();
+    stars.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y)));
+    g.stroke();
+    for (const [x, y] of stars) icCircle(g, x, y, 2.6, IC.yellow);
+    for (const y of [34, 41, 48]) icLine(g, 6, y, 18, y, 2, IC.white);
+    icRect(g, 22, 28, 28, 26, IC.skin, 8);
+    g.beginPath();
+    for (const x of [30, 36, 42]) {
+      g.moveTo(x, 30);
+      g.lineTo(x, 40);
+    }
+    g.stroke();
+  },
   firepunch(g) {
     icFlame(g, 14, 36, 14);
     icRect(g, 40, 28, 18, 16, IC.red, 3);

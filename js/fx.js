@@ -141,6 +141,10 @@ function applyEvent(e) {
     case 'dmg':
       FX.txt.push({ x: e.x, y: e.y, t: '-' + e.v, c: e.c, l: 1.8 });
       break;
+    case 'say':
+      FX.txt.push({ x: e.x, y: e.y, t: e.t, c: '#ffd23f', l: 2.4 });
+      showMsg(tr(e.t), 1800);
+      break;
     case 'msg':
       showMsg(tr(e.t, ...(e.a || []), e.w ? wname(e.w) : ''));
       break;
@@ -159,6 +163,11 @@ function applyEvent(e) {
       puff(e.x2, e.y2, 5, 120, ['#ffe9a0', '#fff'], 0.3, 1.6, 300, 'd');
       break;
     case 'punch':
+      if (e.k === 'hyaku') {
+        puff(e.x, e.y, 4, 110, ['#fff', '#ffd23f'], 0.25, 2, 0, 'c');
+        SFX.thud();
+        break;
+      }
       puff(
         e.x,
         e.y,

@@ -363,6 +363,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Hokuto Hyakuretsu Ken: a gatling of punches on the worm in front, then a dash past it and "Tu sei già morto".
+// The worm that was hit explodes and dies 3 s after the last blow (see hyakuTick / doomBlast in worms.js).
+registerWeapon({
+  id: 'hokuto',
+  name: 'Hokuto Hyakuretsu Ken',
+  code: 'HK',
+  ammo: 1,
+  delay: 4,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'hyaku', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Air strike: click a target; a plane drops five bombs.
 registerWeapon({
   id: 'airstrike',
@@ -982,7 +996,7 @@ function handleFire(w, t, inp, dt) {
     inp.fireP = 0;
     return;
   }
-  if (inp.fireP && w.tool && w.tool.k !== 'kami') {
+  if (inp.fireP && w.tool && !TOOL_LOCKED[w.tool.k]) {
     w.tool.t = 0;
     inp.fireP = 0;
     return;
