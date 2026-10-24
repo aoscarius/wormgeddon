@@ -18,8 +18,9 @@ with game_page(init_script=FAKE_PEER, viewport={"width": 1000, "height": 700}) a
     pg.click("#bHost")
     pg.evaluate("window.__peers[0].h.open()")          # the broker accepted the id
     code = pg.evaluate("NET.code")
+    link = pg.evaluate("inviteURL(NET.code)")       # the button is an icon: the link is built, not shown
     assert link.endswith("?join=" + code) and "?" not in link.split("?join=")[0]
-    assert pg.is_enabled("#bLink") and pg.text_content("#bLink") == "Copy link"
+    assert pg.is_enabled("#bLink") and pg.get_attribute("#bLink", "aria-label") == "Copy invite link"
 
     # desktop: copies (clipboard stubbed), shows a message
     pg.evaluate("window.__copied = []; Object.defineProperty(navigator, 'clipboard', {value: {writeText: t => (window.__copied.push(t), Promise.resolve())}, configurable: true});")
@@ -30,7 +31,6 @@ with game_page(init_script=FAKE_PEER, viewport={"width": 1000, "height": 700}) a
     # phone: share sheet (touch + navigator.share) is used with title/text/url; closing it does not copy
     pg.evaluate("""() => { window.__shared = []; navigator.share = d => { window.__shared.push(d); return Promise.resolve(); };
       matchMedia = q => ({matches: q.includes('coarse'), addEventListener() {}, addListener() {}}); inviteSync(); }""")
-    assert pg.text_content("#bLink") == "Share link"
     pg.click("#bLink"); pg.wait_for_timeout(100)
     sh = pg.evaluate("window.__shared")
     assert len(sh) == 1 and sh[0]["url"] == link and sh[0]["title"] == "Wormgeddon", sh

@@ -1,4 +1,4 @@
-"""Sound: the Holy Hand Grenade choir ends with the blast, MP3s respect mute, the dragon does not sing."""
+"""Sound: the Holy Hand Grenade choir plays with the blast, MP3s respect mute, the dragon does not sing."""
 from common import game_page, finish, BASE
 
 JS = """([fuse, base]) => {
@@ -18,10 +18,9 @@ with game_page() as (pg, errors):
         r = pg.evaluate(JS, [fuse, BASE])
         print("fuse", fuse, r)
         assert len(r["songs"]) == 1 and r["booms"], r
-        # the choir starts with HOLY_SONG (2.0 s) of fuse left, or at once for a shorter fuse
-        want = max(0, fuse - 2.0)
-        assert abs(r["songs"][0] - want) < 0.1, (fuse, r)
-        assert r["songs"][0] <= r["booms"][0]
+        # the choir is triggered by the blast itself (boom() of the holy grenade), once per grenade
+        assert abs(r["songs"][0] - r["booms"][0]) < 0.1, (fuse, r)
+        assert r["booms"][0] >= fuse - 0.1, (fuse, r)
 
     # mp3 voices: counted through the <audio> fallback (file:// has no fetch/decode)
     r = pg.evaluate("""() => {

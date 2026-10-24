@@ -16,6 +16,19 @@ BASE = dict(style="hills", theme="grass", size="m", hp=100, turnTime=45, arsenal
             mines=0, drums=0, crates=0, sd=0, worms=3, rise=0)
 
 
+# Test arena helpers (JS source, prepend it to a test script): `arena(top)` replaces the level by an empty map with
+# one flat floor whose surface is at y = top; `stand(worm, x)` puts a worm on that floor, at rest.
+ARENA_JS = """
+let __floor = 700;
+const arena = (top) => {
+  __floor = top;
+  T.mask.fill(0);
+  for (let y = top; y < T.h; y++) T.mask.fill(1, y * T.w, (y + 1) * T.w);
+};
+const stand = (o, x) => { o.x = x; o.y = __floor - o.r - 1; o.vx = o.vy = 0; o.grounded = true; o.dead = false; return o; };
+"""
+
+
 def chromium_path():
     """CHROMIUM_PATH env var, else the common sandbox location, else Playwright's own browser."""
     for c in (os.environ.get("CHROMIUM_PATH"), "/opt/pw-browsers/chromium"):

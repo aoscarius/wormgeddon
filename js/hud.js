@@ -171,6 +171,7 @@ function hudPanel(t, mine) {
         t.id,
         G.round,
         G.weapon.id,
+        UI.wcat,
         WLIST.map(x => t.ammo[x.id] + '' + (avail(t, x.id) ? 1 : 0)).join(''),
       ].join('|')
     : 'x';
@@ -179,6 +180,7 @@ function hudPanel(t, mine) {
     let html = '';
     if (mine) {
       for (const x of WLIST) {
+        if (UI.wcat !== 'all' && x.cat !== UI.wcat) continue;
         const ok = avail(t, x.id),
           ammo = t.ammo[x.id];
         // Badge: remaining ammo, infinity, or the round the weapon unlocks in.

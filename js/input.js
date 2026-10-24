@@ -7,7 +7,7 @@
  * record (and network messages for clients).
  *
  * Depends on: view, hud, net
- * Globals defined: uiSelect, togglePanel, PAD_ARROW, TOUCH_ICONS, touchFx, KEYMAP, setKey, edge, ZOOM_MIN, ZOOM_MAX, zoomAt, drag, pinch, buildTouch
+ * Globals defined: setWeaponTab, uiSelect, togglePanel, PAD_ARROW, TOUCH_ICONS, touchFx, KEYMAP, setKey, edge, ZOOM_MIN, ZOOM_MAX, zoomAt, drag, pinch, buildTouch
  */
 
 /* ---- Input ---- */
@@ -257,6 +257,27 @@ $('wgrid').addEventListener('click', e => {
   uiSelect(b.dataset.w);
   if (innerWidth < 800 || matchMedia('(pointer:coarse)').matches) togglePanel(false);
 });
+/** Weapon panel tabs: show one category or all weapons. */
+function setWeaponTab(cat) {
+  UI.wcat = cat;
+  for (const b of document.querySelectorAll('#wtabs [data-cat]')) {
+    b.classList.toggle('on', b.dataset.cat === cat);
+    b.setAttribute('aria-selected', b.dataset.cat === cat ? 'true' : 'false');
+  }
+  UI.sig = null; // rebuild the grid
+  try {
+    localStorage.setItem('wormgeddon.wtab', cat);
+  } catch (e) {}
+  $('wgrid').scrollTop = 0;
+}
+$('wtabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]');
+  if (b) setWeaponTab(b.dataset.cat);
+});
+try {
+  const saved = localStorage.getItem('wormgeddon.wtab');
+  if (saved && (saved === 'all' || WEAPON_CATS.includes(saved))) setWeaponTab(saved);
+} catch (e) {}
 $('wtoggle').addEventListener('click', () => togglePanel());
 $('wclose').addEventListener('click', () => togglePanel(false));
 $('wback').addEventListener('mousedown', () => togglePanel(false));

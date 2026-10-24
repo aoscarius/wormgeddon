@@ -28,15 +28,16 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_special_weapons.py` | Earthquake (cracks the ground, ends), Dragon Fire (dragon + flames), Thunderstorm (5 bolts, damage), Tornado (lifts a worm), Thor's Hammer (charges, then strikes), Time Car (drives through and pushes a worm); each turn still ends |
 | `test_tsunami.py` | Tsunami from the left / right kills the worm at that coast, spares the one in the middle, and ends |
 | `test_sky.py` | day / night / cloudy / rainy render (night much darker, rain darker than cloud), defaults to day, `random` yields concrete skies |
-| `test_audio.py` | Holy Hand Grenade choir starts `fuse - 2 s` after the throw (once, before the blast), MP3s respect mute and stop, the dragon roars instead of singing |
+| `test_audio.py` | Holy Hand Grenade choir plays once, with the blast, MP3s respect mute and stop, the dragon roars instead of singing |
 | `test_damage_display.py` | a hit keeps the old health on screen (label, team bars, guest snapshot) until `-N` is announced, then counts down; heals show at once |
 | `test_touch.py` | touch emulation (`game_page(mobile=True)`): on rope / jet pack with another weapon, Jump shows the weapon icon + FIRE tag and Fire becomes "let go"; reverts afterwards, Italian labels |
-| `test_invite.py` | host link + Copy / Share (stubbed clipboard and share sheet), cleared on close; `?join=CODE` joins at once with a saved name, drops the query, lobby chat visible (fake PeerJS) |
+| `test_invite.py` | host invite button (icon) + copy / share (stubbed clipboard and share sheet), disabled again on close; `?join=CODE` joins at once with a saved name, drops the query, lobby chat visible (fake PeerJS) |
 | `test_fall.py` | jumps and back-flips are harmless, a long drop hurts |
 | `test_camera.py` | camera goes to impacts and flying worms, manual pan yields to action |
 | `test_homing.py` | homing missile explodes at a marked point in empty sky and on a worm instead of circling until its fuse ends |
+| `test_weapon_tabs.py` | every weapon has a category, the weapon panel tabs filter the grid (All shows everything), the tab is remembered, Italian labels |
 | `test_splatter.py` | blood particles appear when Splatter Mode is enabled and are suppressed when disabled |
-| `test_radiation.py` | Nuclear Test infects every worm: -5 health every 5 s for 60 s, never lethal |
+| `test_radiation.py` | Nuclear Test infects every worm: RAD_DMG health every RAD_EVERY s for RAD_TIME s (read from core.js), never lethal |
 | `test_tools.py` | blowtorch keeps its heading and drops into holes; torch and drill hurt the worms they touch, not their user |
 | `test_tornado.py` | the tornado really hurts a worm in the funnel and lifts mines and oil drums |
 | `test_teamsbar.py` | team bars sorted by total health, rows slide when two teams swap, ties keep team order |

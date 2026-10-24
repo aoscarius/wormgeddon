@@ -7,7 +7,7 @@
  * accessors. Everything that wants to add content calls registerWeapon() / registerProj().
  *
  * Depends on: util
- * Globals defined: GRAV, WIND_ACC, FALLV, WORM_R, RAD_TIME, RAD_DMG, RAD_EVERY, WEAPONS, WLIST, PTYPES, registerWeapon,
+ * Globals defined: GRAV, WIND_ACC, FALLV, WORM_R, RAD_TIME, RAD_DMG, RAD_EVERY, WEAPON_CATS, WEAPON_CAT, WEAPONS, WLIST, PTYPES, registerWeapon,
  *     registerProj, G, curInp, wById, teamOf, activeWorm, aimDir, teamAlive, emit, sched,
  *     MAX_WORMS_TOTAL, SEA_RISE_STEP, MAX_TEAMS, TEAM_COLORS, TEAM_NAMES, WORM_NAMES
  */
@@ -32,8 +32,25 @@ const WEAPONS = {},
   WLIST = [],
   PTYPES = {};
 /**
+ * Weapon categories shown as tabs in the weapon panel (`all` is the tab without a filter), in tab order.
+ * A weapon's category is its `cat` field, or the entry in WEAPON_CAT below, or `special`.
+ */
+const WEAPON_CATS = ['body', 'short', 'long', 'destructive', 'anime', 'tools', 'special'];
+const WEAPON_CAT = {};
+for (const [cat, ids] of Object.entries({
+  body: ['firepunch', 'dragonball', 'bat', 'kamikaze'], // direct contact with the worm's body
+  short: ['shotgun', 'handgun', 'uzi', 'dynamite', 'mine', 'petrol', 'sheep', 'supersheep'], // close to the shooter
+  long: ['bazooka', 'homing', 'mortar', 'grenade', 'cluster', 'banana', 'holy', 'airstrike', 'napalm', 'minestrike'],
+  destructive: ['donkey', 'armageddon', 'nuke', 'earthquake', 'tsunami'], // hits the whole level
+  anime: ['dragonfire', 'thunder', 'hammer', 'timecar', 'tornado'], // fantasy and elemental powers
+  tools: ['rope', 'jetpack', 'teleport', 'girder', 'blowtorch', 'drill', 'parachute'], // movement and digging
+  special: ['scales', 'select', 'skip', 'surrender'], // everything else, and the turn controls
+}))
+  for (const id of ids) WEAPON_CAT[id] = cat;
+/**
  * Adds a weapon to the game. Fields of `d`:
  *   id, name, code      identity; `code` is a 2-letter fallback badge for the icon
+ *   cat                 category tab (one of WEAPON_CATS); default: WEAPON_CAT[id], else 'special'
  *   ammo                starting ammo, -1 = unlimited
  *   delay               first round in which it is available (Standard arsenal only)
  *   charge              true = hold Space to charge power, release to fire
@@ -48,6 +65,7 @@ const WEAPONS = {},
  * An icon can be added in icons.js (ICON_DRAW[id]).
  */
 function registerWeapon(d) {
+  d.cat = d.cat || WEAPON_CAT[d.id] || 'special';
   WEAPONS[d.id] = d;
   WLIST.push(d);
   return d;

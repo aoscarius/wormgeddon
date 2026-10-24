@@ -24,6 +24,7 @@ const CAM = { x: 1000, y: 400, z: 1, s: 1 };
  * time of the last manual camera pan, and cached HUD signature.
  */
 const UI = {
+  wcat: 'all', // weapon panel tab: 'all' or one of WEAPON_CATS
   mx: 0,
   my: 0,
   ang: 0,

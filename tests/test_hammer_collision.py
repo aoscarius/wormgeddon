@@ -43,19 +43,22 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     for k, v in r.items():
         print(k, v)
 
+    # the main bolt is the first non-soft arc (it starts at the hammer); the impact then scatters short branch arcs
+    for v in r.values():
+        assert v["arc"] and v["arc"][0]["x1"] < 830, v
+        v["main"] = v["arc"][0]
+        assert all(a["x1"] == v["main"]["x2"] for a in v["arc"][1:]), "branches start where the main bolt ended"
     c = r["clear"]
-    assert len(c["arc"]) == 1 and abs(c["arc"][0]["x2"] - c["foeX0"]) < 14, "clear line: the bolt reaches the target"
+    assert abs(c["main"]["x2"] - c["foeX0"]) < 14, "clear line: the bolt reaches the target"
     assert c["foeLost"] > 15 and c["midLost"] == 0, c
 
     w = r["wall"]
-    assert len(w["arc"]) == 1, w
-    assert 935 < w["arc"][0]["x2"] < 955, f"the bolt must end at the wall (x~950), ended at {w['arc'][0]['x2']}"
-    assert len(w["x"]) >= 1 and all(900 < e["x"] < 960 for e in w["x"]), "the explosion happens at the wall"
+    assert 935 < w["main"]["x2"] < 955, f"the bolt must end at the wall (x~950), ended at {w['arc'][0]['x2']}"
+    assert w["x"] and 900 < w["x"][0]["x"] < 960, "the main explosion happens at the wall"
     assert w["foeLost"] == 0, "the worm behind the wall must be untouched"
 
     m = r["worm"]
-    assert len(m["arc"]) == 1, m
-    assert 980 < m["arc"][0]["x2"] < 1005, f"the bolt must end at the worm in between (x~1000), ended at {m['arc'][0]['x2']}"
+    assert 980 < m["main"]["x2"] < 1005, f"the bolt must end at the worm in between (x~1000), ended at {m['arc'][0]['x2']}"
     assert m["midLost"] > 10, "the worm in the way is struck"
     assert m["foeLost"] == 0, "the marked worm is shielded by the worm in front of it"
     finish(errors)
