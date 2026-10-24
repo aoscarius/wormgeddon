@@ -608,7 +608,7 @@ function drawAim(w) {
   const W = G.weapon,
     d = WEAPONS[W.id];
   if (!d || G.phase !== 'turn' || w.tool || ((w.jet || w.rope) && !holdingOther(w)) || w.dead) return;
-  if (d.click || d.instant || d.id === 'jetpack' || d.id === 'blowtorch' || d.id === 'drill')
+  if ((d.click && ! d.id === 'homing') || d.instant || d.id === 'jetpack' || d.id === 'blowtorch' || d.id === 'drill')
     return;
   if (w.rope && d.id === 'rope') return;
   const [ax, ay] = aimDir(w),

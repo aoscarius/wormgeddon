@@ -143,11 +143,12 @@ registerWeapon({
   click: true,
   needTarget: true,
   fire(c) {
-    const [mx, my, dx, dy] = muzzle(c.w);
-    return spawnProj('homing', mx, my, dx * 160, dy * 160, c.w, {
+    const [mx, my, dx, dy] = muzzle(c.w), speed = 140 + (800 - 140) * c.power;
+    return spawnProj('homing', mx, my, dx * speed, dy * speed, c.w, {
       tx: G.weapon.tx,
       ty: G.weapon.ty,
       a: Math.atan2(dy, dx),
+      spd: speed,
     });
   },
 });

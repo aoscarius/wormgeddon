@@ -143,29 +143,61 @@ registerProj('rocket', {
 // Homing missile: steers towards the marked target at a limited turn rate, accelerating up to 340 px/s.
 registerProj('homing', {
   r: 3,
-  grav: 0,
-  wind: 0.2,
+  grav: 0.3,
+  wind: 1,
   hit: true,
   spr: 'rocket',
   trail: 'smoke',
   fuse: 9,
-  fixedAngle: true,
-  tick(p, dt) {
+    tick(p, dt) {
+    // Use normal rocket physics (including gravity and wind) until the missile reaches its apex.
+    if (p.phase !== 'return') {
+      if (p.vy < 0) {
+        p.rising = true;
+        return true;
+      }
+      // If it never rose, treat its launch point as its apex.
+      if (!p.rising || p.vy >= 0) p.phase = 'return';
+    }
+
     const tx = p.tx,
       ty = p.ty;
-    if (tx != null) {
-      const want = Math.atan2(ty - p.y, tx - p.x);
+    if (tx != null && ty != null) {
+      const dx = tx - p.x,
+        dy = ty - p.y,
+        distance = Math.hypot(dx, dy);
+
+      if (distance < 20 && p.age > 0.3) {
+        detonate(p);
+        return false;
+      }
+
+      const want = Math.atan2(dy, dx);
       let df = want - p.a;
       while (df > Math.PI) df -= TAU;
       while (df < -Math.PI) df += TAU;
-      p.a += clamp(df, -2.6 * dt, 2.6 * dt);
+
+      // Tighten the turn near the target and reduce speed to avoid orbiting it.
+      const near = clamp((140 - distance) / 140, 0, 1);
+      const turnRate = 8 + 4 * near;
+      p.a += clamp(df, -turnRate * dt, turnRate * dt);
+
+      const launchSpeed = p.spd || Math.max(120, Math.hypot(p.vx, p.vy));
+      const speed = Math.min(launchSpeed, Math.max(45, distance * 4.5));
+      p.vx = Math.cos(p.a) * speed;
+      p.vy = Math.sin(p.a) * speed;
     }
-    const s = Math.min(340, 120 + p.age * 400);
-    p.vx = Math.cos(p.a) * s;
-    p.vy = Math.sin(p.a) * s;
-    p.vx += G.wind * WIND_ACC * 0.2 * dt;
-    const c = stepBody(p, dt);
-    if (c) detonate(p);
+
+    const ox = p.x,
+      oy = p.y,
+      c = stepBody(p, dt),
+      hit = projectileWormHit(p, ox, oy, p.x, p.y);
+
+    if (hit) {
+      p.x = hit.x;
+      p.y = hit.y;
+    }
+    if (c || hit) detonate(p);
     if (Math.random() < 0.8) emit({ e: 'trail', x: p.x, y: p.y, k: 'smoke', q: 1 });
     return false;
   },
