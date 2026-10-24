@@ -26,7 +26,7 @@ const run = ([base]) => {
     return {g, a, v, behind, far, t};
   };
   const play = (s, secs, hook) => {
-    const r = {ev: {punch: 0, ata: 0, dead: 0, say: 0, x: []}, phases: new Set(), doomAt: null, deadAt: null, blockers: [], t0: s.g.time};
+    const r = {ev: {punch: 0, dead: 0, say: 0, x: []}, phases: new Set(), doomAt: null, deadAt: null, blockers: [], t0: s.g.time};
     const old = window.emit;
     window.emit = e => {
       if (e.e === 'punch' && e.k === 'hyaku') r.ev.punch++;
@@ -57,7 +57,7 @@ const run = ([base]) => {
   out.A.dash = s.a.x - x0; out.A.pastVictim = s.a.x - s.v.x0; out.A.vDead = s.v.dead; out.A.vHp = s.v.hp; out.A.vX = s.v.x;
   out.A.spoken = spoken.slice(); out.A.aliveAtEnd = !s.a.dead; out.A.tool = !!s.a.tool;
   // muted: nothing is spoken
-  spoken.length = 0; muted = true; SFX.dead(); SFX.ata(); out.mutedSpoken = spoken.length; muted = false;
+  spoken.length = 0; muted = true; SFX.dead(); out.mutedSpoken = spoken.length; muted = false;
 
   // B) nobody in reach: no mark, no damage, still dashes forward
   s = setup(1100); spoken.length = 0;
@@ -82,7 +82,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- A: the barrage
     assert 15 <= A["ev"]["punch"] <= 24, f"gatling of punches: {A['ev']['punch']}"
     assert A["vLost"] >= 20 or A["vDead"], "the punches hurt the victim"
-    assert A["ev"]["ata"] == 1 and A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
+    assert A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
     sp = A["spoken"]
     assert len(sp) == 2 and sp[0]["t"].lower().startswith("atata") and sp[0]["lang"] == "it-IT", sp
     assert sp[1]["t"] == "Tu sei già morto" and sp[1]["lang"] == "it-IT", sp

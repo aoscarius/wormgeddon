@@ -302,6 +302,7 @@ I18N.it = {
   Kamikaze: 'Kamikaze',
   'Hokuto Hyakuretsu Ken': 'Hokuto Hyakuretsu Ken',
   'You\'re already dead!': 'Tu sei già morto!',
+  Kamehameha: 'Kamehameha',
   'Air Strike': 'Attacco aereo',
   'Napalm Strike': 'Attacco al napalm',
   'Mine Strike': 'Attacco di mine',

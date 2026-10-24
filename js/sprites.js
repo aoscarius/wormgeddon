@@ -262,6 +262,77 @@ function spriteProj(p) {
       }
       break;
     }
+    case 'kamebeam': {
+      // Drawn in world coordinates between the tail and the head: layered blue glow, white core, wisps and orbs.
+      const n = p.net;
+      if (!n) break;
+      ctx2.translate(-p.x, -p.y);
+      const [ox, oy, a, hd, tl, L] = n,
+        dx = Math.cos(a),
+        dy = Math.sin(a),
+        ax = ox + dx * tl,
+        ay = oy + dy * tl,
+        bx = ox + dx * hd,
+        by = oy + dy * hd,
+        pulse = 1 + Math.sin(G.time * 45) * 0.08,
+        gr = ctx2.createLinearGradient(ax, ay, bx, by);
+      gr.addColorStop(0, 'rgba(90,180,255,0.2)'); // the tail trails off while the head is still racing ahead
+      gr.addColorStop(1, 'rgba(170,225,255,1)');
+      ctx2.globalCompositeOperation = 'lighter';
+      ctx2.lineCap = 'round';
+      ctx2.strokeStyle = gr;
+      for (const [w, al] of [
+        [KAME_R * 2 * pulse, 0.28],
+        [KAME_R * 1.4 * pulse, 0.5],
+        [KAME_R * 0.8 * pulse, 0.85],
+      ]) {
+        ctx2.globalAlpha = al;
+        ctx2.lineWidth = w;
+        ctx2.beginPath();
+        ctx2.moveTo(ax, ay);
+        ctx2.lineTo(bx, by);
+        ctx2.stroke();
+      }
+      ctx2.globalAlpha = 0.95;
+      ctx2.strokeStyle = '#fff';
+      ctx2.lineWidth = KAME_R * 0.35 * pulse;
+      ctx2.beginPath();
+      ctx2.moveTo(ax, ay);
+      ctx2.lineTo(bx, by);
+      ctx2.stroke();
+      // energy wisps streaming along the beam
+      ctx2.globalAlpha = 0.6;
+      ctx2.strokeStyle = '#cfeaff';
+      ctx2.lineWidth = 1.5;
+      for (let i = 0; i < 10; i++) {
+        const s0 = tl + Math.random() * Math.max(1, hd - tl),
+          off = (Math.random() - 0.5) * KAME_R * 1.8,
+          len = 20 + Math.random() * 90;
+        ctx2.beginPath();
+        ctx2.moveTo(ox + dx * s0 - dy * off, oy + dy * s0 + dx * off);
+        ctx2.lineTo(ox + dx * Math.max(tl, s0 - len) - dy * off, oy + dy * Math.max(tl, s0 - len) + dx * off);
+        ctx2.stroke();
+      }
+      // orbs at the muzzle (until the tail has left it) and at the racing head
+      ctx2.globalAlpha = 1;
+      for (const [x, y, r, on] of [
+        [ox, oy, KAME_R * 0.9 * pulse, tl < 1],
+        [bx, by, KAME_R * 1.5 * pulse, hd < L],
+      ]) {
+        if (!on) continue;
+        const rg = ctx2.createRadialGradient(x, y, 0, x, y, r);
+        rg.addColorStop(0, 'rgba(255,255,255,1)');
+        rg.addColorStop(0.45, 'rgba(150,215,255,.8)');
+        rg.addColorStop(1, 'rgba(60,140,255,0)');
+        ctx2.fillStyle = rg;
+        ctx2.beginPath();
+        ctx2.arc(x, y, r, 0, TAU);
+        ctx2.fill();
+      }
+      ctx2.globalCompositeOperation = 'source-over';
+      ctx2.globalAlpha = 1;
+      break;
+    }
     case 'mjolnir': {
       // A stout hammer held up over the caster; it shakes and crackles more and more while it charges.
       const k = p.walk || 0,

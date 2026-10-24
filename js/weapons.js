@@ -377,6 +377,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Kamehameha: the worm charges an energy ball (1.3 s, aim still adjustable), then fires a beam across the whole map
+// along the aim that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
+registerWeapon({
+  id: 'kamehameha',
+  name: 'Kamehameha',
+  code: 'KH',
+  ammo: 1,
+  delay: 6,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'kame', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Air strike: click a target; a plane drops five bombs.
 registerWeapon({
   id: 'airstrike',

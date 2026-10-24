@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -292,6 +292,23 @@ function hyakuTick(w, tl, dt) {
     if (tl.age >= HYAKU_SAY) tl.t = 0;
   }
 }
+/**
+ * One tick of the Kamehameha charge: the worm stands still while the energy ball grows (tl.p = 0..1, shown to guests);
+ * when the charge is full the beam is released along the aim at that moment and the tool ends.
+ */
+function kameTick(w, tl, dt) {
+  if (tl.age === undefined) {
+    tl.age = 0;
+    emit({ e: 'snd', s: 'charge' });
+  }
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / KAME_CHARGE).toFixed(2);
+  physWorm(w, dt, false);
+  if (tl.age >= KAME_CHARGE) {
+    kameFire(w);
+    tl.t = 0;
+  }
+}
 /** The marked worm's time is up: a lethal explosion, and it dies on the spot. */
 function doomBlast(o) {
   o.doom = 0;
@@ -358,6 +375,7 @@ function controlWorm(w, inp, dt) {
         toSettle();
       }
     } else if (tl.k === 'hyaku') hyakuTick(w, tl, dt);
+    else if (tl.k === 'kame') kameTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

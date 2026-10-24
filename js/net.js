@@ -89,6 +89,7 @@ function snapshot(withAmmo) {
       p.face,
       +(p.walk || 0).toFixed(1),
       p.age > 1.2 ? 1 : 0,
+      p.net ? p.net.map(v => +v.toFixed(2)) : 0, // beam geometry (Kamehameha)
     ]),
     f: G.fires.map(f => [f.x | 0, f.y | 0]),
     o: G.objs.map(o => [o.id, o.k, r1(o.x), r1(o.y), o.type || 0, o.landed ? 1 : 0, o.lit ? 1 : 0]),
@@ -150,6 +151,7 @@ function applySnapshot(s) {
     p.fuse = a[5] < 0 ? null : a[5];
     p.face = a[6];
     p.walk = a[7];
+    p.net = a[9] || undefined;
     if (a[8]) p.age = 2;
     else if (!old.has(a[0])) p.age = 0;
     return p;

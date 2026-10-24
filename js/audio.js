@@ -173,6 +173,11 @@ const SFX = {
     noiseBurst(0.05, 0.12, 900);
     tone(110, 50, 0.06, 'square', 0.06);
   },
+  charge: () => tone(180, 900, 1.3, 'sine', 0.08),
+  kame: () => {
+    noiseBurst(1.4, 0.3, 700);
+    tone(70, 240, 1.4, 'sawtooth', 0.1);
+  },
   dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 0.8, 0.6),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);

@@ -292,6 +292,18 @@ const ICON_DRAW = {
     icRect(g, 22, 36, 9, 20, IC.steel, 2);
     icRect(g, 38, 36, 8, 14, IC.dsteel, 2);
   },
+  // Kamehameha: two cupped hands holding a blue energy ball that shoots a beam.
+  kamehameha(g) {
+    g.save();
+    g.globalAlpha = 0.9;
+    icLine(g, 30, 30, 62, 30, 12, IC.blue);
+    icLine(g, 30, 30, 62, 30, 5, IC.white);
+    g.restore();
+    icCircle(g, 24, 30, 13, IC.blue);
+    icCircle(g, 24, 30, 7, IC.white);
+    icEllipse(g, 14, 48, 11, 6, IC.skin, -0.5);
+    icEllipse(g, 30, 48, 11, 6, IC.skin, 0.5);
+  },
   // Hokuto Hyakuretsu Ken: the seven stars of the Big Dipper above a fist with motion lines.
   hokuto(g) {
     const stars = [[8, 14], [18, 11], [27, 15], [35, 12], [40, 6], [52, 7], [54, 17]];

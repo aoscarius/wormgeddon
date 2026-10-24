@@ -525,6 +525,32 @@ function drawWorm(w) {
       g.moveTo(0, 6);
       g.lineTo(Math.sin(G.time * 60) * 2, 14);
       g.stroke();
+    } else if (w.tool.k === 'kame') {
+      // energy ball between the hands, growing with the charge, with sparks drawn into it
+      const k = w.tool.p || 0,
+        cx = f * 11,
+        cy = -3,
+        r = 2 + 11 * k;
+      g.globalCompositeOperation = 'lighter';
+      const rg = g.createRadialGradient(cx, cy, 0, cx, cy, r + 4);
+      rg.addColorStop(0, 'rgba(255,255,255,1)');
+      rg.addColorStop(0.5, 'rgba(130,205,255,.85)');
+      rg.addColorStop(1, 'rgba(50,130,255,0)');
+      g.fillStyle = rg;
+      g.beginPath();
+      g.arc(cx, cy, r + 4, 0, TAU);
+      g.fill();
+      g.strokeStyle = 'rgba(190,230,255,.8)';
+      g.lineWidth = 1;
+      for (let i = 0; i < 6; i++) {
+        const an = G.time * 9 + i * 1.05,
+          d0 = r + 16 - ((G.time * 40 + i * 7) % 14);
+        g.beginPath();
+        g.moveTo(cx + Math.cos(an) * d0, cy + Math.sin(an) * d0);
+        g.lineTo(cx + Math.cos(an) * (d0 - 5), cy + Math.sin(an) * (d0 - 5));
+        g.stroke();
+      }
+      g.globalCompositeOperation = 'source-over';
     } else if (w.tool.k === 'hyaku') {
       if (!w.tool.p) {
         // gatling of fists: a blur of fists flickering in front of the worm, with impact stars

@@ -37,6 +37,7 @@ const CRATE_WEAP = [
   'bat',
   'kamikaze',
   'hokuto',
+  'kamehameha',
   'airstrike',
   'napalm',
   'minestrike',

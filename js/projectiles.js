@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
+ * Globals defined: KAME_*, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -635,6 +635,99 @@ registerProj('supersheep', {
     const c = stepBody(p, dt);
     if (c) detonate(p);
     if (Math.random() < 0.9) emit({ e: 'trail', x: p.x, y: p.y, k: 'star', q: 1 });
+    return false;
+  },
+});
+
+/**
+ * Kamehameha: charge time (s), beam head speed (px/s), tunnel radius (px), damage to a worm in the beam, how long the
+ * full-length beam stays and how long its tail takes to sweep out (s), and how far from the muzzle the carving starts
+ * (so the shooter keeps the ground under its feet).
+ */
+const KAME_CHARGE = 1.3,
+  KAME_SPEED = 2000,
+  KAME_R = 20,
+  KAME_DMG = 75,
+  KAME_HOLD = 0.7,
+  KAME_FADE = 0.5,
+  KAME_START = 26;
+/** Distance from point (px, py) to the segment (x1, y1)-(x2, y2). */
+function segDist(px, py, x1, y1, x2, y2) {
+  const vx = x2 - x1,
+    vy = y2 - y1,
+    l2 = vx * vx + vy * vy,
+    t = l2 ? clamp(((px - x1) * vx + (py - y1) * vy) / l2, 0, 1) : 0;
+  return Math.hypot(px - (x1 + vx * t), py - (y1 + vy * t));
+}
+/**
+ * Releases the Kamehameha beam from worm `w` along its aim. The beam is a projectile that stays at the muzzle; its
+ * geometry lives in p.net = [originX, originY, angle, headDistance, tailDistance, fullLength] (sent to guests as is).
+ * The full length is the distance to the edge of the map (and a bit beyond), so it always crosses the whole level.
+ */
+function kameFire(w) {
+  const [dx, dy] = aimDir(w),
+    ox = w.x + dx * 10,
+    oy = w.y - 2 + dy * 10,
+    a = Math.atan2(dy, dx);
+  let L = Infinity;
+  if (dx > 1e-6) L = Math.min(L, (T.w + 60 - ox) / dx);
+  else if (dx < -1e-6) L = Math.min(L, (-60 - ox) / dx);
+  if (dy > 1e-6) L = Math.min(L, (T.h + 60 - oy) / dy);
+  else if (dy < -1e-6) L = Math.min(L, (-420 - oy) / dy);
+  spawnProj('kamebeam', ox, oy, 0, 0, w, { a, net: [ox, oy, a, 0, 0, L], hits: new Set(), cd: KAME_START });
+  emit({ e: 'snd', s: 'kame' });
+  emit({ e: 'flash', c: '#bfe6ff' });
+  emit({ e: 'quake', t: 2 });
+}
+// Kamehameha beam: its head sweeps outwards, carving a tunnel (KAME_R) and wrecking whatever it meets once: worms
+// (damage + shove along the beam), mines (detonate), oil drums (blow up) and crates (destroyed). After the head
+// reached the map edge the beam holds for a moment, then its tail sweeps out after it.
+registerProj('kamebeam', {
+  r: 1,
+  grav: 0,
+  spr: 'kamebeam',
+  fixedAngle: true,
+  tick(p, dt) {
+    const n = p.net,
+      dx = Math.cos(n[2]),
+      dy = Math.sin(n[2]);
+    n[3] = Math.min(n[5], n[3] + KAME_SPEED * dt);
+    while (p.cd <= n[3]) {
+      const x = n[0] + dx * p.cd,
+        y = n[1] + dy * p.cd;
+      if (x > -KAME_R && x < T.w + KAME_R && y > -KAME_R && y < T.h + KAME_R) emit({ e: 'cv', x, y, r: KAME_R, s: 1 });
+      p.cd += KAME_R / 2;
+    }
+    const x1 = n[0] + dx * n[4],
+      y1 = n[1] + dy * n[4],
+      x2 = n[0] + dx * n[3],
+      y2 = n[1] + dy * n[3],
+      once = (key, x, y, r) => {
+        if (p.hits.has(key) || segDist(x, y, x1, y1, x2, y2) >= KAME_R + r) return false;
+        p.hits.add(key);
+        return true;
+      };
+    for (const o of G.worms)
+      if (!o.dead && o.id !== p.ow && once('w' + o.id, o.x, o.y, o.r)) {
+        hurt(o, KAME_DMG, { src: p.ow, noEnd: true });
+        o.vx += dx * 520;
+        o.vy += dy * 520 - 140;
+        o.grounded = false;
+        o.rope = null;
+      }
+    for (const q of [...G.projs]) if (q.t === 'mine' && !q.dead && once('p' + q.id, q.x, q.y, q.r)) detonate(q);
+    for (const o of G.objs) {
+      if (o.kill || !once('o' + o.id, o.x, o.y, o.r || 7)) continue;
+      if (o.k === 'drum') o.lit = o.lit > 0 ? Math.min(o.lit, 0.05) : 0.05;
+      else o.kill = true;
+    }
+    if (n[3] >= n[5]) {
+      p.hold = (p.hold || 0) + dt;
+      if (p.hold > KAME_HOLD) {
+        n[4] = Math.min(n[5], n[4] + (n[5] / KAME_FADE) * dt);
+        if (n[4] >= n[5]) p.dead = true;
+      }
+    }
     return false;
   },
 });
