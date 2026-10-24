@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, oniTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -293,6 +293,75 @@ function hyakuTick(w, tl, dt) {
   }
 }
 /**
+ * Oni Giri: charge time (s), dash speed (px/s), how far ahead a worm counts as "in front" (px), how far past the last
+ * worm the dash ends, the dash when nobody is in front, the slicing damage and how long the swords stay out afterwards.
+ */
+const ONI_CHARGE = 0.9,
+  ONI_SPEED = 640,
+  ONI_REACH = 260,
+  ONI_SAFE = 60,
+  ONI_NOVIC = 150,
+  ONI_DMG = 38,
+  ONI_SHEATH = 0.5;
+/**
+ * One tick of the Oni Giri. Phases (tl.ph, shown to guests as tl.p): 0 = three swords drawn, the worm gathers itself;
+ * 1 = dash straight ahead through the worms on its level (each is sliced on the very tick the attacker passes through
+ * it, once); 2 = swords lowered. The tool ends by setting tl.t = 0.
+ */
+function oniTick(w, tl, dt) {
+  tl.age = (tl.age || 0) + dt;
+  if (tl.ph === undefined) {
+    tl.ph = 0;
+    tl.p = 0;
+    tl.cut = new Set();
+    emit({ e: 'snd', s: 'draw' });
+  }
+  if (tl.ph === 0) {
+    physWorm(w, dt, false);
+    if (tl.age >= ONI_CHARGE) {
+      let far = 0;
+      for (const o of G.worms) {
+        const rx = (o.x - w.x) * w.face;
+        if (!o.dead && o !== w && Math.abs(o.y - w.y) <= 16 && rx > 0 && rx <= ONI_REACH) far = Math.max(far, rx);
+      }
+      tl.d = far ? far + ONI_SAFE : ONI_NOVIC;
+      tl.ph = 1;
+      tl.p = 1;
+      emit({ e: 'snd', s: 'swoosh' });
+    }
+  } else if (tl.ph === 1) {
+    const x0 = w.x,
+      step = Math.min(tl.d, ONI_SPEED * dt);
+    let ok = true;
+    if (w.grounded) {
+      w.vx = 0;
+      ok = walkStep(w, w.face * step);
+    } else w.vx = w.face * ONI_SPEED;
+    physWorm(w, dt, true);
+    tl.d -= step;
+    for (const o of G.worms) {
+      if (o.dead || o === w || tl.cut.has(o.id) || Math.abs(o.y - w.y) > 16) continue;
+      if (((o.x - x0) * (o.x - w.x) <= 0 && (o.x - x0) * w.face > -7) || Math.abs(o.x - w.x) < 7) {
+        tl.cut.add(o.id);
+        hurt(o, ONI_DMG, { src: w.id, noEnd: true });
+        emit({ e: 'slash', x: o.x, y: o.y - 2, f: w.face });
+        o.vx += w.face * 140;
+        o.vy -= 90;
+        o.grounded = false;
+      }
+    }
+    if (tl.d <= 0.5 || !ok) {
+      tl.ph = 2;
+      tl.p = 2;
+      tl.age = 0;
+      w.vx = 0;
+    }
+  } else {
+    physWorm(w, dt, false);
+    if (tl.age >= ONI_SHEATH) tl.t = 0;
+  }
+}
+/**
  * One tick of the Kamehameha charge: the worm stands still while the energy ball grows (tl.p = 0..1, shown to guests);
  * when the charge is full the beam is released along the aim at that moment and the tool ends.
  */
@@ -376,6 +445,7 @@ function controlWorm(w, inp, dt) {
       }
     } else if (tl.k === 'hyaku') hyakuTick(w, tl, dt);
     else if (tl.k === 'kame') kameTick(w, tl, dt);
+    else if (tl.k === 'oni') oniTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

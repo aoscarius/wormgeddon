@@ -627,6 +627,28 @@ function render() {
     }
     ctx2.restore();
   }
+  for (const s of FX.slashes || []) {
+    // three parallel cuts that flash across the sliced worm and fade
+    const k = s.t / 0.3,
+      len = 34 * Math.min(1, k * 4),
+      ang = s.f > 0 ? 0.9 : Math.PI - 0.9;
+    ctx2.save();
+    ctx2.globalAlpha = Math.max(0, 1 - k);
+    ctx2.lineCap = 'round';
+    ctx2.shadowColor = '#fff';
+    ctx2.shadowBlur = 10;
+    ctx2.strokeStyle = '#fff';
+    ctx2.lineWidth = 2;
+    for (const off of [-7, 0, 7]) {
+      const cx = s.x - Math.sin(ang) * off,
+        cy = s.y + Math.cos(ang) * off;
+      ctx2.beginPath();
+      ctx2.moveTo(cx - Math.cos(ang) * len, cy - Math.sin(ang) * len);
+      ctx2.lineTo(cx + Math.cos(ang) * len, cy + Math.sin(ang) * len);
+      ctx2.stroke();
+    }
+    ctx2.restore();
+  }
   for (const p of FX.planes) {
     ctx2.save();
     ctx2.translate(p.x, -110);

@@ -391,6 +391,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Oni Giri (Zoro's Ogre Cutter): three swords out, a short charge, then a dash straight ahead that slices every worm
+// it passes through on the spot (see oniTick in worms.js).
+registerWeapon({
+  id: 'onigiri',
+  name: 'Oni Giri',
+  code: 'OG',
+  ammo: 1,
+  delay: 4,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'oni', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Air strike: click a target; a plane drops five bombs.
 registerWeapon({
   id: 'airstrike',

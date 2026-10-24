@@ -525,6 +525,63 @@ function drawWorm(w) {
       g.moveTo(0, 6);
       g.lineTo(Math.sin(G.time * 60) * 2, 14);
       g.stroke();
+    } else if (w.tool.k === 'oni') {
+      // three swords: one in the mouth, one in each hand. Drawn back while charging, thrust forward in the dash,
+      // lowered afterwards.
+      const ph = w.tool.p || 0,
+        base = ph === 0 ? [Math.PI + 0.5, Math.PI, Math.PI - 0.5] : ph === 1 ? [-0.2, 0, 0.2] : [0.9, 1.1, 1.3],
+        mount = [
+          [6, 0],
+          [4, -4],
+          [4, 4],
+        ];
+      g.lineCap = 'round';
+      for (let i = 0; i < 3; i++) {
+        const an = base[i] + (ph === 0 ? Math.sin(G.time * 30 + i) * 0.05 : 0),
+          sx = f * mount[i][0],
+          sy = mount[i][1],
+          dx = f * Math.cos(an),
+          dy = Math.sin(an),
+          ex = sx + dx * 22,
+          ey = sy + dy * 22;
+        if (ph === 0) {
+          g.strokeStyle = `rgba(120,255,160,${0.35 + 0.25 * Math.sin(G.time * 14 + i)})`;
+          g.lineWidth = 6;
+          g.beginPath();
+          g.moveTo(sx, sy);
+          g.lineTo(ex, ey);
+          g.stroke();
+        }
+        g.strokeStyle = '#0c1524';
+        g.lineWidth = 3.4;
+        g.beginPath();
+        g.moveTo(sx + dx * 3, sy + dy * 3);
+        g.lineTo(ex, ey);
+        g.stroke();
+        g.strokeStyle = '#e8f0ff';
+        g.lineWidth = 1.6;
+        g.beginPath();
+        g.moveTo(sx + dx * 3, sy + dy * 3);
+        g.lineTo(ex, ey);
+        g.stroke();
+        g.strokeStyle = '#d9a520';
+        g.lineWidth = 2.4;
+        g.beginPath();
+        g.moveTo(sx - dy * 3, sy + dx * 3);
+        g.lineTo(sx + dy * 3, sy - dx * 3);
+        g.stroke();
+      }
+      if (ph === 1) {
+        g.strokeStyle = 'rgba(255,255,255,.7)';
+        g.lineWidth = 1.2;
+        for (let i = 0; i < 6; i++) {
+          const ly = (i - 2.5) * 4;
+          g.beginPath();
+          g.moveTo(-f * 8, ly);
+          g.lineTo(-f * (24 + Math.random() * 26), ly);
+          g.stroke();
+        }
+      }
     } else if (w.tool.k === 'kame') {
       // energy ball between the hands, growing with the charge, with sparks drawn into it
       const k = w.tool.p || 0,

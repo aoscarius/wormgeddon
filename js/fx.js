@@ -141,6 +141,11 @@ function applyEvent(e) {
     case 'dmg':
       FX.txt.push({ x: e.x, y: e.y, t: '-' + e.v, c: e.c, l: 1.8 });
       break;
+    case 'slash':
+      (FX.slashes = FX.slashes || []).push({ x: e.x, y: e.y, t: 0, f: e.f });
+      puff(e.x, e.y, 10, 260, ['#fff', '#cfe8ff', '#ff4b4b'], 0.3, 2, 0, 'c');
+      SFX.slash();
+      break;
     case 'say':
       FX.txt.push({ x: e.x, y: e.y, t: e.t, c: '#ffd23f', l: 2.4 });
       showMsg(tr(e.t), 1800);
@@ -340,6 +345,7 @@ function fxUpdate(dt) {
   FX.storms = FX.storms.filter(s => s.t < s.l);
   for (const b of FX.bolts) b.t += dt;
   FX.bolts = FX.bolts.filter(b => b.t < 0.35);
+  FX.slashes = (FX.slashes || []).filter(s => (s.t += dt) < 0.3);
   if (FX.quake > 0) {
     FX.quake -= dt;
     UI.shake = Math.max(UI.shake, 5);

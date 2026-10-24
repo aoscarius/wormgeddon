@@ -292,6 +292,22 @@ const ICON_DRAW = {
     icRect(g, 22, 36, 9, 20, IC.steel, 2);
     icRect(g, 38, 36, 8, 14, IC.dsteel, 2);
   },
+  // Oni Giri: three swords fanned out from the hands, each with a golden guard.
+  onigiri(g) {
+    for (const [tx, ty] of [
+      [12, 12],
+      [32, 6],
+      [52, 12],
+    ]) {
+      const dx = tx - 32,
+        dy = ty - 56,
+        l = Math.hypot(dx, dy),
+        ux = dx / l,
+        uy = dy / l;
+      icLine(g, 32 + ux * 12, 56 + uy * 12, tx, ty, 4, IC.white);
+      icLine(g, 32 + ux * 12 - uy * 6, 56 + uy * 12 + ux * 6, 32 + ux * 12 + uy * 6, 56 + uy * 12 - ux * 6, 3, IC.yellow);
+    }
+  },
   // Kamehameha: two cupped hands holding a blue energy ball that shoots a beam.
   kamehameha(g) {
     g.save();

@@ -178,6 +178,18 @@ const SFX = {
     noiseBurst(1.4, 0.3, 700);
     tone(70, 240, 1.4, 'sawtooth', 0.1);
   },
+  // Oni Giri: swords drawn, the dash, and a slice.
+  draw: () => {
+    for (let i = 0; i < 3; i++) setTimeout(() => tone(2200 + i * 500, 3400 + i * 500, 0.12, 'triangle', 0.05), i * 110);
+  },
+  swoosh: () => {
+    noiseBurst(0.3, 0.15, 2500);
+    tone(300, 1400, 0.3, 'sine', 0.05);
+  },
+  slash: () => {
+    noiseBurst(0.12, 0.2, 4000);
+    tone(1800, 600, 0.12, 'sawtooth', 0.07);
+  },
   dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 0.8, 0.6),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);
