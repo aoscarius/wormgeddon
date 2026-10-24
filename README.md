@@ -17,7 +17,7 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
   destructible. In online games the host sends the map to the guests.
 - **Destructible terrain**, wind, fall damage, drowning, rising water (sudden death), mines, oil
   drums and supply crates.
-- **46 weapons and tools**, each with a hand-drawn icon: Bazooka, Homing Missile, Mortar, Grenade,
+- **46 weapons and tools**, each with a hand-drawn icon, sorted into categories (body, short range, long range, destructive, anime, tools, special) with tabs in the weapon panel: Bazooka, Homing Missile, Mortar, Grenade,
   Cluster Bomb, Banana Bomb, Holy Hand Grenade, Petrol Bomb, Dynamite, Mine, Sheep, Super Sheep,
   Shotgun, Handgun, Uzi, Fire Punch, Dragon Ball, Baseball Bat, Kamikaze, Air Strike, Napalm
   Strike, Mine Strike, Concrete Donkey, Armageddon, Nuclear Test, Earthquake, Dragon Fire, Thunderstorm, Thor's Hammer, Hokuto Hyakuretsu Ken, Kamehameha, Oni Giri, Time Car, Tornado, Tsunami, Scales of Justice, Ninja Rope,
@@ -213,8 +213,15 @@ described by `maps/manifest.json`:
 
 ## Developer documentation
 
-`docs/DEVELOPING.md` explains the architecture and how to add weapons, projectiles, maps, level styles,
-themes, languages, crates, menu options and network state, with worked examples.
+[`docs/DEVELOPING.md`](docs/DEVELOPING.md) explains the architecture and how to add weapons, projectiles, maps, level styles,
+themes, languages, crates, menu options and network state, with worked examples. Detailed guides:
+
+- [Collision system and hit detection](docs/COLLISION.md)
+- [Physics](docs/PHYSICS.md)
+- [Weapons](docs/WEAPONS.md) (categories, panel tabs, checklist)
+- [Projectiles](docs/PROJECTILES.md)
+- [Customising](docs/CUSTOMIZING.md) (cookbook)
+
 Debug keys: `F3` / `` ` `` debug view, `F4` trajectories (while the debug view is on).
 
 ## Robustness notes
@@ -238,3 +245,9 @@ Debug keys: `F3` / `` ` `` debug view, `F4` trajectories (while the debug view i
 Fire (or choosing the same weapon again in the menu) while hanging on the ninja rope, or while the
 jet pack is on, lets go and frees aiming and weapon changes again. Whatever is still held when the
 turn ends is dropped automatically.
+
+## ❤️ Support My Work
+
+If you like my work and want to help me maintain this project and create new open-source software, you can support me by making a donation of your choice. Thank you for your support!
+
+[![By me a coffee](https://shields.io/badge/☕-Buy_me_a_coffee-795548?style=for-the-badge)](https://github.com/sponsors/aoscarius)

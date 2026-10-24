@@ -7,7 +7,20 @@ Everything is plain JavaScript loaded with ordinary `<script>` tags (no bundler,
 every top-level `function` / `const` is a global and you can try things in the browser console
 (`window.__wh` also exposes `newGame`, `stepOnce`, `G`, ...).
 
+## Detailed guides
+
+This guide is the overview. Each topic below has its own document with the full detail:
+
+| Document | What it covers |
+| --- | --- |
+| [Collision and hit detection](COLLISION.md) | the terrain mask, `hitC` / `stepBody`, explosions and their reach, projectile-worm hit boxes, rays, melee, lightning, mines and drums |
+| [Physics](PHYSICS.md) | the fixed 60 Hz tick, constants, worm movement, jumping and fall damage, wind, water, fire, radiation, tuning recipes |
+| [Weapons](WEAPONS.md) | the `registerWeapon` record, the fire state machine, **weapon categories and the panel tabs**, the list of all weapons, the add-a-weapon checklist |
+| [Projectiles](PROJECTILES.md) | `registerProj`, the `tick` hook, one tick in order, turn flow, sprites and network sync, recipes |
+| [Customising](CUSTOMIZING.md) | "I want to change X" cookbook: tuning numbers, adding things, recipes, conventions |
+
 - [Wormgeddon developer guide](#wormgeddon-developer-guide)
+  - [Detailed guides](#detailed-guides)
   - [1. Project layout and workflow](#1-project-layout-and-workflow)
   - [2. How the game runs](#2-how-the-game-runs)
   - [3. Adding a weapon](#3-adding-a-weapon)
@@ -110,6 +123,8 @@ scripts up from that list automatically.
 
 ## 3. Adding a weapon
 
+> Full reference: [WEAPONS.md](WEAPONS.md) (fields, categories, checklist). Hit detection: [COLLISION.md](COLLISION.md).
+
 A weapon is one `registerWeapon({...})` record in `js/weapons.js` (anywhere before the end of the
 file; menu order = registration order). Fields:
 
@@ -210,6 +225,8 @@ state on guests, add it to `snapshot()` / `applySnapshot()` in `net.js` (see sec
 ---
 
 ## 4. Adding a projectile type
+
+> Full reference: [PROJECTILES.md](PROJECTILES.md). Movement and contact rules: [PHYSICS.md](PHYSICS.md), [COLLISION.md](COLLISION.md).
 
 `registerProj(id, d)` (`core.js` documents the fields, `projectiles.js` has ~20 examples):
 
@@ -378,8 +395,7 @@ Online players each use their own language because events carry keys, not senten
   with `mp3Sfx(path, volume)`. It uses a decoded `AudioBuffer` (exact start) on http(s) and falls back to an
   `<audio>` element on `file://`; mute stops running voices (`mp3Stop`). The build copies `sounds/` to `dist/`
   (`--single` embeds it as `window.SOUNDS_BUNDLE`). *Timing:* a sound is a normal `snd` event, so emit it when
-  it should be heard: the Holy Hand Grenade projectile emits `holy` when `HOLY_SONG` (2.0 s) of fuse is left, so
-  the choir ends with the blast. Guests hear it when the event arrives.
+  it should be heard: the Holy Hand Grenade projectile emits `holy` from its `boom()`, so the choir plays with the blast. Guests hear it when the event arrives.
 * **Icons** (`icons.js`): `ICON_DRAW[weaponId] = g => {...}` on a 64x64 canvas with helpers
   (`icRect`, `icCircle`, `icEllipse`, `icPoly`, `icLine`, `icFlame`, `icGrenade`, `icWormHead`, palette `IC`).
   Missing icons fall back to a badge with the weapon `code`.
