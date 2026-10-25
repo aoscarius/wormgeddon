@@ -424,11 +424,12 @@ guests send inputs and render what they receive.
 
 | Direction | Type | Content |
 | --- | --- | --- |
-| host -> guest | `start` | game config (`cfg`, incl. `mapData` for custom levels), team list |
+| host -> guest | `start` | game config (`cfg`, incl. `mapData` for custom levels), team list, worms with `x`/`y`/`face`, and a full snapshot `snap` |
 | host -> guest | `s` | snapshot (~30/s): phase, timer, wind, water, worms, projectiles, fires, objects, weapon |
 | host -> guest | `v` | batch of events (explosions, sounds, messages) |
 | host -> guest | `full` | the room is full / already started |
 | guest -> host | `hello` | join request |
+| guest -> host | `ready` | the match is built (or no snapshot yet): the host answers with a full snapshot; repeated every 1.5 s, at most 6 times, until one arrives |
 | guest -> host | `k` | held keys |
 | guest -> host | `e` | key edge (`fireP`, `jump`, `back`, `tab`) |
 | guest -> host | `c` | map click |
@@ -454,6 +455,15 @@ box reduces it to the code. Tests fake PeerJS (`tests/test_invite.py`).
 button; Esc closes). Only online games have it. Guests never choose their own name or team: the host
 re-stamps every line, cleans it (control characters, 140 chars) and rebroadcasts it, so all clients
 show the same order. Text is rendered with `textContent` only. `NET.close()` calls `chatReset()`.
+
+**Start-up and connection lifecycle.** A guest never simulates, so everything it draws must come from the
+host. `startClientGame()` therefore applies the worm positions and the full snapshot carried by `start`,
+adds `waterTarget` to `G`, and only then calls `enterGame()` (the camera looks at the first worm with a
+finite position, otherwise at the middle of the level). Snapshots that arrive while a custom map is still
+being decoded are kept in `NET.early`. `camFocus()` resets a non-finite camera, so one bad value can no
+longer freeze the view. `joinRoom()` gives up after 20 s with a message, both sides call
+`peer.reconnect()` when the broker connection drops, and `NET.close()` clears every timer.
+`tests/test_p2p_start.py` covers all of this.
 
 Online play needs a normal web page (WebRTC through PeerJS' cloud broker); it does not work inside
 sandboxed iframes such as the artifact preview.

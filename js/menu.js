@@ -78,11 +78,10 @@ function enterGame() {
   CAM.z = 1;
   CAM.fx = null;
   UI.panT = -9;
-  const w = G.worms[0];
-  if (w) {
-    CAM.x = w.x;
-    CAM.y = w.y;
-  }
+  // Look at the first worm; a guest may not know any position yet, then at the middle of the level.
+  const w = G.worms.find(o => isFinite(o.x) && isFinite(o.y));
+  CAM.x = w ? w.x : T.w / 2;
+  CAM.y = w ? w.y : T.h / 2;
   Object.assign(LOCAL, makeInp());
   ac();
 }

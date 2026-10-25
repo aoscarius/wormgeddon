@@ -23,6 +23,10 @@ const NET = {
   conns: [],
   conn: null,
   code: '',
+  joinT: 0, // guest: connection timeout
+  readyT: 0, // guest: asks the host for a full snapshot until one arrives
+  early: null, // guest: newest snapshot that arrived while the level was still loading
+  loading: false, // guest: 'start' received, match not built yet (custom map decoding)
   send(m) {
     try {
       if (this.conn && this.conn.open) this.conn.send(m);
@@ -39,6 +43,10 @@ const NET = {
       } catch (e) {}
   },
   close() {
+    clearTimeout(this.joinT);
+    clearInterval(this.readyT);
+    this.early = null;
+    this.loading = false;
     try {
       if (this.peer) this.peer.destroy();
     } catch (e) {}
@@ -198,7 +206,6 @@ function clientSmooth(dt) {
 }
 /** Guest side: builds the local match from the host's 'start' message (terrain is regenerated from the seed). */
 function startClientGame(m) {
-  Object.assign(window, {});
   generateTerrain(m.cfg);
   G = {
     cfg: m.cfg,
@@ -226,6 +233,7 @@ function startClientGame(m) {
     round: 0,
     time: 0,
     waterY: T.waterBase,
+    waterTarget: T.waterBase,
     over: false,
     winner: -1,
     weapon: { id: 'bazooka', fuse: 3, pw: 0, ch: false, shots: 0, ang: 0, tx: null, ty: null },
@@ -243,12 +251,28 @@ function startClientGame(m) {
       dead: false,
       vx: 0,
       vy: 0,
+      // real positions from the host when it sends them, so the camera has somewhere to look at once
+      x: isFinite(w.x) ? w.x : undefined,
+      y: isFinite(w.y) ? w.y : undefined,
     });
     G.teams[w.team].worms.push(w.id);
   }
   UI.myTeam = m.my;
   NET.role = 'client';
+  NET.loading = false;
   enterGame();
+  const first = m.snap || NET.early;
+  NET.early = null;
+  if (first) applySnapshot(first);
+  // Ask the host for a full snapshot until one has arrived (the first one may have been lost on the way).
+  let tries = 0;
+  clearInterval(NET.readyT);
+  NET.send({ t: 'ready' });
+  NET.readyT = setInterval(() => {
+    if (NET.role !== 'client' || ++tries > 6) clearInterval(NET.readyT);
+    else NET.send({ t: 'ready' });
+  }, 1500);
+  if (first) clearInterval(NET.readyT);
 }
 /** Handles all events produced by the last tick locally and forwards the non-cosmetic ones (no `q` flag) to guests. */
 function drainEvents() {
@@ -299,6 +323,13 @@ function hostCreate() {
         MAX_TEAMS - 1
       );
     });
+    // The broker connection dropped (sleeping tab, flaky network): get it back so new guests can still find the room.
+    peer.on('disconnected', () => {
+      if (NET.peer === peer && !peer.destroyed)
+        try {
+          peer.reconnect();
+        } catch (e) {}
+    });
     peer.on('error', err => {
       if (err.type === 'unavailable-id') {
         try {
@@ -344,6 +375,14 @@ function hostMsg(g, m) {
   }
   if (m.t === 'chat') {
     chatHostMsg(g, m);
+    return;
+  }
+  if (m.t === 'ready') {
+    // the guest has built the match (or has not received any snapshot yet): send it everything again
+    if (G && !G.demo)
+      try {
+        g.conn.send(snapshot(true));
+      } catch (e) {}
     return;
   }
   if (!G || g.team < 0) return;
@@ -393,7 +432,8 @@ function hostStart() {
     t: 'start',
     cfg,
     teams: G.teams.map(t => ({ id: t.id, name: t.name, ctrl: t.ctrl })),
-    worms: G.worms.map(w => ({ id: w.id, team: w.team, name: w.name })),
+    worms: G.worms.map(w => ({ id: w.id, team: w.team, name: w.name, x: w.x, y: w.y, face: w.face })),
+    snap: snapshot(true), // the guest starts with the real positions, health and ammo: no empty first frames
   };
   for (const g of lobby.guests) {
     try {
@@ -426,7 +466,22 @@ function joinRoom() {
   $('joinNote').textContent = tr('Connecting...');
   const peer = new Peer();
   NET.peer = peer;
+  // Give up cleanly when the room never answers instead of waiting for ever.
+  clearTimeout(NET.joinT);
+  NET.joinT = setTimeout(() => {
+    if (NET.peer === peer && !(NET.conn && NET.conn.open)) {
+      $('joinNote').textContent = tr('Connection timed out. Check the code and try again.');
+      NET.close();
+    }
+  }, 20000);
+  peer.on('disconnected', () => {
+    if (NET.peer === peer && !peer.destroyed && !NET.conn)
+      try {
+        peer.reconnect();
+      } catch (e) {}
+  });
   peer.on('error', err => {
+    clearTimeout(NET.joinT);
     $('joinNote').textContent =
       err.type === 'peer-unavailable'
         ? tr('Room not found.')
@@ -436,6 +491,7 @@ function joinRoom() {
     const conn = peer.connect('wormgeddon-' + code, { reliable: true });
     NET.conn = conn;
     conn.on('open', () => {
+      clearTimeout(NET.joinT);
       conn.send({ t: 'hello', name: $('jName').value || tr('Player') });
       $('joinNote').textContent = tr('Connected. Waiting for the host to start.');
     });
@@ -451,14 +507,20 @@ function joinRoom() {
 /** Guest side: dispatches host messages (start, snapshot, events, full). */
 function clientMsg(m) {
   if (m.t === 'start') {
-    if (m.cfg.style === 'custom' && m.cfg.mapData)
+    if (m.cfg.style === 'custom' && m.cfg.mapData) {
+      NET.loading = true; // snapshots that arrive while the picture is decoded are kept, not lost
       loadMapImage(m.cfg.mapData, 'host map')
         .then(() => startClientGame(m))
         .catch(() => {
+          NET.loading = false;
           $('joinNote').textContent = tr('Could not load the host map.');
         });
-    else startClientGame(m);
-  } else if (m.t === 's' && G && NET.role === 'client' && !G.demo) applySnapshot(m);
+    } else startClientGame(m);
+  } else if (m.t === 's' && NET.loading) NET.early = m;
+  else if (m.t === 's' && G && NET.role === 'client' && !G.demo) {
+    clearInterval(NET.readyT);
+    applySnapshot(m);
+  }
   else if (m.t === 'v' && G && !G.demo)
     for (const e of m.ev) {
       applyTerrain(e);

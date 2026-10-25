@@ -1,5 +1,5 @@
-"""Hokuto Hyakuretsu Ken: gatling punches on the worm in front ("Atatata"), a dash past it to a safe distance with
-"Tu sei già morto", and 3 s after the last blow the victim explodes and dies. Misses mark nobody."""
+"""Hokuto Hyakuretsu Ken: gatling punches on the worm in front, a dash past it to a safe distance with
+"You're already dead!", and 3 s after the last blow the victim explodes and dies. Misses mark nobody."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
 
@@ -84,8 +84,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert A["vLost"] >= 20 or A["vDead"], "the punches hurt the victim"
     assert A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
     sp = A["spoken"]
-    assert len(sp) == 2 and sp[0]["t"].lower().startswith("atata") and sp[0]["lang"] == "it-IT", sp
-    assert sp[1]["t"] == "Tu sei già morto" and sp[1]["lang"] == "it-IT", sp
+    assert len(sp) == 1 and sp[0]["t"] == "You're already dead!" and sp[0]["lang"] == "en-EN", sp
     assert r["mutedSpoken"] == 0, "muted: no voice"
     # --- A: the dash goes past the victim to a safe distance (blast reach is r+14 = 62 px)
     assert 0 in A["phases"] and 1 in A["phases"] and 2 in A["phases"]

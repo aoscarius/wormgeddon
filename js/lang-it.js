@@ -150,6 +150,7 @@ I18N.it = {
   'Host disconnected': 'Host disconnesso',
   'Disconnected.': 'Disconnesso.',
   'Could not load the host map.': 'Impossibile caricare la mappa dell’host.',
+  'Connection timed out. Check the code and try again.': 'Connessione scaduta. Controlla il codice e riprova.',
   'Room is full or already started.': 'La stanza è piena o la partita è già iniziata.',
   '{0} disconnected (bot takes over)': '{0} si è disconnesso (subentra un bot)',
 

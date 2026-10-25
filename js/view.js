@@ -99,6 +99,12 @@ function fastestWorm(min = 45) {
  */
 function camFocus(dt) {
   if (!G) return;
+  // A camera that ever became NaN would never recover (every later value is NaN too): reset it.
+  if (!isFinite(CAM.x) || !isFinite(CAM.y) || !isFinite(CAM.z) || CAM.z <= 0) {
+    CAM.x = T.w / 2;
+    CAM.y = T.h / 2;
+    CAM.z = isFinite(CAM.z) && CAM.z > 0 ? CAM.z : 1;
+  }
   let tx = CAM.x,
     ty = CAM.y;
   const w = activeWorm();
