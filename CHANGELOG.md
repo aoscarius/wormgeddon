@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-37 commits, 2026-10-18 to 2026-10-25. Up to commit `3647ddf6cd189a9b188f036bad299a15a6fb7531`.
+38 commits, 2026-10-18 to 2026-10-25. Up to commit `a12b727584b9c71be7be02f365db19cf0b6060f6`.
 
 ## 2026-10-18
 
@@ -294,9 +294,17 @@ fixed, changed or refactored.
 **Added**
 - Implement touch swipe functionality for weapon panel category navigation: add swipe gestures for mobile devices, update related documentation and tests
 
-### [`3647ddf`](https://github.com/aoscarius/wormgeddon/commit/3647ddf6cd189a9b188f036bad299a15a6fb7531)
+### [`6a56974`](https://github.com/aoscarius/wormgeddon/commit/6a56974447d5441bc4eabc26b4bfb8d1644d1d0f)
 
 **Added**
-- Add Gomu Gomu no Gigant Axe weapon with unique mechanics and effects
+- Added Gomu Gomu no Gigant Axe weapon with unique mechanics and effects
 - Added audio effects for the weapon's shout and stomp
 - Created tests to validate weapon functionality and interactions with other game elements
+
+### [`a12b727`](https://github.com/aoscarius/wormgeddon/commit/a12b727584b9c71be7be02f365db19cf0b6060f6)
+
+**Added**
+- Added missing arsenal modes to the selection and enhanced teammate proximity checks for proton stream targeting
+
+**Changed**
+- Update arsenal options and improve proton stream mechanics

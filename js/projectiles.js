@@ -740,11 +740,12 @@ registerProj('kamebeam', {
  */
 const PROTON_EQUIP = 0.7,
   PROTON_FIRE = 2.4,
-  PROTON_FADE = 0.3,
+  PROTON_FADE = 0.7,
   PROTON_TICK = 0.3,
   PROTON_RANGE = 450,
   PROTON_DMG = [0, 2, 6, 10],
-  PROTON_SHOOTERS = 3;
+  PROTON_SHOOTERS = 3,
+  PROTON_MAX_DIST = 250;
 /**
  * Walks a stream from (x1, y1) towards (x2, y2) in 3 px steps and returns where it ends: the first solid pixel or the
  * first living worm other than the shooters (`skip` = their ids) on the way, else the aimed point.
@@ -753,11 +754,14 @@ const PROTON_EQUIP = 0.7,
 function streamRay(x1, y1, x2, y2, skip) {
   const n = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 3));
   for (let i = 0; i <= n; i++) {
-    const x = x1 + ((x2 - x1) * i) / n,
-      y = y1 + ((y2 - y1) * i) / n;
+    const x = x1 + ((x2 - x1) * i) / n, y = y1 + ((y2 - y1) * i) / n;
+    const mine = G.projs.find( q => q.t === 'mine' && !q.dead && Math.hypot(q.x - x, q.y - y) < (q.r || 4) + 3 );
+    if (mine) return { x, y, hit: 'mine', object: mine };
+    const drum = G.objs.find( o => !o.kill && o.k === 'drum' && Math.hypot(o.x - x, o.y - y) < (o.r || 7) + 3 );
+    if (drum) return { x, y, hit: 'drum', object: drum };
     if (solid(x, y)) return { x, y, hit: 'ground' };
-    const o = G.worms.find(q => !q.dead && !skip.includes(q.id) && Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 8);
-    if (o) return { x, y, hit: 'worm', worm: o };
+    const worm = G.worms.find( q => !q.dead && !skip.includes(q.id) && Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 8 );
+    if (worm) return { x, y, hit: 'worm', worm };
   }
   return { x: x2, y: y2, hit: null };
 }
@@ -779,7 +783,7 @@ function protonGeom(p) {
       d = Math.hypot(t.x - mx, t.y - my),
       k = d > PROTON_RANGE ? PROTON_RANGE / d : 1,
       r = streamRay(mx, my, mx + (t.x - mx) * k, my + (t.y - my) * k, ids);
-    return { x: mx, y: my, ex: r.x, ey: r.y, hit: r.hit, worm: r.worm, connected: d <= PROTON_RANGE && (!r.hit || (r.hit === 'worm' && r.worm === t)) };
+    return { x: mx, y: my, ex: r.x, ey: r.y, hit: r.hit, worm: r.worm, object: r.object, connected: d <= PROTON_RANGE && (!r.hit || (r.hit === 'worm' && r.worm === t)) };
   });
   return { streams, t, shooters, n: streams.filter(s => s.connected).length };
 }
@@ -798,27 +802,55 @@ registerProj('proton', {
   tick(p, dt) {
     p.life = (p.life || 0) + dt;
     p.net[1] = p.life;
+    // Recalculate the streams each tick so they follow the target and shooters.
     const g = protonGeom(p),
       end = PROTON_EQUIP + PROTON_FIRE;
+    // Stop the effect if the target or all shooters are gone.
     if (!g || g.t.dead) {
       p.dead = true;
       return false;
     }
+    // Keep the shooters stationary and facing the target.
     for (const s of g.shooters) {
       s.vx = 0;
       s.face = g.t.x >= s.x ? 1 : -1;
     }
     if (p.life >= PROTON_EQUIP && p.life < end) {
       p.tk = (p.tk || 0) + dt;
+      // Apply damage at fixed intervals while the streams are firing.
       while (p.tk >= PROTON_TICK) {
         p.tk -= PROTON_TICK;
+        // Combined streams deal increasing damage to the locked target.
         if (g.n) hurt(g.t, PROTON_DMG[Math.min(g.n, PROTON_DMG.length - 1)], { src: p.ow, noEnd: true });
-        for (const s of g.streams) if (s.hit === 'worm' && s.worm !== g.t) hurt(s.worm, PROTON_DMG[1], { src: p.ow, noEnd: true });
+        // Apply reduced damage or trigger objects hit by individual streams.
+        for (const s of g.streams) {
+          if (s.hit === 'worm' && s.worm !== g.t) {
+            hurt(s.worm, PROTON_DMG[1], { src: p.ow, noEnd: true });
+          } else if (s.hit === 'ground') {
+            // Create a small crater and lightly damage nearby worms.
+            emit({ e: 'cv', x: s.ex, y: s.ey, r: 2, s: 0 });
+            for (const w of G.worms) {
+              if (!w.dead && Math.hypot(w.x - s.ex, w.y - s.ey) <= 18) { hurt(w, 1, { src: p.ow, noEnd: true }); }
+            }
+          } else if (s.hit === 'mine' && s.object && !s.object.dead) {
+            // Detonate a mine hit by the stream.
+            detonate(s.object);
+          } else if (s.hit === 'drum' && s.object && !s.object.kill && !p.impactDrums?.has(s.object)) {
+            // Ignite each oil drum only once; its normal update will trigger the explosion.
+            p.impactDrums ||= new Set();
+            p.impactDrums.add(s.object);
+            s.object.lit = 0.05;
+          }
+        }
         emit({ e: 'snd', s: 'zap' });
       }
     } else if (p.life >= end && !p.burst) {
       p.burst = true;
       if (g.n >= 2) explode(g.t.x, g.t.y, 34 + 6 * (g.n - 2), 30 + 10 * (g.n - 2), 300, { src: p.ow, fire: 3, noEnd: true });
+      if (g.n === 3) {
+        const caster = wById(p.ow);
+        if (caster) emit({ e: 'say', x: caster.x, y: caster.y - 24, t: tr('We came, we saw, we kicked its ass!') });
+      }
     }
     if (p.life >= end + PROTON_FADE) p.dead = true;
     return false;

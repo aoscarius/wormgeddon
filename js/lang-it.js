@@ -328,6 +328,8 @@ I18N.it = {
   'Proton Stream': 'Raggio protonico',
   'Click an enemy worm': 'Clicca un verme nemico',
   'Needs a teammate': 'Serve un compagno',
+  'At least two allied must be within {0} px of the target': 'Almeno due alleati devono essere entro {0} px dal bersaglio',
+  'We came, we saw, we kicked its ass!':'Venimmo, vedemmo, e lo inculammo!',
   'Air Strike': 'Attacco aereo',
   'Napalm Strike': 'Attacco al napalm',
   'Mine Strike': 'Attacco di mine',

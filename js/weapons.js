@@ -432,13 +432,23 @@ registerWeapon({
       emit({ e: 'msg', t: 'Click an enemy worm' });
       return 'miss';
     }
+    const inRange = o => Math.hypot(o.x - tw.x, o.y - tw.y) <= PROTON_MAX_DIST;
+    const teammates = G.worms.filter(
+      o => !o.dead && !o.sunk && o !== c.w && o.team === c.w.team
+    );
+    // Show this only when the team has no other living worms.
+    if (!teammates.length) {
+      emit({ e: 'msg', t: 'Needs a teammate' });
+      return 'miss';
+    }
     // the partners are the living teammates closest to the caster: with a bigger team, the nearest two (three shooters)
-    const mates = G.worms
-      .filter(o => !o.dead && !o.sunk && o !== c.w && o.team === c.w.team)
+    const mates = teammates
+      .filter(inRange)
       .sort((p, q) => Math.hypot(p.x - c.w.x, p.y - c.w.y) - Math.hypot(q.x - c.w.x, q.y - c.w.y))
       .slice(0, PROTON_SHOOTERS - 1);
-    if (!mates.length) {
-      emit({ e: 'msg', t: 'Needs a teammate' });
+    // The caster and at least one teammate must be within range.
+    if (!inRange(c.w) || mates.length < 1) {
+      emit({ e: 'msg', t: 'At least two worms must be within {0} px of the target', a: [PROTON_MAX_DIST] });
       return 'miss';
     }
     emit({ e: 'msg', t: 'Proton stream' });

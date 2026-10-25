@@ -30,7 +30,7 @@ const run = ([base]) => {
   const shoot = (s, secs, click, hook) => {
     const r = {msgs: [], x: [], dmg: [], firstDmgAt: null, proj: null, snap: null, t0: s.g.time, lockedX: true, rig: null};
     const old = window.emit; let last = s.foe.hp; const x0 = s.a.x;
-    window.emit = e => { if (e.e === 'msg') r.msgs.push(e.t); if (e.e === 'x') r.x.push({x: e.x, y: e.y, r: e.r, t: s.g.time - r.t0}); return old(e); };
+    window.emit = e => { if (e.e === 'msg') r.msgs.push(e.t); if (e.e === 'x') r.x.push({x: e.x, y: e.y, r: e.r, t: s.g.time - r.t0}); if (e.e === 'cv') r.cv.push({x: e.x, y: e.y, r: e.r, s: e.s}); if (e.e === 'say') r.say.push(e.t); return old(e); };
     const ammo0 = s.t.ammo.proton;
     LOCAL.clicks.push(click || {x: s.foe.x, y: s.foe.y - 4});
     for (let i = 0; i < 60 * secs; i++) {
@@ -86,6 +86,18 @@ const run = ([base]) => {
   // I) all three shooters in range: three crossed streams
   s = setup({mates: [760, 700]});
   out.I = shoot(s, 6);
+  // M) a stream hits a mine: it detonates.
+  s = setup();
+  const mine = spawnProj('mine', 850, s.a.y - 4, 0, 0, null, {grounded: true});
+  out.M = shoot(s, 1.5);
+  out.M.mineDead = mine.dead;
+  // N) a stream hits an oil drum: it ignites and explodes.
+  s = setup();
+  const drumX = 850, drumY = s.a.y - 4;
+  const drum = {id: s.g.nid++, k: 'drum', x: drumX, y: drumY, r: 7, kill: false, lit: 0, vx: 0, vy: 0, grounded: true, air: 0};
+  s.g.objs.push(drum);
+  out.N = shoot(s, 2);
+  out.N.drumExploded = out.N.x.some(e => Math.abs(e.x - drumX) < 20 && Math.abs(e.y - drumY) < 20);
   // J) a team of 5: only the caster + the two NEAREST teammates shoot; the farther two get no rifle
   s = setup({worms: 5, mates: [700, 500, 760, 100]});     // nearest to the caster: 760 (idx 2), 700 (idx 0)
   out.J = shoot(s, 6);
@@ -123,6 +135,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- B: one stream blocked: 2 per tick, no crossed blast
     assert 10 <= B["foeLost"] <= 22, f"single stream only: {B['foeLost']}"
     assert all(d <= 2.5 for d in B["dmg"]) and not [e for e in B["x"] if e["r"] >= 30 and abs(e["x"] - 1100) < 40], B["dmg"]
+    assert any(e["r"] == 2 for e in B["cv"]), f"ground impact should emit a small crater: {B['cv']}"
     # --- C: out of range
     assert C["foeLost"] == 0 and C["projGone"], "out of range: nothing reaches the target"
     # --- D: the worm in the way is burnt instead
@@ -137,6 +150,11 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- I: three streams cross: 10 per tick and a bigger blast, which kills
     assert I["dmg"][:7] == [10] * 7 and I["foeLost"] >= 100, I["dmg"]      # lethal (dead is flagged when the turn settles)
     assert [e for e in I["x"] if e["r"] >= 40], "bigger blast with three streams"
+    assert "We came, we saw, we kicked its ass!" in I["say"], I["say"]
+    # --- M: a stream hits a mine: it detonates.
+    assert M["mineDead"] and M["x"], f"the hit mine should detonate: {M}"
+    # --- M: a stream hits an oil drum: it ignites and explodes.
+    assert N["drumExploded"], f"the hit oil drum should explode: {N}"
     # --- J: a team of 5: the caster and the two nearest only
     ids = J["ids"]["mates"]            # mates in placement order: x = 700, 500, 760, 100
     assert J["proj"]["net"][2:] == [J["ids"]["a"], ids[2], ids[0]], (J["proj"], J["ids"])
