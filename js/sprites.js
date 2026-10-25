@@ -262,6 +262,94 @@ function spriteProj(p) {
       }
       break;
     }
+    case 'proton': {
+      // Drawn in world coordinates: a glow at each muzzle, then two wavy orange streams that run to the target and a
+      // little past it so that they cross there, with sparks where each stream ends and a flare at the crossing.
+      const gm = protonGeom(p);
+      if (!gm) break;
+      const life = p.net[3],
+        endT = PROTON_EQUIP + PROTON_FIRE,
+        firing = life >= PROTON_EQUIP && life < endT + PROTON_FADE,
+        fade = life > endT ? Math.max(0, 1 - (life - endT) / PROTON_FADE) : 1,
+        crossing = gm.a.connected && gm.b.connected;
+      ctx2.translate(-p.x, -p.y);
+      ctx2.globalCompositeOperation = 'lighter';
+      ctx2.lineCap = 'round';
+      ctx2.lineJoin = 'round';
+      ctx2.globalAlpha = fade;
+      const glow = (x, y, r, c0) => {
+        const rg = ctx2.createRadialGradient(x, y, 0, x, y, r);
+        rg.addColorStop(0, '#fff');
+        rg.addColorStop(0.4, c0);
+        rg.addColorStop(1, 'rgba(255,100,20,0)');
+        ctx2.fillStyle = rg;
+        ctx2.beginPath();
+        ctx2.arc(x, y, r, 0, TAU);
+        ctx2.fill();
+      };
+      for (const s of [gm.a, gm.b]) {
+        glow(s.x, s.y, life < PROTON_EQUIP ? 3 + (9 * life) / PROTON_EQUIP : 9 + Math.sin(G.time * 40) * 2, 'rgba(255,200,80,.9)');
+        if (!firing) continue;
+        let ex = s.ex,
+          ey = s.ey;
+        if (s.connected) {
+          const d = Math.hypot(gm.t.x - s.x, gm.t.y - s.y) || 1;
+          ex = gm.t.x + ((gm.t.x - s.x) / d) * 24;
+          ey = gm.t.y + ((gm.t.y - s.y) / d) * 24;
+        }
+        const len = Math.hypot(ex - s.x, ey - s.y) || 1,
+          nx = -(ey - s.y) / len,
+          ny = (ex - s.x) / len,
+          N = 16;
+        for (const [lw, al, col] of [
+          [9, 0.3, '#ff6a10'],
+          [4.5, 0.75, '#ffb030'],
+          [1.8, 1, '#fff6c8'],
+        ]) {
+          ctx2.strokeStyle = col;
+          ctx2.globalAlpha = al * fade;
+          ctx2.lineWidth = lw;
+          ctx2.beginPath();
+          for (let i = 0; i <= N; i++) {
+            const k = i / N,
+              off = Math.sin(k * 14 - G.time * 38 + (s === gm.a ? 0 : 2)) * 4 * Math.min(1, k * 4);
+            const x = s.x + (ex - s.x) * k + nx * off,
+              y = s.y + (ey - s.y) * k + ny * off;
+            i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
+          }
+          ctx2.stroke();
+        }
+        ctx2.globalAlpha = fade;
+        ctx2.strokeStyle = '#ffe08a';
+        ctx2.lineWidth = 1.4;
+        for (let i = 0; i < 6; i++) {
+          const an = Math.random() * TAU,
+            r0 = 3 + Math.random() * 4,
+            r1 = r0 + 5 + Math.random() * 9;
+          ctx2.beginPath();
+          ctx2.moveTo(s.ex + Math.cos(an) * r0, s.ey + Math.sin(an) * r0);
+          ctx2.lineTo(s.ex + Math.cos(an) * r1, s.ey + Math.sin(an) * r1);
+          ctx2.stroke();
+        }
+      }
+      if (firing && crossing) {
+        const k = 1 + Math.sin(G.time * 30) * 0.15;
+        glow(gm.t.x, gm.t.y, 26 * k, 'rgba(255,170,40,.9)');
+        ctx2.strokeStyle = '#fff2b0';
+        ctx2.lineWidth = 1.6;
+        for (let i = 0; i < 14; i++) {
+          const an = Math.random() * TAU,
+            r1 = 12 + Math.random() * 26;
+          ctx2.beginPath();
+          ctx2.moveTo(gm.t.x + Math.cos(an) * 8, gm.t.y + Math.sin(an) * 8);
+          ctx2.lineTo(gm.t.x + Math.cos(an) * r1, gm.t.y + Math.sin(an) * r1);
+          ctx2.stroke();
+        }
+      }
+      ctx2.globalCompositeOperation = 'source-over';
+      ctx2.globalAlpha = 1;
+      break;
+    }
     case 'kamebeam': {
       // Drawn in world coordinates between the tail and the head: layered blue glow, white core, wisps and orbs.
       const n = p.net;

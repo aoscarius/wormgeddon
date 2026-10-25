@@ -47,6 +47,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_kenshiro.py` | Hokuto Hyakuretsu Ken: punch barrage on the worm in front, voice lines (speech stubbed), dash past it to a safe distance, victim dies exactly 3 s after the last blow, turn waits for it, misses mark nobody, tool is not cancellable |
 | `test_kamehameha.py` | Kamehameha: 1.3 s charge, beam across the whole map, tunnel of fixed radius (carved vs. untouched pixels), worm damaged, mine / oil drum / crate destroyed, bystanders and shooter unharmed, angled shot leaves other terrain alone, beam geometry reaches guests |
 | `test_zoro.py` | Oni Giri: ~0.9 s charge, the dash slices each worm in line exactly once for the right damage as the attacker passes through it, worms behind / out of reach / the attacker unharmed, a miss still dashes, Space and the turn clock can't interrupt it |
+| `test_proton.py` | Proton Stream: crossed streams (6/tick + blast), one blocked stream (2/tick, no blast), out of range, a worm in the way is burnt instead, shooters never block each other, no teammate / bad click = miss without cost, caster locked while streaming, target dying ends it, guests get the lock |
 
 `common.py` holds the shared browser helper. A new test is a `test_*.py` file using
 `with game_page() as (page, errors): ...` and ending with `finish(errors)`; `run_all.py` finds it.

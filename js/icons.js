@@ -292,6 +292,15 @@ const ICON_DRAW = {
     icRect(g, 22, 36, 9, 20, IC.steel, 2);
     icRect(g, 38, 36, 8, 14, IC.dsteel, 2);
   },
+  // Proton Stream: two streams that cross, with a flare at the crossing.
+  proton(g) {
+    icLine(g, 6, 54, 50, 14, 5, IC.orange);
+    icLine(g, 6, 54, 50, 14, 2, IC.yellow);
+    icLine(g, 6, 14, 50, 54, 5, IC.orange);
+    icLine(g, 6, 14, 50, 54, 2, IC.yellow);
+    icCircle(g, 28, 34, 9, IC.yellow);
+    icCircle(g, 28, 34, 4, IC.white);
+  },
   // Oni Giri: three swords fanned out from the hands, each with a golden guard.
   onigiri(g) {
     for (const [tx, ty] of [

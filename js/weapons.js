@@ -405,6 +405,56 @@ registerWeapon({
     return 'keep';
   },
 });
+// Proton Stream: click an enemy worm to lock on. The caster and the living teammate closest to it shoulder proton
+// rifles and burn the target; the streams cross at the target (see the 'proton' projectile). Needs a teammate.
+registerWeapon({
+  id: 'proton',
+  name: 'Proton Stream',
+  code: 'PS',
+  ammo: 1,
+  delay: 6,
+  click: true,
+  instant: true,
+  noEnd: true,
+  fire(c) {
+    // the target is the living enemy worm closest to the click (within 70 px)
+    let tw = null,
+      best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o.team === c.w.team) continue;
+      const d = Math.hypot(o.x - c.target.x, o.y - c.target.y);
+      if (d < best) {
+        best = d;
+        tw = o;
+      }
+    }
+    if (!tw) {
+      emit({ e: 'msg', t: 'Click an enemy worm' });
+      return 'miss';
+    }
+    // the partner is the living teammate closest to the caster
+    let mate = null;
+    best = Infinity;
+    for (const o of G.worms) {
+      if (o.dead || o.sunk || o === c.w || o.team !== c.w.team) continue;
+      const d = Math.hypot(o.x - c.w.x, o.y - c.w.y);
+      if (d < best) {
+        best = d;
+        mate = o;
+      }
+    }
+    if (!mate) {
+      emit({ e: 'msg', t: 'Needs a teammate' });
+      return 'miss';
+    }
+    emit({ e: 'msg', t: 'Proton stream' });
+    emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
+    emit({ e: 'snd', s: 'proton' });
+    c.w.tool = { k: 'proton', t: 99, p: 0 };
+    spawnProj('proton', c.w.x, c.w.y, 0, 0, c.w, { ow: c.w.id, net: [c.w.id, mate.id, tw.id, 0] });
+    return 'keep';
+  },
+});
 // Air strike: click a target; a plane drops five bombs.
 registerWeapon({
   id: 'airstrike',

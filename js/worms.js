@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, oniTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -210,8 +210,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -291,6 +291,11 @@ function hyakuTick(w, tl, dt) {
     physWorm(w, dt, false);
     if (tl.age >= HYAKU_SAY) tl.t = 0;
   }
+}
+/** The caster of a Proton Stream holds still (rifle raised) until the streams are gone; then the tool ends. */
+function protonTick(w, tl, dt) {
+  physWorm(w, dt, false);
+  if (!G.projs.some(p => p.t === 'proton' && !p.dead && p.ow === w.id)) tl.t = 0;
 }
 /**
  * Oni Giri: charge time (s), dash speed (px/s), how far ahead a worm counts as "in front" (px), how far past the last
@@ -446,6 +451,7 @@ function controlWorm(w, inp, dt) {
     } else if (tl.k === 'hyaku') hyakuTick(w, tl, dt);
     else if (tl.k === 'kame') kameTick(w, tl, dt);
     else if (tl.k === 'oni') oniTick(w, tl, dt);
+    else if (tl.k === 'proton') protonTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

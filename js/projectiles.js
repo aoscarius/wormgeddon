@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: KAME_*, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
+ * Globals defined: KAME_*, PROTON_*, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -728,6 +728,102 @@ registerProj('kamebeam', {
         if (n[4] >= n[5]) p.dead = true;
       }
     }
+    return false;
+  },
+});
+
+/**
+ * Proton Stream: seconds the rifles are raised before firing, how long the streams burn, how long they take to die
+ * down, the time between damage ticks, the farthest a stream reaches (px), and the damage per tick when both streams
+ * hit the target (crossed) or only one does.
+ */
+const PROTON_EQUIP = 0.7,
+  PROTON_FIRE = 2.4,
+  PROTON_FADE = 0.3,
+  PROTON_TICK = 0.3,
+  PROTON_RANGE = 450,
+  PROTON_DMG2 = 6,
+  PROTON_DMG1 = 2;
+/**
+ * Walks a stream from (x1, y1) towards (x2, y2) in 3 px steps and returns where it ends: the first solid pixel or the
+ * first living worm other than the shooters (`skip` = their ids) on the way, else the aimed point.
+ * @returns {{x: number, y: number, hit: 'ground'|'worm'|null, worm?: object}}
+ */
+function streamRay(x1, y1, x2, y2, skip) {
+  const n = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 3));
+  for (let i = 0; i <= n; i++) {
+    const x = x1 + ((x2 - x1) * i) / n,
+      y = y1 + ((y2 - y1) * i) / n;
+    if (solid(x, y)) return { x, y, hit: 'ground' };
+    const o = G.worms.find(q => !q.dead && !skip.includes(q.id) && Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 8);
+    if (o) return { x, y, hit: 'worm', worm: o };
+  }
+  return { x: x2, y: y2, hit: null };
+}
+/**
+ * The two streams of a Proton Stream projectile (p.net = [shooterA, shooterB, target, age]): for each shooter its
+ * muzzle, where the stream really ends (ground / another worm / out of range stop it) and whether it is `connected`
+ * to the locked target. Host and guests both call this, so everybody sees the same streams. null when a worm is gone.
+ */
+function protonGeom(p) {
+  const [ia, ib, it] = p.net,
+    a = wById(ia),
+    b = wById(ib),
+    t = wById(it);
+  if (!a || !b || !t) return null;
+  const mk = s => {
+    const f = t.x >= s.x ? 1 : -1,
+      mx = s.x + f * 9,
+      my = s.y - 4,
+      d = Math.hypot(t.x - mx, t.y - my),
+      k = d > PROTON_RANGE ? PROTON_RANGE / d : 1,
+      r = streamRay(mx, my, mx + (t.x - mx) * k, my + (t.y - my) * k, [ia, ib]);
+    return { x: mx, y: my, ex: r.x, ey: r.y, hit: r.hit, worm: r.worm, connected: d <= PROTON_RANGE && (!r.hit || (r.hit === 'worm' && r.worm === t)) };
+  };
+  return { a: mk(a), b: mk(b), t };
+}
+/** The Proton Stream projectile in which worm `w` is one of the two shooters, if any (drawn with a rifle). */
+const protonRig = w => G.projs.find(p => p.t === 'proton' && !p.dead && p.net && (p.net[0] === w.id || p.net[1] === w.id));
+// Proton Stream: two worms of a team shoulder proton rifles and burn one locked worm. Every tick the target takes
+// PROTON_DMG1 per stream that reaches it, PROTON_DMG2 when both do (crossed streams); at the end, if both still
+// connect, the crossed streams detonate at the target. A stream stopped by ground or by another worm does not reach
+// the target (a worm in the way is burnt instead). The shooters stand still and face the target; the lock follows it.
+registerProj('proton', {
+  r: 1,
+  grav: 0,
+  spr: 'proton',
+  fixedAngle: true,
+  tick(p, dt) {
+    p.life = (p.life || 0) + dt;
+    p.net[3] = p.life;
+    const g = protonGeom(p),
+      tgt = wById(p.net[2]),
+      end = PROTON_EQUIP + PROTON_FIRE;
+    if (!g || tgt.dead) {
+      p.dead = true;
+      return false;
+    }
+    for (const id of [p.net[0], p.net[1]]) {
+      const s = wById(id);
+      if (!s.dead) {
+        s.vx = 0;
+        s.face = tgt.x >= s.x ? 1 : -1;
+      }
+    }
+    if (p.life >= PROTON_EQUIP && p.life < end) {
+      p.tk = (p.tk || 0) + dt;
+      while (p.tk >= PROTON_TICK) {
+        p.tk -= PROTON_TICK;
+        const n = (g.a.connected ? 1 : 0) + (g.b.connected ? 1 : 0);
+        if (n) hurt(tgt, n === 2 ? PROTON_DMG2 : PROTON_DMG1, { src: p.ow, noEnd: true });
+        for (const s of [g.a, g.b]) if (s.hit === 'worm' && s.worm !== tgt) hurt(s.worm, PROTON_DMG1, { src: p.ow, noEnd: true });
+        emit({ e: 'snd', s: 'zap' });
+      }
+    } else if (p.life >= end && !p.burst) {
+      p.burst = true;
+      if (g.a.connected && g.b.connected) explode(tgt.x, tgt.y, 34, 30, 300, { src: p.ow, fire: 3, noEnd: true });
+    }
+    if (p.life >= end + PROTON_FADE) p.dead = true;
     return false;
   },
 });

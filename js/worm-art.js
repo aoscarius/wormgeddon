@@ -640,6 +640,40 @@ function drawWorm(w) {
       }
     }
   }
+  // shooter of a Proton Stream: a proton pack on the back and a rifle aimed at the locked target
+  const rig = protonRig(w);
+  if (rig) {
+    const tg = wById(rig.net[2]),
+      an = tg ? Math.atan2(tg.y - (w.y - 3), tg.x - w.x) : 0,
+      dx = Math.cos(an),
+      dy = Math.sin(an),
+      bf = w.face || 1;
+    g.fillStyle = '#586377';
+    g.strokeStyle = '#0c1524';
+    g.lineWidth = 1;
+    g.fillRect(-bf * 8 - 3, -7, 6, 10);
+    g.strokeRect(-bf * 8 - 3, -7, 6, 10);
+    g.fillStyle = `rgba(255,140,30,${0.6 + 0.4 * Math.sin(G.time * 16)})`;
+    g.fillRect(-bf * 8 - 1.5, -5, 3, 3);
+    g.lineCap = 'round';
+    for (const [lw, col] of [
+      [4.2, '#0c1524'],
+      [2.6, '#a9b4c2'],
+    ]) {
+      g.strokeStyle = col;
+      g.lineWidth = lw;
+      g.beginPath();
+      g.moveTo(dx * 3, -3 + dy * 3);
+      g.lineTo(dx * 15, -3 + dy * 15);
+      g.stroke();
+    }
+    g.strokeStyle = '#ff8a1f';
+    g.lineWidth = 2.6;
+    g.beginPath();
+    g.moveTo(dx * 15, -3 + dy * 15);
+    g.lineTo(dx * 19, -3 + dy * 19);
+    g.stroke();
+  }
   // marked by the Hokuto Hyakuretsu Ken: a pulsing red aura until the blast
   if (w.doom > 0) {
     const pu = Math.sin(G.time * 14);

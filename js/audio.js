@@ -178,6 +178,12 @@ const SFX = {
     noiseBurst(1.4, 0.3, 700);
     tone(70, 240, 1.4, 'sawtooth', 0.1);
   },
+  // Proton Stream: the packs power up, then a crackle on every damage tick.
+  proton: () => tone(100, 160, 0.7, 'sawtooth', 0.06),
+  zap: () => {
+    noiseBurst(0.08, 0.12, 2500);
+    tone(900, 300, 0.08, 'square', 0.04);
+  },
   // Oni Giri: swords drawn, the dash, and a slice.
   draw: () => {
     for (let i = 0; i < 3; i++) setTimeout(() => tone(2200 + i * 500, 3400 + i * 500, 0.12, 'triangle', 0.05), i * 110);

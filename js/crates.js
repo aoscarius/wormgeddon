@@ -39,6 +39,7 @@ const CRATE_WEAP = [
   'hokuto',
   'kamehameha',
   'onigiri',
+  'proton',
   'airstrike',
   'napalm',
   'minestrike',
