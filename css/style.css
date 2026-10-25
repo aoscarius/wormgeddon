@@ -661,6 +661,9 @@ kbd {
   padding-bottom: 2px;
   scrollbar-width: thin;
 }
+#wtabs [hidden] {
+  display: none;
+}
 #wtabs button {
   flex: 0 0 auto;
   padding: 5px 11px;

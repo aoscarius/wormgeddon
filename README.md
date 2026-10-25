@@ -70,7 +70,7 @@ runs offline without them (only online play and the display font are lost).
 - A turn lasts 20-90 s. Firing starts a 3 s retreat during which you can still move.
 - Taking damage in your own turn ends it. Deaths and damage numbers are resolved when the
   battlefield has come to rest.
-- Standard arsenal: strong weapons unlock in later rounds; crates unlock them early.
+- Standard arsenal: strong weapons unlock in later rounds; crates unlock them early. Other arsenals: everything, bazooka only, chaos, and the game modes **Special weapons only**, **Anime weapons only**, **Melee only** and **Artillery only**.
 - Sea level rise (optional): the water climbs a little every 1, 2, 3 or 5 rounds.
 - Sudden death: every worm drops to 1 HP and the water rises each round.
 - Last team standing wins.

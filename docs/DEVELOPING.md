@@ -390,6 +390,15 @@ kept in `UI` and `localStorage` (`wormgeddon.autocenter`); see the end of `menu.
 **Splatter Mode**, are
 kept in `UI` and `localStorage` (`wormgeddon.splattermode`); see the end of `menu.js`.
 
+**Arsenal modes.** The *Arsenal* option is `cfg.arsenal`: `std`, `full`, `bazooka`, `chaos` or a key of
+`ARSENALS` (`match.js`): `special`, `anime`, `melee`, `artillery`. A restricted arsenal is data:
+`{cats: [...WEAPON_CATS], ids: [...]}` lists what is in play (plus `skip` / `surrender`). Those weapons are
+available from round 1 with their normal ammo (at least 2 when limited); everything else has no ammo, is hidden
+from the weapon panel (empty category tabs too), is never dropped by crates and is never chosen by bots (the
+bot falls back to `AI_SIMPLE` in `ai.js`, a list of weapons it can use with a simple aim or click). To add a mode
+add an entry to `ARSENALS`, an `<option value="key">` to `#oArs` and the Italian label; a weapon with a new
+`cat` joins the matching mode automatically. `tests/test_arsenals.py` runs bots in every mode.
+
 Other tunables: physics constants (`GRAV`, `WIND_ACC`, `FALLV`, `WORM_R`) in `core.js`;
 explosion data in `projectiles.js` / `weapons.js`; camera behaviour in `view.js` (`camFocus`);
 turn timing in `match.js` / `step.js`; sea level rise and sudden death in `match.js`.

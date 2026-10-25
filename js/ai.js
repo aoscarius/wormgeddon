@@ -18,6 +18,61 @@ const AI_SHOTS = [
   { id: 'cluster', type: 'cluster', lo: 60, hi: 620, g: 1, wind: 0, fuse: 3 },
 ];
 /**
+ * Weapons the bot can use with a plain "face the target and fire" (or "click the target") plan. Used when the
+ * usual repertoire is not available, e.g. in the restricted arsenals (anime / special / melee only).
+ * `reach` = the weapon needs the target within that distance, so the bot walks up to it first.
+ */
+const AI_SIMPLE = [
+  { id: 'kamehameha' },
+  { id: 'proton' },
+  { id: 'hokuto', reach: 60 },
+  { id: 'onigiri', reach: 160 },
+  { id: 'dragonball', reach: 60 },
+  { id: 'firepunch', reach: 26 },
+  { id: 'bat', reach: 26 },
+  { id: 'kamikaze', reach: 30 },
+  { id: 'shotgun', reach: 260 },
+  { id: 'handgun', reach: 260 },
+  { id: 'uzi', reach: 260 },
+  { id: 'thunder', click: 1 },
+  { id: 'dragonfire', click: 1 },
+  { id: 'tornado', click: 1 },
+  { id: 'hammer', click: 1 },
+  { id: 'airstrike', click: 1 },
+  { id: 'napalm', click: 1 },
+  { id: 'minestrike', click: 1 },
+  { id: 'armageddon' },
+  { id: 'donkey' },
+  { id: 'nuke' },
+  { id: 'earthquake' },
+  { id: 'tsunami' },
+  { id: 'holy', fuse: 3 },
+  { id: 'banana', fuse: 3 },
+  { id: 'dynamite' },
+  { id: 'sheep' },
+  { id: 'supersheep' },
+  { id: 'petrol' },
+];
+/** Picks any available simple weapon for the plan (skips the turn when there is none). */
+function aiFallback(plan, w, t, tg, dist) {
+  const ok = AI_SIMPLE.filter(s => avail(t, s.id) && (!s.reach || dist < s.reach * 3));
+  if (!ok.length) {
+    plan.weapon = avail(t, 'skip') ? 'skip' : plan.weapon;
+    plan.err = 0;
+    return;
+  }
+  const near = ok.filter(s => !s.reach || dist <= s.reach);
+  const s = pick(near.length ? near : ok);
+  plan.weapon = s.id;
+  plan.fuse = s.fuse;
+  plan.aim = clamp(Math.atan2(tg.y - w.y, Math.abs(tg.x - w.x)), -1.2, 1.2);
+  plan.power = 1;
+  if (s.click) plan.click = { x: tg.x, y: tg.y };
+  plan.err = s.reach && dist > s.reach ? 999 : 0; // too far for a contact weapon: walk first
+  if (plan.err) plan.move = clamp(tg.x - w.x, -220, 220) * 0.8;
+}
+
+/**
  * Simulates a shot for a given aim angle and power and returns where it first hits the ground or
  * water. The bot calls this for many angle/power pairs and keeps the closest one.
  */
@@ -119,6 +174,7 @@ function aiPlan(w, t) {
       }
   }
   if (best) Object.assign(plan, best);
+  else if (!avail(t, plan.weapon)) aiFallback(plan, w, t, tg, dist);
   if (plan.err > 70 && !(t.ai && t.ai.moved)) plan.move = clamp(tg.x - w.x, -220, 220) * 0.7;
   return plan;
 }

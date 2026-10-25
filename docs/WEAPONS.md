@@ -88,7 +88,8 @@ translate the label.
 ## 4. The weapons
 
 Damage numbers are in the code next to each weapon; `ammo` / `delay` are the *Full / Standard* arsenal values
-(`-1` = unlimited).
+(`-1` = unlimited). The *Special / Anime / Melee / Artillery only* arsenals pick weapons by their category (`cat`) and
+ignore `delay`; see "Arsenal modes" in DEVELOPING.md section 7.
 
 | Weapon | id | Ammo | Round | Kind |
 | --- | --- | --- | --- | --- |

@@ -165,6 +165,14 @@ function hudWeapon(t, mine) {
 
 /** Rebuilds the weapon grid when ammo, round or selection changes. */
 function hudPanel(t, mine) {
+  // A restricted arsenal hides the categories it has no weapon in.
+  if (mine && UI.tabsFor !== G.cfg.arsenal) {
+    UI.tabsFor = G.cfg.arsenal;
+    for (const b of document.querySelectorAll('#wtabs [data-cat]'))
+      b.hidden = b.dataset.cat !== 'all' && !WLIST.some(x => x.cat === b.dataset.cat && arsenalHas(G.cfg.arsenal, x.id));
+    const cur = document.querySelector(`#wtabs [data-cat="${UI.wcat}"]`);
+    if (!cur || cur.hidden) setWeaponTab('all');
+  }
   const signature = mine
     ? [
         LANG,
@@ -181,6 +189,7 @@ function hudPanel(t, mine) {
     if (mine) {
       for (const x of WLIST) {
         if (UI.wcat !== 'all' && x.cat !== UI.wcat) continue;
+        if (!arsenalHas(G.cfg.arsenal, x.id)) continue;
         const ok = avail(t, x.id),
           ammo = t.ammo[x.id];
         // Badge: remaining ammo, infinity, or the round the weapon unlocks in.

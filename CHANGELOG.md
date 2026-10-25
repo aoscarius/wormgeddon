@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-32 commits, 2026-10-18 to 2026-10-25. Up to commit `a7365a8da4c78d5c49e0404c71e36486a4d6c9fd`.
+33 commits, 2026-10-18 to 2026-10-25. Up to commit `8a620563adf6e7ecb6d0d8389912c31d2e6acd4f`.
 
 ## 2026-10-18
 
@@ -267,8 +267,13 @@ fixed, changed or refactored.
 **Changed**
 - Update README and DEVELOPING.md to reference the changelog
 
-### [`a7365a8`](https://github.com/aoscarius/wormgeddon/commit/a7365a8da4c78d5c49e0404c71e36486a4d6c9fd)
+### [`400ca04`](https://github.com/aoscarius/wormgeddon/commit/400ca044dd74e4f760b767503e3f2dd770543c1b)
 
 **Added**
 - Add seasonal and special themes with effects and testing
 - Introduced seasonal themes: Halloween, Christmas, and Manga with unique effects and properties
+
+### [`8a62056`](https://github.com/aoscarius/wormgeddon/commit/8a620563adf6e7ecb6d0d8389912c31d2e6acd4f)
+
+**Added**
+- Add arsenal modes and related functionality: implement special, anime, melee, and artillery only modes with corresponding weapon restrictions, update documentation, and add tests for arsenal behavior

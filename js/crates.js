@@ -60,8 +60,11 @@ const CRATE_WEAP = [
 function spawnCrate() {
   const x = 80 + Math.random() * (T.w - 160),
     r = Math.random();
-  const type = r < 0.35 ? 'health' : r < 0.75 ? 'weapon' : 'util';
-  const item = type === 'health' ? null : pick(type === 'weapon' ? CRATE_WEAP : CRATE_UTIL);
+  let type = r < 0.35 ? 'health' : r < 0.75 ? 'weapon' : 'util';
+  // A restricted arsenal only drops its own weapons (and health when it has none to offer).
+  const pool = (type === 'weapon' ? CRATE_WEAP : CRATE_UTIL).filter(id => arsenalHas(G.cfg.arsenal, id));
+  if (!pool.length) type = 'health';
+  const item = type === 'health' ? null : pick(pool);
   G.objs.push({
     id: G.nid++,
     k: 'crate',

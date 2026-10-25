@@ -155,11 +155,38 @@ function newGame(cfg, teamDefs) {
   return G;
 }
 
-/** Fills a team's ammo table for the chosen arsenal: 'std', 'full', 'bazooka' or 'chaos'. -1 = unlimited. */
+/**
+ * Weapon-restricted arsenals ("game modes" of the Arsenal menu option). Each lists the weapon categories
+ * (WEAPON_CATS in core.js) and extra weapon ids that are in play; nothing else is available, in the panel,
+ * in crates or for the bots. Weapons in play are available from the first round, with their normal ammo
+ * (at least ARSENAL_MIN_AMMO when limited). To add a mode: add an entry here, an <option> in index.html
+ * (value = the key) and the Italian label in lang-it.js.
+ */
+const ARSENALS = {
+  special: { cats: ['destructive', 'anime'], ids: ['holy', 'supersheep', 'banana', 'napalm'] }, // super weapons
+  anime: { cats: ['anime'], ids: ['dragonball', 'hokuto', 'onigiri'] }, // fantasy / manga powers
+  melee: { cats: ['body', 'short'], ids: [] }, // fists, blades and close-range guns
+  artillery: { cats: ['long'], ids: [] }, // rockets, mortars and bombardments
+};
+/** Turn controls that every restricted arsenal keeps. */
+const ARSENAL_ALWAYS = ['skip', 'surrender'];
+const ARSENAL_MIN_AMMO = 2;
+/** True when `mode` is one of the weapon-restricted arsenals above. */
+const isRestrictedArsenal = mode => Object.prototype.hasOwnProperty.call(ARSENALS, mode);
+/** Is weapon `id` part of arsenal `mode`? (Always true for the unrestricted modes.) */
+function arsenalHas(mode, id) {
+  if (!isRestrictedArsenal(mode)) return true;
+  const a = ARSENALS[mode],
+    d = WEAPONS[id];
+  return ARSENAL_ALWAYS.includes(id) || a.ids.includes(id) || (!!d && a.cats.includes(d.cat));
+}
+
+/** Fills a team's ammo table for the chosen arsenal: 'std', 'full', 'bazooka', 'chaos' or a key of ARSENALS. -1 = unlimited. */
 function initAmmo(t, mode) {
   for (const d of WLIST) {
     let a = d.ammo;
-    if (mode === 'full') a = a < 0 ? -1 : 99;
+    if (isRestrictedArsenal(mode)) a = !arsenalHas(mode, d.id) ? 0 : a < 0 ? -1 : Math.max(a, ARSENAL_MIN_AMMO);
+    else if (mode === 'full') a = a < 0 ? -1 : 99;
     else if (mode === 'bazooka') a = ['bazooka', 'skip', 'surrender'].includes(d.id) ? -1 : 0;
     else if (mode === 'chaos') a = a < 0 ? -1 : rndi(0, 5);
     t.ammo[d.id] = a;
