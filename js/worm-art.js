@@ -498,7 +498,8 @@ function drawWorm(w) {
   }
 
   // --- accessory
-  drawHat(g, TEAM_HATS[w.team % TEAM_HATS.length], team.color, hx, hy, f, t);
+  if (!themeFxHat(g, team.color, hx, hy, f, t))
+    drawHat(g, TEAM_HATS[w.team % TEAM_HATS.length], team.color, hx, hy, f, t);
 
   // --- held weapon (and its hand), drawn in front of the body
   if (aiming) {

@@ -474,6 +474,7 @@ function render() {
   }
   ctx2.setTransform(DPR, 0, 0, DPR, 0, 0);
   drawSky();
+  themeFxSky();
   drawNuke();
   const sh = UI.shake,
     ox = (Math.random() - 0.5) * sh,
@@ -489,6 +490,7 @@ function render() {
   );
   drawWater(false);
   ctx2.drawImage(T.cv, 0, 0);
+  themeFxWorld();
   for (const o of G.objs) drawObj(o);
   for (const p of G.projs) spriteProj(p);
   for (const w of G.worms) drawWorm(w);
@@ -731,6 +733,7 @@ function render() {
     ctx2.globalAlpha = 1;
   }
   drawSkyOverlay();
+  themeFxScreen();
   if (UI.flashA > 0) {
     ctx2.setTransform(1, 0, 0, 1, 0, 0);
     ctx2.globalAlpha = UI.flashA * 0.8;

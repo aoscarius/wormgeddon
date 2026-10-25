@@ -4,7 +4,39 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-27 commits, 2026-10-20 to 2026-10-25. Up to commit `7979a082ec1d6ca6f48193f45c8e1ad3c7a2c428`.
+32 commits, 2026-10-18 to 2026-10-25. Up to commit `a7365a8da4c78d5c49e0404c71e36486a4d6c9fd`.
+
+## 2026-10-18
+
+### [`446d46d`](https://github.com/aoscarius/wormgeddon/commit/446d46d6db33742093913112a2c8b51cdecd0a4e)
+
+**Changed**
+- First public release of new started work based on Worms Armageddon game
+
+## 2026-10-19
+
+### [`8ff0844`](https://github.com/aoscarius/wormgeddon/commit/8ff0844daaf3dc9a83304f209b4008fce0232571)
+
+**Added**
+- Add various gameplay improvements and bugfixing:. - Introduced maplib.js to manage custom maps from a folder with support for manifest.json. - Enhanced gameplay mechanics in match.js and step.js to improve turn transitions and worm behavior. - Implemented debug view in render.js for better visibility of physics interactions. - Added new maps (Air Force One, Cavern, etc.) with corresponding manifest.json for easy loading. - Adjusted weapon handling in weapons.js to improve user experience with ropes and jetpacks. - Fixed various bugs related to worm movement and projectile control
+
+### [`ebe3059`](https://github.com/aoscarius/wormgeddon/commit/ebe30593c55ea8e13b2dd739e00ca876bb6ec490)
+
+**Added**
+- Added developing documentation
+- Follow to expand and customize the game
+- Added auto camera center on player move in zoom mode
+- New debug features
+
+**Fixed**
+- Fixed bug of mouse right button click that open also browser menù
+
+### [`a9b01fb`](https://github.com/aoscarius/wormgeddon/commit/a9b01fb096c8030bf656b20bbee7f044c50ed252)
+
+**Changed**
+- Enhance AI behavior and worm physics
+- Improve worm sinking mechanics for water and map edges
+- Update victory message element with data attribute for localization support
 
 ## 2026-10-20
 
@@ -218,15 +250,25 @@ fixed, changed or refactored.
 - Enhance P2P connection handling: improve guest start-up with valid camera and worm positions, implement connection timeout, and ensure early snapshots are retained
 - Update related tests for robustness
 
-### [`1e03847`](https://github.com/aoscarius/wormgeddon/commit/1e038473ad05ecc1c8bfc668906f50ab9e0c3948)
+### [`8d89f35`](https://github.com/aoscarius/wormgeddon/commit/8d89f35c4bb8aac691c5682b78db10df096c0a60)
 
 **Added**
-- Add changelog generator: tools/changelog.py builds CHANGELOG.md from the git history
-- Commits are listed oldest first, each split into Added, Fixed, Changed, Refactored, Docs and Tests by verb or conventional prefix
-- Add --check and --stdout modes
-- Add tests/test_changelog.py and document it in the developer guide
+- Added Proton Stream weapon with unique mechanics and visuals
+- Introduced the Proton Stream weapon, allowing players to click on an enemy worm to lock on
+- Implemented mechanics for the caster and their closest living teammate to shoulder proton rifles and burn the target
+- Developed comprehensive tests for the Proton Stream functionality, covering various scenarios including successful hits, misses, and interactions with obstacles
 
-### [`7979a08`](https://github.com/aoscarius/wormgeddon/commit/7979a082ec1d6ca6f48193f45c8e1ad3c7a2c428)
+### [`b382b57`](https://github.com/aoscarius/wormgeddon/commit/b382b5700c0b5ddd14f6440f58246ffa7187396e)
+
+**Added**
+- Add changelog generator and documentation: implement tools/changelog.py to automate CHANGELOG.md creation from git history, including classification of commits by type
+- Add tests for changelog functionality
 
 **Changed**
-- Generate CHANGELOG.md from the git history
+- Update README and DEVELOPING.md to reference the changelog
+
+### [`a7365a8`](https://github.com/aoscarius/wormgeddon/commit/a7365a8da4c78d5c49e0404c71e36486a4d6c9fd)
+
+**Added**
+- Add seasonal and special themes with effects and testing
+- Introduced seasonal themes: Halloween, Christmas, and Manga with unique effects and properties

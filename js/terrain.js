@@ -111,7 +111,7 @@ function cleanTerrain(mask, w, h, minSolid, minAir) {
  * @param {function} rng seeded random generator
  */
 function chooseTheme(cfg, rng) {
-  const names = Object.keys(THEMES);
+  const names = Object.keys(THEMES).filter(k => !THEMES[k].special); // 'random' keeps to the everyday themes
   T.themeName =
     cfg.theme === 'random'
       ? names[Math.floor(rng() * names.length)]
@@ -121,6 +121,8 @@ function chooseTheme(cfg, rng) {
   T.theme = THEMES[T.themeName];
   T.sky = SKIES.includes(cfg.sky) ? cfg.sky : 'day';
 }
+/** Scatters the theme's scenery props (theme-fx.js) once the level exists. */
+const buildThemeProps = cfg => typeof themeFxBuild === 'function' && themeFxBuild(cfg);
 
 /**
  * Builds a new random level and stores it in T.
@@ -140,6 +142,7 @@ function generateTerrain(cfg) {
   if (cfg.style === 'custom' && MAPS.custom) {
     chooseTheme(cfg, rng);
     buildCustomTerrain();
+    buildThemeProps(cfg);
     return;
   }
   const [w, h] = SIZES[cfg.size] || SIZES.m;
@@ -370,6 +373,7 @@ function generateTerrain(cfg) {
   chooseTheme(cfg, rng);
   T.waterBase = h - 38;
   paintTerrain();
+  buildThemeProps(cfg);
 }
 
 /**
@@ -379,7 +383,8 @@ function generateTerrain(cfg) {
  */
 function paintTerrain() {
   const { w, h, mask } = T,
-    th = T.theme;
+    th = T.theme,
+    tc = [0, 0, 0];
   const cv = (T.cv = T.cv || document.createElement('canvas'));
   cv.width = w;
   cv.height = h;
@@ -422,6 +427,15 @@ function paintTerrain() {
         r *= 0.62;
         g *= 0.62;
         b *= 0.62;
+      }
+      if (th.tex) {
+        tc[0] = r;
+        tc[1] = g;
+        tc[2] = b;
+        th.tex(x, y, depth, n, n2, tc);
+        r = tc[0];
+        g = tc[1];
+        b = tc[2];
       }
       const p = i * 4;
       d[p] = r;

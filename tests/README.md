@@ -27,6 +27,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_build.py` | `node build/build.js` output: one hashed minified js/css, `.gz`/`.br` copies, served over http the game loads, lists all maps and plays (skipped without `cd build && npm install`) |
 | `test_special_weapons.py` | Earthquake (cracks the ground, ends), Dragon Fire (dragon + flames), Thunderstorm (5 bolts, damage), Tornado (lifts a worm), Thor's Hammer (charges, then strikes), Time Car (drives through and pushes a worm); each turn still ends |
 | `test_tsunami.py` | Tsunami from the left / right kills the worm at that coast, spares the one in the middle, and ends |
+| `test_themes.py` | Halloween / Christmas / Manga: props and look differ, deterministic from the seed, props vanish with their ground, terrain texture hook, hats, `Random` never picks a special theme, `Seasonal` by date, menu + Italian names |
 | `test_sky.py` | day / night / cloudy / rainy render (night much darker, rain darker than cloud), defaults to day, `random` yields concrete skies |
 | `test_audio.py` | Holy Hand Grenade choir plays once, with the blast, MP3s respect mute and stop, the dragon roars instead of singing |
 | `test_damage_display.py` | a hit keeps the old health on screen (label, team bars, guest snapshot) until `-N` is announced, then counts down; heals show at once |

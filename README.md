@@ -8,7 +8,7 @@ Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 
 - **2-8 teams**, each human or bot, up to 40 worms in total. Humans share the keyboard in turns.
 - **Random level generator** with 7 styles (rolling hills, floating islands, caverns, terraces, mountains, archipelago,
-  canyon), 5 themes (meadow, desert, arctic, inferno, neon), 4 skies (day, night, cloudy, rainy) or a random one, 3 sizes and a text seed (same seed =
+  canyon), 5 everyday themes (meadow, desert, arctic, inferno, neon) plus the special **Halloween**, **Christmas** and **Manga** themes (own sky, terrain texture, scenery, worm hats and overlays; *Seasonal* picks one by date), 4 skies (day, night, cloudy, rainy) or a random one, 3 sizes and a text seed (same seed =
   same level, also online).
 - **Custom maps**: load your own picture as the battlefield (menu, Battlefield, "Load map
   image", or drop a file on the window). PNG with an alpha channel (transparent = sky) or an
@@ -91,6 +91,7 @@ js/*.js             one file per module, classic scripts sharing the global scop
 | `lang-it.js`     | Italian dictionary                                                   |
 | `audio.js`       | Web-Audio synthesised sound effects                                  |
 | `themes.js`      | colour themes                                                        |
+| `theme-fx.js`    | seasonal / special theme effects (props, sky, overlay, hats)         |
 | `terrain.js`     | level generation, painting, craters, girders                         |
 | `collision.js`   | circle/terrain collision, surface normals, body integrator           |
 | `core.js`        | constants, weapon/projectile registries, match state `G`, event bus  |
@@ -174,7 +175,7 @@ to `ICON_DRAW` in `js/icons.js` and, if it needs a new projectile, a `registerPr
 `spriteProj()` (`js/sprites.js`).
 
 **Add a theme.** Add an entry to `THEMES` in `js/themes.js` and an `<option>` to `#oTheme` in
-`index.html`.
+`index.html`. For seasonal looks with drawn scenery, hats and overlays see "Seasonal and special themes" in the developer guide.
 
 **Add a level style.** Add a branch to `generateTerrain()` in `js/terrain.js` that fills
 `mask` (helpers: `fillCols`, `carveC`, `tunnels`, `blob`, `rocks`, `bumps`; a clean-up pass removes specks and tiny bubbles afterwards), then add the option to `#oStyle` and the name to `STYLES` in `js/menu.js`.

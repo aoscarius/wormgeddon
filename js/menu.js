@@ -45,7 +45,7 @@ function readCfg() {
   return {
     seed,
     style,
-    theme: $('oTheme').value,
+    theme: $('oTheme').value === 'seasonal' ? seasonalTheme() : $('oTheme').value,
     sky: $('oSky').value === 'random' ? pick(SKIES) : $('oSky').value,
     size: $('oSize').value,
     hp: +$('oHp').value,

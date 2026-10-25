@@ -63,6 +63,7 @@ dist/             build output (git-ignored): the deployable folder (index.html,
 | `i18n.js`, `lang-it.js` | `tr()`, `wname()`, dictionaries |
 | `audio.js` | WebAudio helpers (`tone`, `noiseBurst`, `mp3Sfx`) and the `SFX` table |
 | `themes.js` | colour palettes (`THEMES`) |
+| `theme-fx.js` | seasonal / special theme effects: props, sky decoration, overlay, worm hats (see 6.3) |
 | `terrain.js` | terrain mask + canvas, level generation (`generateTerrain`), carving, girders |
 | `custommap.js`, `maplib.js` | importing PNG levels, the level library |
 | `collision.js` | `solid`, `hitC`, `normalAt`, `findFree`, `groundBelow`, `stepBody` |
@@ -336,6 +337,31 @@ level. To add a style: add the branch, add the id to `STYLES` in `menu.js`, add 
 `themes.js` -> `THEMES[name] = {sky:[top,bottom], top:[r,g,b], dirt, deep, water:[surface,deep], sun, cloud}`.
 Add an `<option>` to `#oTheme` in `index.html` and a translation. PNG levels keep their own
 colours; the theme still colours sky, sun, clouds and water.
+
+#### Seasonal and special themes (`theme-fx.js`)
+
+Halloween, Christmas and Manga are *special* themes: a palette plus an **effect** with drawn assets
+(no image files). A theme entry may carry:
+
+| Field | Meaning |
+| --- | --- |
+| `special: true` | left out of the *Random* choice |
+| `fx: 'name'` | effect registered with `registerThemeFx('name', {...})` in `theme-fx.js` |
+| `tex(x, y, depth, n, n2, c)` | recolours one terrain pixel (`c = [r,g,b]`, changed in place; `depth` = pixels below the surface, `n` / `n2` = fine / coarse noise) |
+
+An effect definition has optional hooks: `props: [kinds]` and `prop(g, p, t)` (scenery standing on the
+terrain: tombstones, pumpkins, trees, snowmen ...), `sky(g, t)` (screen-space decoration: moon, bats, snow),
+`screen(g, t)` (overlay over the finished frame: vignette, snow, manga screentone and impact lines) and
+`hat(g, col, hx, hy, f, t)` (replaces every worm's team hat: witch, Santa, hachimaki). Props are placed by
+`themeFxBuild()` from the level seed on gentle ground above the water and vanish when their ground is blown
+away; guests rebuild them from the seed, so nothing extra is sent over the network. Everything animates from
+`G.time`.
+
+To add a theme (say *Easter*): add the `THEMES.easter` entry (`special: true, fx: 'easter'`), call
+`registerThemeFx('easter', {...})` in `theme-fx.js` (or a new file loaded after it), add the `<option>` to
+`#oTheme` and the Italian name to `lang-it.js`. The menu choice **Seasonal** calls `seasonalTheme()`:
+Halloween from 15 Oct to 2 Nov, Christmas from 1 Dec to 6 Jan, a normal theme otherwise; add a date range to
+`SEASON_THEMES` for a new one. `tests/test_themes.py` shows what to check.
 
 ### 6.4 Sky
 
