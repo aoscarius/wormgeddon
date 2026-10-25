@@ -526,6 +526,72 @@ function drawWorm(w) {
       g.moveTo(0, 6);
       g.lineTo(Math.sin(G.time * 60) * 2, 14);
       g.stroke();
+    } else if (w.tool.k === 'axe') {
+      // Gomu Gomu no Gigant Axe: a rubber leg stretches up and the foot grows huge, then it slams straight down.
+      const p = w.tool.p || 0,
+        ft = axeFoot(w, p),
+        fx = ft.x - w.x,
+        fy = ft.y - w.y,
+        gx = ft.ix - w.x,
+        gy = ft.iy - w.y,
+        sc = ft.sc,
+        W = 2 * AXE_R * sc,
+        H = 30 * sc;
+      if (p < 2) {
+        // telegraph: the zone that is going to be crushed
+        g.fillStyle = `rgba(0,0,0,${0.08 + 0.12 * sc})`;
+        g.beginPath();
+        g.ellipse(gx, gy - 1, AXE_R * sc, 6 * sc + 1, 0, 0, TAU);
+        g.fill();
+        g.strokeStyle = 'rgba(255,80,60,.6)';
+        g.lineWidth = 1.5;
+        g.setLineDash([5, 4]);
+        g.beginPath();
+        g.ellipse(gx, gy - 1, AXE_R, 7, 0, 0, TAU);
+        g.stroke();
+        g.setLineDash([]);
+      }
+      g.lineCap = 'round';
+      for (const [lw, col] of [
+        [8 + 12 * sc, '#0c1524'],
+        [5 + 10 * sc, '#f4b9a8'],
+      ]) {
+        g.strokeStyle = col;
+        g.lineWidth = lw;
+        g.beginPath();
+        g.moveTo(0, -4);
+        g.lineTo(fx - f * W * 0.25, fy - H * 0.9);
+        g.stroke();
+      }
+      g.fillStyle = '#f4b9a8';
+      g.strokeStyle = '#0c1524';
+      g.lineWidth = 2;
+      g.beginPath();
+      g.ellipse(fx, fy - H / 2, W / 2, H / 2, 0, 0, TAU);
+      g.fill();
+      g.stroke();
+      for (let i = 0; i < 5; i++) {
+        g.beginPath();
+        g.arc(fx + f * (W / 2 - H * 0.06), fy - H / 2 + (i - 2) * H * 0.2, H * 0.13, 0, TAU);
+        g.fill();
+        g.stroke();
+      }
+      g.strokeStyle = '#e5473c';
+      g.lineWidth = Math.max(1, 3 * sc);
+      g.beginPath();
+      g.moveTo(fx - f * W * 0.1, fy - H * 0.92);
+      g.lineTo(fx - f * W * 0.1, fy - H * 0.08);
+      g.stroke();
+      if (p > 1 && p < 2) {
+        g.strokeStyle = 'rgba(255,255,255,.7)';
+        g.lineWidth = 1.5;
+        for (let i = -2; i <= 2; i++) {
+          g.beginPath();
+          g.moveTo(fx + i * W * 0.2, fy - H - 10);
+          g.lineTo(fx + i * W * 0.2, fy - H - 40 - Math.random() * 30);
+          g.stroke();
+        }
+      }
     } else if (w.tool.k === 'oni') {
       // three swords: one in the mouth, one in each hand. Drawn back while charging, thrust forward in the dash,
       // lowered afterwards.

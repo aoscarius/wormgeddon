@@ -38,7 +38,7 @@ const WEAPONS = {},
 const WEAPON_CATS = ['body', 'short', 'long', 'destructive', 'anime', 'tools', 'special'];
 const WEAPON_CAT = {};
 for (const [cat, ids] of Object.entries({
-  body: ['firepunch', 'dragonball', 'bat', 'kamikaze', 'hokuto', 'onigiri'], // direct contact with the worm's body
+  body: ['firepunch', 'dragonball', 'bat', 'kamikaze', 'hokuto', 'onigiri', 'gigantaxe'], // direct contact with the worm's body
   short: ['shotgun', 'handgun', 'uzi', 'dynamite', 'mine', 'petrol', 'sheep', 'supersheep'], // close to the shooter
   long: ['bazooka', 'homing', 'mortar', 'grenade', 'cluster', 'banana', 'holy', 'airstrike', 'napalm', 'minestrike'],
   destructive: ['donkey', 'armageddon', 'nuke', 'earthquake', 'tsunami'], // hits the whole level

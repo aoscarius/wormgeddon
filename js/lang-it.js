@@ -324,6 +324,7 @@ I18N.it = {
   'You\'re already dead!': 'Tu sei già morto!',
   Kamehameha: 'Kamehameha',
   'Oni Giri': 'Oni Giri',
+  'Gomu Gomu no Gigant Axe': 'Gomu Gomu no Gigant Axe',
   'Proton Stream': 'Raggio protonico',
   'Click an enemy worm': 'Clicca un verme nemico',
   'Needs a teammate': 'Serve un compagno',

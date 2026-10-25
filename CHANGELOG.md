@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-36 commits, 2026-10-18 to 2026-10-25. Up to commit `93f2da47d0c655ed76afdeb1d05595f5e4faff82`.
+37 commits, 2026-10-18 to 2026-10-25. Up to commit `3647ddf6cd189a9b188f036bad299a15a6fb7531`.
 
 ## 2026-10-18
 
@@ -289,7 +289,14 @@ fixed, changed or refactored.
 **Refactored**
 - Refactor Proton Stream mechanics: allow up to two teammates to join the caster in targeting, adjust damage calculations based on the number of streams, and update related tests and documentation
 
-### [`93f2da4`](https://github.com/aoscarius/wormgeddon/commit/93f2da47d0c655ed76afdeb1d05595f5e4faff82)
+### [`8b83473`](https://github.com/aoscarius/wormgeddon/commit/8b83473b75aa25993372f12c730edeecf885cf7b)
 
 **Added**
 - Implement touch swipe functionality for weapon panel category navigation: add swipe gestures for mobile devices, update related documentation and tests
+
+### [`3647ddf`](https://github.com/aoscarius/wormgeddon/commit/3647ddf6cd189a9b188f036bad299a15a6fb7531)
+
+**Added**
+- Add Gomu Gomu no Gigant Axe weapon with unique mechanics and effects
+- Added audio effects for the weapon's shout and stomp
+- Created tests to validate weapon functionality and interactions with other game elements

@@ -184,6 +184,15 @@ const SFX = {
     noiseBurst(0.08, 0.12, 2500);
     tone(900, 300, 0.08, 'square', 0.04);
   },
+  // Gomu Gomu no Gigant Axe: the shout and the rubber leg stretching, then the stomp.
+  gigant: () => {
+    voice('Gomu Gomu no, Gigant Axe!', 'ja-JP', 1.0, 0.5);
+    tone(150, 700, 1.1, 'sine', 0.06);
+  },
+  stomp: () => {
+    noiseBurst(0.6, 0.45, 300);
+    tone(80, 28, 0.6, 'sine', 0.25);
+  },
   // Oni Giri: swords drawn, the dash, and a slice.
   draw: () => {
     for (let i = 0; i < 3; i++) setTimeout(() => tone(2200 + i * 500, 3400 + i * 500, 0.12, 'triangle', 0.05), i * 110);
@@ -196,7 +205,7 @@ const SFX = {
     noiseBurst(0.12, 0.2, 4000);
     tone(1800, 600, 0.12, 'sawtooth', 0.07);
   },
-  dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 0.8, 0.6),
+  dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 1.0, 0.5),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);
     setTimeout(() => tone(900, 1300, 0.12, 'triangle', 0.1), 90);

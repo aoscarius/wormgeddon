@@ -292,6 +292,23 @@ const ICON_DRAW = {
     icRect(g, 22, 36, 9, 20, IC.steel, 2);
     icRect(g, 38, 36, 8, 14, IC.dsteel, 2);
   },
+  // Gomu Gomu no Gigant Axe: a giant foot coming down, with speed lines and a cracked ground.
+  gigantaxe(g) {
+    for (const x of [16, 30, 44]) icLine(g, x, 3, x, 12, 2.5, IC.white);
+    icEllipse(g, 30, 29, 22, 13, IC.skin);
+    for (const [x, y] of [
+      [50, 21],
+      [53, 27],
+      [53, 33],
+      [50, 39],
+      [46, 43],
+    ])
+      icCircle(g, x, y, 4, IC.skin);
+    icLine(g, 26, 18, 26, 40, 3, IC.red);
+    icLine(g, 4, 54, 60, 54, 4, IC.brown);
+    icLine(g, 24, 54, 16, 61, 2, IC.ink);
+    icLine(g, 40, 54, 48, 61, 2, IC.ink);
+  },
   // Proton Stream: two streams that cross, with a flare at the crossing.
   proton(g) {
     icLine(g, 6, 54, 50, 14, 5, IC.orange);

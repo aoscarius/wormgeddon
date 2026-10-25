@@ -449,6 +449,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Gomu Gomu no Gigant Axe (Luffy): the worm raises a foot that grows huge, then slams it down 90 px ahead, crushing
+// everything within 50 px (see axeTick / axeCrush in worms.js).
+registerWeapon({
+  id: 'gigantaxe',
+  name: 'Gomu Gomu no Gigant Axe',
+  code: 'GG',
+  ammo: 1,
+  delay: 5,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'axe', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Air strike: click a target; a plane drops five bombs.
 registerWeapon({
   id: 'airstrike',

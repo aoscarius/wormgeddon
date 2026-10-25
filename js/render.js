@@ -629,6 +629,19 @@ function render() {
     }
     ctx2.restore();
   }
+  for (const f of FX.flats || []) {
+    const tm = G.teams[f.team];
+    ctx2.save();
+    ctx2.globalAlpha = Math.min(1, (2 - f.t) / 0.6);
+    ctx2.fillStyle = (tm && tm.color) || '#f4a6b8';
+    ctx2.strokeStyle = '#0c1524';
+    ctx2.lineWidth = 1.2;
+    ctx2.beginPath();
+    ctx2.ellipse(f.x, f.y + 4, 15, 2.6, 0, 0, TAU);
+    ctx2.fill();
+    ctx2.stroke();
+    ctx2.restore();
+  }
   for (const s of FX.slashes || []) {
     // three parallel cuts that flash across the sliced worm and fade
     const k = s.t / 0.3,

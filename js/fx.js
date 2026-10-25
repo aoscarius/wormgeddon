@@ -141,6 +141,15 @@ function applyEvent(e) {
     case 'dmg':
       FX.txt.push({ x: e.x, y: e.y, t: '-' + e.v, c: e.c, l: 1.8 });
       break;
+    case 'stomp':
+      FX.rings.push({ x: e.x, y: e.y, r: e.r, t: 0, big: true });
+      puff(e.x, e.y, 30, 230, ['#b9a48a', '#8c7a63', '#e0d2b4'], 0.9, 3.5, 200, 'c');
+      SFX.stomp();
+      break;
+    case 'flat':
+      // a worm squashed flat: a pancake in its team colour that fades away
+      (FX.flats = FX.flats || []).push({ x: e.x, y: e.y, t: 0, team: e.t });
+      break;
     case 'slash':
       (FX.slashes = FX.slashes || []).push({ x: e.x, y: e.y, t: 0, f: e.f });
       puff(e.x, e.y, 10, 260, ['#fff', '#cfe8ff', '#ff4b4b'], 0.3, 2, 0, 'c');
@@ -346,6 +355,7 @@ function fxUpdate(dt) {
   for (const b of FX.bolts) b.t += dt;
   FX.bolts = FX.bolts.filter(b => b.t < 0.35);
   FX.slashes = (FX.slashes || []).filter(s => (s.t += dt) < 0.3);
+  FX.flats = (FX.flats || []).filter(f => (f.t += dt) < 2);
   if (FX.quake > 0) {
     FX.quake -= dt;
     UI.shake = Math.max(UI.shake, 5);
