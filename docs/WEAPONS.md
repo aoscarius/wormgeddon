@@ -71,6 +71,14 @@ remembered in `localStorage` (`wormgeddon.wtab`).
 | `tools` | movement and digging | Ninja Rope, Jet Pack, Teleport, Girder, Blowtorch, Pneumatic Drill, Parachute |
 | `special` | everything else and turn controls | Scales of Justice, Select Worm, Skip Go, Surrender |
 
+**Keyboard only.** While the panel is open (key `W`) the keyboard drives it: arrows move a highlighted cursor (it
+starts on the armed weapon; left / right step through the list, up / down jump to the next row), `Home` / `End`
+go to the ends, `Tab` / `Shift+Tab` change category, a letter jumps to the next weapon whose name starts with it,
+`Enter` or `Space` arm the weapon under the cursor and close the panel (an empty or locked weapon is refused), and
+`W` or `Esc` close it. The game keys (arrows to walk, Space to fire, Tab to switch worm) are inactive meanwhile. Code:
+`panelKey` / `panelCursor` / `panelMove` / `panelTab` in `input.js`, the `.kb` outline in `style.css`, the cursor
+is kept across grid rebuilds by `hudPanel`. `tests/test_weapon_keys.py` covers it.
+
 Where it lives:
 
 * `WEAPON_CATS` (tab order) and `WEAPON_CAT` (id -> category) are at the top of `core.js`; `registerWeapon` sets

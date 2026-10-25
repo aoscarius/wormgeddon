@@ -20,6 +20,8 @@ I18N.it = {
   'Hold Space to charge': 'Tieni premuto Spazio per caricare',
   'Weapons [W]': 'Armi [W]',
   Weapons: 'Armi',
+  'Keyboard: arrows move, Enter or Space arms, Tab changes category, letters jump to a weapon, W or Esc closes.':
+    'Tastiera: le frecce spostano, Invio o Spazio armano, Tab cambia categoria, le lettere saltano a un’arma, W o Esc chiudono.',
   Close: 'Chiudi',
   Fire: 'Fuoco',
   Jump: 'Salta',

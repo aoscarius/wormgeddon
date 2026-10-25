@@ -208,6 +208,7 @@ function hudPanel(t, mine) {
       }
     }
     $('wgrid').innerHTML = html;
+    if (mine && $('wpanel').classList.contains('on')) panelCursor(UI.wcur); // keep the keyboard cursor
   }
   $('wtoggle').style.display = mine ? '' : 'none';
   $('touch').classList.toggle('off', !mine);

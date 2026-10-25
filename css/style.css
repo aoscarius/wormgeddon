@@ -689,6 +689,15 @@ kbd {
   overscroll-behavior: contain;
   align-content: start;
 }
+.wb.kb {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+@media (pointer: coarse) {
+  #wpanel .kbhint {
+    display: none;
+  }
+}
 #wpanel .note {
   margin: 0;
   font-size: 0.8rem;

@@ -54,7 +54,7 @@ runs offline without them (only online play and the display font are lost).
 | Up / Down              | aim (rope: reel in / out; jet pack: thrust)                                                      |
 | Enter / Backspace      | jump / back-flip (Enter lets go of the rope; with another weapon selected on the rope or jet pack it fires that weapon)                                                |
 | Space                  | hold to charge, release to fire; fires instant weapons; detonates sheep                          |
-| W                      | weapon panel (click a weapon to arm it)                                                          |
+| W                      | weapon panel: click a weapon, or use the keyboard: arrows move, Enter / Space arms it, Tab changes category, a letter jumps to a weapon, W / Esc closes |
 | 1-5                    | grenade fuse in seconds                                                                          |
 | Mouse click / tap      | target for strikes, teleport, girder, homing missile                                             |
 | Mouse wheel / pinch    | zoom towards the cursor / fingers (wheel rotates the girder when it is armed; hold Ctrl to zoom) |

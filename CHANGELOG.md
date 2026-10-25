@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-33 commits, 2026-10-18 to 2026-10-25. Up to commit `8a620563adf6e7ecb6d0d8389912c31d2e6acd4f`.
+34 commits, 2026-10-18 to 2026-10-25. Up to commit `5cf4dae69bc2b4cfa3c53834d619c9df8692b51d`.
 
 ## 2026-10-18
 
@@ -273,7 +273,13 @@ fixed, changed or refactored.
 - Add seasonal and special themes with effects and testing
 - Introduced seasonal themes: Halloween, Christmas, and Manga with unique effects and properties
 
-### [`8a62056`](https://github.com/aoscarius/wormgeddon/commit/8a620563adf6e7ecb6d0d8389912c31d2e6acd4f)
+### [`4cfcef5`](https://github.com/aoscarius/wormgeddon/commit/4cfcef589dcbf975f975049b114cf8db415a1768)
 
 **Added**
 - Add arsenal modes and related functionality: implement special, anime, melee, and artillery only modes with corresponding weapon restrictions, update documentation, and add tests for arsenal behavior
+
+### [`5cf4dae`](https://github.com/aoscarius/wormgeddon/commit/5cf4dae69bc2b4cfa3c53834d619c9df8692b51d)
+
+**Changed**
+- Enhance weapon panel keyboard navigation: implement keyboard controls for opening, navigating, and arming weapons, including support for category switching and letter jumps
+- Update documentation and add tests for keyboard functionality

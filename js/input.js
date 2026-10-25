@@ -39,6 +39,7 @@ function edge(k) {
 // F3 or ` (debug view).
 addEventListener('keydown', e => {
   if (!G || $('menu').style.display !== 'none' || e.target.tagName === 'INPUT') return;
+  if (panelKey(e)) return;
   const k = KEYMAP[e.key];
   if (k) {
     if (!e.repeat) setKey(k, 1);
@@ -118,9 +119,96 @@ addEventListener('blur', () => {
 function togglePanel(open) {
   const p = $('wpanel'),
     on = open === undefined ? !p.classList.contains('on') : !!open;
+  if (on && !p.classList.contains('on')) UI.wcur = G && G.weapon ? G.weapon.id : null; // keyboard cursor starts on the armed weapon
   p.classList.toggle('on', on);
   p.setAttribute('aria-hidden', on ? 'false' : 'true');
   $('wback').classList.toggle('on', on);
+  if (on) panelCursor(UI.wcur);
+}
+
+/* ---- Weapon panel: keyboard navigation ---- */
+/** Weapon buttons currently in the panel grid. */
+const panelButtons = () => [...$('wgrid').querySelectorAll('.wb')];
+/**
+ * Puts the keyboard cursor on weapon `id` (the armed weapon, else the first one shown) and scrolls it into view.
+ * Called after every grid rebuild too, so the cursor survives ammo changes.
+ */
+function panelCursor(id) {
+  const bs = panelButtons();
+  if (!bs.length) return;
+  const b = bs.find(x => x.dataset.w === id) || bs.find(x => x.dataset.w === (G && G.weapon && G.weapon.id)) || bs[0];
+  UI.wcur = b.dataset.w;
+  for (const x of bs) x.classList.toggle('kb', x === b);
+  if (b.scrollIntoView) b.scrollIntoView({ block: 'nearest' });
+}
+/** Moves the cursor: left / right step through the list, up / down jump to the nearest button in the next row. */
+function panelMove(dx, dy) {
+  const bs = panelButtons();
+  if (!bs.length) return;
+  let i = bs.findIndex(b => b.dataset.w === UI.wcur);
+  if (i < 0) i = 0;
+  if (dx) return panelCursor(bs[(i + dx + bs.length) % bs.length].dataset.w);
+  const c = bs[i],
+    cx = c.offsetLeft + c.offsetWidth / 2,
+    rows = [...new Set(bs.map(b => b.offsetTop))].sort((a, b) => a - b),
+    r = rows.indexOf(c.offsetTop) + dy;
+  if (r < 0 || r >= rows.length) return;
+  const row = bs.filter(b => b.offsetTop === rows[r]);
+  row.sort((a, b) => Math.abs(a.offsetLeft + a.offsetWidth / 2 - cx) - Math.abs(b.offsetLeft + b.offsetWidth / 2 - cx));
+  panelCursor(row[0].dataset.w);
+}
+/** Tab / Shift+Tab: next / previous visible category tab. */
+function panelTab(dir) {
+  const tabs = [...document.querySelectorAll('#wtabs [data-cat]')].filter(b => !b.hidden),
+    i = tabs.findIndex(b => b.dataset.cat === UI.wcat);
+  if (!tabs.length) return;
+  UI.wcur = null;
+  setWeaponTab(tabs[(i + dir + tabs.length) % tabs.length].dataset.cat);
+  hud(); // rebuild the grid now so the cursor lands on the first weapon of the category
+  const bs = panelButtons();
+  if (bs.length) panelCursor(bs[0].dataset.w);
+}
+/**
+ * Keyboard control of the open weapon panel (for players without a mouse): arrows move the cursor,
+ * Enter / Space arm the weapon under it and close the panel, Tab / Shift+Tab change category, Home / End
+ * jump to the ends, a letter jumps to the next weapon whose name starts with it. W and Esc close it (handled
+ * by the normal key handler). Returns true when the key was consumed.
+ */
+function panelKey(e) {
+  if (!$('wpanel').classList.contains('on') || e.ctrlKey || e.metaKey || e.altKey) return false;
+  const k = e.key;
+  if (k === 'w' || k === 'W' || k === 'Escape') return false;
+  let used = true;
+  if (k === 'ArrowLeft') panelMove(-1, 0);
+  else if (k === 'ArrowRight') panelMove(1, 0);
+  else if (k === 'ArrowUp') panelMove(0, -1);
+  else if (k === 'ArrowDown') panelMove(0, 1);
+  else if (k === 'Home' || k === 'End') {
+    const bs = panelButtons();
+    if (bs.length) panelCursor(bs[k === 'Home' ? 0 : bs.length - 1].dataset.w);
+  } else if (k === 'Tab') panelTab(e.shiftKey ? -1 : 1);
+  else if (k === 'Enter' || k === ' ') {
+    if (!e.repeat) {
+      const b = panelButtons().find(x => x.dataset.w === UI.wcur);
+      if (b && !b.classList.contains('off')) {
+        uiSelect(UI.wcur);
+        togglePanel(false);
+      }
+    }
+  } else if (k.length === 1 && /[a-z]/i.test(k)) {
+    const bs = panelButtons(),
+      n = bs.length,
+      i = bs.findIndex(b => b.dataset.w === UI.wcur);
+    for (let j = 1; j <= n; j++) {
+      const b = bs[(i + j + n) % n];
+      if (b.querySelector('b').textContent.trim().toLowerCase().startsWith(k.toLowerCase())) {
+        panelCursor(b.dataset.w);
+        break;
+      }
+    }
+  } else used = false;
+  if (used) e.preventDefault();
+  return used;
 }
 /** Toggles browser full screen (Fullscreen API; the iOS iPhone Safari has none, so nothing happens there). */
 function toggleFullscreen() {
