@@ -79,6 +79,12 @@ go to the ends, `Tab` / `Shift+Tab` change category, a letter jumps to the next 
 `panelKey` / `panelCursor` / `panelMove` / `panelTab` in `input.js`, the `.kb` outline in `style.css`, the cursor
 is kept across grid rebuilds by `hudPanel`. `tests/test_weapon_keys.py` covers it.
 
+**Touch.** On phones and tablets swipe left / right over the weapon grid to go to the next / previous category
+(it wraps around; the tab strip scrolls so the active tab stays visible). A swipe is mostly horizontal, at least 50 px
+(or 18 % of the panel) and under 0.9 s; vertical drags still scroll the grid and the weapon under the finger is not
+armed at the end of a swipe. Code: the swipe block above `panelKey` in `input.js`, `touch-action: pan-y` and the slide
+animation on `#wgrid` in `style.css`.
+
 Where it lives:
 
 * `WEAPON_CATS` (tab order) and `WEAPON_CAT` (id -> category) are at the top of `core.js`; `registerWeapon` sets

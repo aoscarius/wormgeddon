@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-35 commits, 2026-10-18 to 2026-10-25. Up to commit `27d38818e32288a1863a4e03292e4fcfd9d3feb2`.
+36 commits, 2026-10-18 to 2026-10-25. Up to commit `93f2da47d0c655ed76afdeb1d05595f5e4faff82`.
 
 ## 2026-10-18
 
@@ -284,7 +284,12 @@ fixed, changed or refactored.
 - Enhance weapon panel keyboard navigation: implement keyboard controls for opening, navigating, and arming weapons, including support for category switching and letter jumps
 - Update documentation and add tests for keyboard functionality
 
-### [`27d3881`](https://github.com/aoscarius/wormgeddon/commit/27d38818e32288a1863a4e03292e4fcfd9d3feb2)
+### [`fe93a1f`](https://github.com/aoscarius/wormgeddon/commit/fe93a1ffcbc07f0a1182ce14d9f4a4ba8205b45c)
 
 **Refactored**
 - Refactor Proton Stream mechanics: allow up to two teammates to join the caster in targeting, adjust damage calculations based on the number of streams, and update related tests and documentation
+
+### [`93f2da4`](https://github.com/aoscarius/wormgeddon/commit/93f2da47d0c655ed76afdeb1d05595f5e4faff82)
+
+**Added**
+- Implement touch swipe functionality for weapon panel category navigation: add swipe gestures for mobile devices, update related documentation and tests

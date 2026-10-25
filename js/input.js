@@ -169,6 +169,37 @@ function panelTab(dir) {
   if (bs.length) panelCursor(bs[0].dataset.w);
 }
 /**
+ * Touch: swipe left / right over the weapon grid to move to the next / previous category tab (the tab strip
+ * itself also scrolls sideways with a finger). A swipe is mostly horizontal, at least 50 px (or 18 % of the
+ * panel) long and fast enough to be deliberate; vertical drags keep scrolling the grid.
+ */
+(function () {
+  const grid = $('wgrid');
+  let s = null;
+  grid.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') return;
+    s = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() };
+  });
+  const end = e => {
+    if (!s || e.pointerId !== s.id) return;
+    const dx = e.clientX - s.x,
+      dy = e.clientY - s.y,
+      dt = performance.now() - s.t;
+    s = null;
+    if (e.type === 'pointercancel') return;
+    const min = Math.max(50, $('wpanel').offsetWidth * 0.18);
+    if (Math.abs(dx) >= min && Math.abs(dx) > Math.abs(dy) * 1.6 && dt < 900) {
+      UI.swipedAt = performance.now();
+      panelTab(dx < 0 ? 1 : -1);
+      grid.classList.remove('swl', 'swr');
+      void grid.offsetWidth; // restart the slide-in animation
+      grid.classList.add(dx < 0 ? 'swl' : 'swr');
+    }
+  };
+  grid.addEventListener('pointerup', end);
+  grid.addEventListener('pointercancel', end);
+})();
+/**
  * Keyboard control of the open weapon panel (for players without a mouse): arrows move the cursor,
  * Enter / Space arm the weapon under it and close the panel, Tab / Shift+Tab change category, Home / End
  * jump to the ends, a letter jumps to the next weapon whose name starts with it. W and Esc close it (handled
@@ -340,6 +371,7 @@ cvs.addEventListener(
   { passive: false }
 );
 $('wgrid').addEventListener('click', e => {
+  if (performance.now() - (UI.swipedAt || -1e9) < 350) return; // the end of a swipe is not a tap
   const b = e.target.closest('.wb');
   if (!b || b.classList.contains('off')) return;
   uiSelect(b.dataset.w);
@@ -353,6 +385,8 @@ function setWeaponTab(cat) {
     b.setAttribute('aria-selected', b.dataset.cat === cat ? 'true' : 'false');
   }
   UI.sig = null; // rebuild the grid
+  const on = document.querySelector(`#wtabs [data-cat="${cat}"]`);
+  if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'center' }); // keep the tab visible in the strip
   try {
     localStorage.setItem('wormgeddon.wtab', cat);
   } catch (e) {}

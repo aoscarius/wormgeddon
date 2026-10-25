@@ -657,7 +657,7 @@ kbd {
 #wtabs {
   display: flex;
   gap: 6px;
-  overflow-x: auto;
+  overflow-x: none;
   padding-bottom: 2px;
   scrollbar-width: thin;
 }
@@ -682,7 +682,26 @@ kbd {
   border-color: var(--accent);
   color: #1a1206;
 }
+#wgrid.swl {
+  animation: wslide-l 0.18s ease-out;
+}
+#wgrid.swr {
+  animation: wslide-r 0.18s ease-out;
+}
+@keyframes wslide-l {
+  from {
+    transform: translateX(24px);
+    opacity: 0.4;
+  }
+}
+@keyframes wslide-r {
+  from {
+    transform: translateX(-24px);
+    opacity: 0.4;
+  }
+}
 #wgrid {
+  touch-action: pan-y;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -696,6 +715,9 @@ kbd {
 @media (pointer: coarse) {
   #wpanel .kbhint {
     display: none;
+  }
+  .wb.kb {
+    outline: none;
   }
 }
 #wpanel .note {
