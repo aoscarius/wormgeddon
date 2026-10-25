@@ -644,7 +644,7 @@ function drawWorm(w) {
   // shooter of a Proton Stream: a proton pack on the back and a rifle aimed at the locked target
   const rig = protonRig(w);
   if (rig) {
-    const tg = wById(rig.net[2]),
+    const tg = wById(rig.net[0]),
       an = tg ? Math.atan2(tg.y - (w.y - 3), tg.x - w.x) : 0,
       dx = Math.cos(an),
       dy = Math.sin(an),

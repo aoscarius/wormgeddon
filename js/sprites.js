@@ -267,11 +267,11 @@ function spriteProj(p) {
       // little past it so that they cross there, with sparks where each stream ends and a flare at the crossing.
       const gm = protonGeom(p);
       if (!gm) break;
-      const life = p.net[3],
+      const life = p.net[1],
         endT = PROTON_EQUIP + PROTON_FIRE,
         firing = life >= PROTON_EQUIP && life < endT + PROTON_FADE,
         fade = life > endT ? Math.max(0, 1 - (life - endT) / PROTON_FADE) : 1,
-        crossing = gm.a.connected && gm.b.connected;
+        crossing = gm.n >= 2;
       ctx2.translate(-p.x, -p.y);
       ctx2.globalCompositeOperation = 'lighter';
       ctx2.lineCap = 'round';
@@ -287,7 +287,7 @@ function spriteProj(p) {
         ctx2.arc(x, y, r, 0, TAU);
         ctx2.fill();
       };
-      for (const s of [gm.a, gm.b]) {
+      for (const s of gm.streams) {
         glow(s.x, s.y, life < PROTON_EQUIP ? 3 + (9 * life) / PROTON_EQUIP : 9 + Math.sin(G.time * 40) * 2, 'rgba(255,200,80,.9)');
         if (!firing) continue;
         let ex = s.ex,
@@ -312,7 +312,7 @@ function spriteProj(p) {
           ctx2.beginPath();
           for (let i = 0; i <= N; i++) {
             const k = i / N,
-              off = Math.sin(k * 14 - G.time * 38 + (s === gm.a ? 0 : 2)) * 4 * Math.min(1, k * 4);
+              off = Math.sin(k * 14 - G.time * 38 + gm.streams.indexOf(s) * 2) * 4 * Math.min(1, k * 4);
             const x = s.x + (ex - s.x) * k + nx * off,
               y = s.y + (ey - s.y) * k + ny * off;
             i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);

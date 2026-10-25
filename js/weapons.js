@@ -405,8 +405,8 @@ registerWeapon({
     return 'keep';
   },
 });
-// Proton Stream: click an enemy worm to lock on. The caster and the living teammate closest to it shoulder proton
-// rifles and burn the target; the streams cross at the target (see the 'proton' projectile). Needs a teammate.
+// Proton Stream: click an enemy worm to lock on. The caster and the (up to two) living teammates closest to it shoulder
+// proton rifles and burn the target; the streams cross at the target (see the 'proton' projectile). Needs a teammate.
 registerWeapon({
   id: 'proton',
   name: 'Proton Stream',
@@ -432,18 +432,12 @@ registerWeapon({
       emit({ e: 'msg', t: 'Click an enemy worm' });
       return 'miss';
     }
-    // the partner is the living teammate closest to the caster
-    let mate = null;
-    best = Infinity;
-    for (const o of G.worms) {
-      if (o.dead || o.sunk || o === c.w || o.team !== c.w.team) continue;
-      const d = Math.hypot(o.x - c.w.x, o.y - c.w.y);
-      if (d < best) {
-        best = d;
-        mate = o;
-      }
-    }
-    if (!mate) {
+    // the partners are the living teammates closest to the caster: with a bigger team, the nearest two (three shooters)
+    const mates = G.worms
+      .filter(o => !o.dead && !o.sunk && o !== c.w && o.team === c.w.team)
+      .sort((p, q) => Math.hypot(p.x - c.w.x, p.y - c.w.y) - Math.hypot(q.x - c.w.x, q.y - c.w.y))
+      .slice(0, PROTON_SHOOTERS - 1);
+    if (!mates.length) {
       emit({ e: 'msg', t: 'Needs a teammate' });
       return 'miss';
     }
@@ -451,7 +445,7 @@ registerWeapon({
     emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
     emit({ e: 'snd', s: 'proton' });
     c.w.tool = { k: 'proton', t: 99, p: 0 };
-    spawnProj('proton', c.w.x, c.w.y, 0, 0, c.w, { ow: c.w.id, net: [c.w.id, mate.id, tw.id, 0] });
+    spawnProj('proton', c.w.x, c.w.y, 0, 0, c.w, { ow: c.w.id, net: [tw.id, 0, c.w.id, ...mates.map(m => m.id)] });
     return 'keep';
   },
 });

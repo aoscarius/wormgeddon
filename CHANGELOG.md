@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-34 commits, 2026-10-18 to 2026-10-25. Up to commit `5cf4dae69bc2b4cfa3c53834d619c9df8692b51d`.
+35 commits, 2026-10-18 to 2026-10-25. Up to commit `27d38818e32288a1863a4e03292e4fcfd9d3feb2`.
 
 ## 2026-10-18
 
@@ -278,8 +278,13 @@ fixed, changed or refactored.
 **Added**
 - Add arsenal modes and related functionality: implement special, anime, melee, and artillery only modes with corresponding weapon restrictions, update documentation, and add tests for arsenal behavior
 
-### [`5cf4dae`](https://github.com/aoscarius/wormgeddon/commit/5cf4dae69bc2b4cfa3c53834d619c9df8692b51d)
+### [`f4b05ca`](https://github.com/aoscarius/wormgeddon/commit/f4b05ca61dad47973f7006a0fbd460828b689de0)
 
 **Changed**
 - Enhance weapon panel keyboard navigation: implement keyboard controls for opening, navigating, and arming weapons, including support for category switching and letter jumps
 - Update documentation and add tests for keyboard functionality
+
+### [`27d3881`](https://github.com/aoscarius/wormgeddon/commit/27d38818e32288a1863a4e03292e4fcfd9d3feb2)
+
+**Refactored**
+- Refactor Proton Stream mechanics: allow up to two teammates to join the caster in targeting, adjust damage calculations based on the number of streams, and update related tests and documentation
