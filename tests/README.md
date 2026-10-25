@@ -42,6 +42,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_tornado.py` | the tornado really hurts a worm in the funnel and lifts mines and oil drums |
 | `test_teamsbar.py` | team bars sorted by total health, rows slide when two teams swap, ties keep team order |
 | `test_p2p_start.py` | guest start-up: finite camera, sea and worm positions right after `start` (also with an old host), `ready` request, early snapshots kept, NaN camera recovers |
+| `test_changelog.py` | `tools/changelog.py`: oldest-first order, verb / `feat:` / `fix:` classification, trailers dropped, reproducible, `--check`; the real CHANGELOG.md is well formed (no browser) |
 | `test_chat.py` | chat: cleaning, host stamping (no spoofing), flood control, no HTML injection, lobby + in-game UI, offline = no chat |
 | `test_hammer_collision.py` | Thor's Hammer lightning ends at the first obstacle: a clear line reaches the target, a wall (girder) or another worm in between takes the strike and shields the target |
 | `test_kenshiro.py` | Hokuto Hyakuretsu Ken: punch barrage on the worm in front, voice lines (speech stubbed), dash past it to a safe distance, victim dies exactly 3 s after the last blow, turn waits for it, misses mark nobody, tool is not cancellable |

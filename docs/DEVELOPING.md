@@ -40,6 +40,7 @@ This guide is the overview. Each topic below has its own document with the full 
   - [10. Bots](#10-bots)
   - [11. Online play and the network protocol](#11-online-play-and-the-network-protocol)
   - [12. Debugging and tests](#12-debugging-and-tests)
+  - [Changelog](#changelog)
   - [13. Conventions and gotchas](#13-conventions-and-gotchas)
 
 ---
@@ -492,6 +493,27 @@ sandboxed iframes such as the artifact preview.
   seconds and that no worm/crate stays un-grounded (`quietBlocker()` tells you why a settle drags on).
 
 ---
+
+### Changelog
+
+`CHANGELOG.md` is generated from the git history, never edited by hand:
+
+```bash
+python3 tools/changelog.py            # rewrite CHANGELOG.md (first commit -> latest, grouped by day)
+python3 tools/changelog.py --check    # exit 1 when it is out of date (for CI or a pre-push hook)
+python3 tools/changelog.py --stdout   # preview
+```
+
+Each commit is one entry (short hash linked to GitHub). The subject and body are split into sentences and each
+goes under **Added**, **Fixed**, **Changed**, **Refactored**, **Docs** or **Tests**, chosen by its first word
+(`Add` / `Implement` / `Introduce` -> Added, `Fix` / `Restore` / `Adjust` -> Fixed, `Refactor` / `Rename` ->
+Refactored, `Update` / `Enhance` / `Remove` -> Changed) or by a conventional prefix (`feat:`, `fix(net):`,
+`refactor:`). A sentence with no known verb joins the category of the commit's first sentence. Co-author and
+session trailers are left out. To get precise entries, start each sentence of the message with one of those
+verbs. Run the script as the last step before pushing; the file names the commit it covers, so the commit that
+stores it does not make `--check` fail. The file records full commit hashes, so after rebasing or applying
+patches (which rewrite hashes) run the script again before committing it. To adjust the rules edit `PREFIX` / `VERBS` in `tools/changelog.py`
+(`tests/test_changelog.py` covers them).
 
 ## 13. Conventions and gotchas
 

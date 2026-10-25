@@ -220,6 +220,7 @@ themes, languages, crates, menu options and network state, with worked examples.
 - [Physics](docs/PHYSICS.md)
 - [Weapons](docs/WEAPONS.md) (categories, panel tabs, checklist)
 - [Projectiles](docs/PROJECTILES.md)
+- [Changelog](CHANGELOG.md), generated from git by `python3 tools/changelog.py` (see the developer guide)
 - [Customising](docs/CUSTOMIZING.md) (cookbook)
 
 Debug keys: `F3` / `` ` `` debug view, `F4` trajectories (while the debug view is on).
