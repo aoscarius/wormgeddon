@@ -226,7 +226,8 @@ const HYAKU_REACH = 34,
   HYAKU_NOVIC = 120,
   HYAKU_FUSE = 6,
   HYAKU_BLAST = 48,
-  HYAKU_SAY = 0.7;
+  HYAKU_SAY = 0.7,
+  HYAKU_SWELL = 4.6;
 /**
  * One tick of the Hokuto Hyakuretsu Ken. Phases (tl.ph, shown to guests as tl.p): 0 = gatling punches on the worm
  * right in front (picked on the first tick), 1 = dash past it to a safe distance (the victim is marked: `doom`),
@@ -240,6 +241,7 @@ function hyakuTick(w, tl, dt) {
     tl.c = 0;
     tl.vic = null;
     let best = HYAKU_REACH + 1;
+    emit({ e: 'snd', s: 'ata' });
     for (const o of G.worms) {
       const rx = (o.x - w.x) * w.face;
       if (o.dead || o === w || Math.abs(o.y - w.y) > 18 || rx < -4 || rx > HYAKU_REACH) continue;
@@ -284,8 +286,11 @@ function hyakuTick(w, tl, dt) {
       tl.p = 2;
       tl.age = 0;
       w.vx = 0;
-      emit({ e: 'snd', s: 'dead' });
-      emit({ e: 'say', x: w.x, y: w.y - 24, t: tr('You\'re already dead!') });
+      // the voice line is for a worm that was really hit: with nobody in front the dash is silent
+      if (live) {
+        emit({ e: 'snd', s: 'dead' });
+        emit({ e: 'say', x: w.x, y: w.y - 24, t: tr('You\'re already dead!') });
+      }
     }
   } else {
     physWorm(w, dt, false);
@@ -488,6 +493,7 @@ function kameTick(w, tl, dt) {
 /** The marked worm's time is up: a lethal explosion, and it dies on the spot. */
 function doomBlast(o) {
   o.doom = 0;
+  emit({ e: 'burst', x: o.x, y: o.y }); // Splatter Mode: the swollen worm bursts
   explode(o.x, o.y, HYAKU_BLAST, 60, 420, { k: 1, noEnd: true, src: o.doomBy });
   if (!o.dead) {
     o.pend = (o.pend || 0) + Math.max(0, o.hp);

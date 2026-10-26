@@ -309,12 +309,46 @@ function drawGrave(g, team) {
 }
 
 /**
+ * Draws a worm. In Splatter Mode a worm just sliced by the Oni Giri (`w._cut`, set by the 'slash' event) is drawn as two
+ * halves along the cut line that slide apart and come back together, while blood spurts from the cut (fx.js).
+ */
+function drawWorm(w) {
+  const cut = UI.splatterMode && !w.dead ? w._cut : null,
+    t = cut ? G.time - cut.t0 : 9;
+  if (!cut || t > 1.1) {
+    if (cut) w._cut = null;
+    drawWormBody(w);
+    return;
+  }
+  const g = ctx2,
+    gap = (t < 0.55 ? Math.min(1, t / 0.12) : Math.max(0, 1 - (t - 0.55) / 0.5)) * 7,
+    dx = Math.cos(cut.ang),
+    dy = Math.sin(cut.ang),
+    nx = -dy,
+    ny = dx,
+    cx = w.x,
+    cy = w.y - 2;
+  for (const sg of [1, -1]) {
+    g.save();
+    g.beginPath();
+    g.moveTo(cx - dx * 40, cy - dy * 40);
+    g.lineTo(cx + dx * 40, cy + dy * 40);
+    g.lineTo(cx + dx * 40 + sg * nx * 40, cy + dy * 40 + sg * ny * 40);
+    g.lineTo(cx - dx * 40 + sg * nx * 40, cy - dy * 40 + sg * ny * 40);
+    g.closePath();
+    g.clip();
+    g.translate(sg * nx * gap, sg * ny * gap + (sg > 0 ? -1 : 1) * gap * 0.25);
+    drawWormBody(w);
+    g.restore();
+  }
+}
+/**
  * Draws one worm (alive or as a grave stone) at its world position.
  * Reads per-frame render memory from the worm (`_px` last x, `_ph` walk phase), which is
  * never sent over the network.
  * @param {object} w worm
  */
-function drawWorm(w) {
+function drawWormBody(w) {
   const g = ctx2,
     team = G.teams[w.team];
   g.save();
@@ -325,6 +359,19 @@ function drawWorm(w) {
     return;
   }
 
+  // Splatter Mode: a worm marked by the Hokuto Hyakuretsu Ken swells up, after a start time, like blob until it bursts (see 'burst' in fx.js)
+  let swell = 0;
+  if (w.doom > 0) {
+    if (w._doomT === undefined) w._doomT = G.time;
+    swell = UI.splatterMode ? Math.min(1, (G.time - w._doomT - HYAKU_SWELL) / HYAKU_FUSE) : 0;
+  } else w._doomT = undefined;
+  if (swell > 0) {
+    const k = swell * swell * (1.3 - 0.3 * swell),
+      s = 1 + 1.9 * k + Math.sin(G.time * (10 + 22 * swell)) * 0.07 * swell;
+    g.translate(0, 6);
+    g.scale(s, s * (1 - 0.06 * Math.sin(G.time * 17) * swell));
+    g.translate(0, -6);
+  }
   const f = w.face,
     t = G.time,
     act = w.id === G.active,
@@ -740,6 +787,23 @@ function drawWorm(w) {
     g.moveTo(dx * 15, -3 + dy * 15);
     g.lineTo(dx * 19, -3 + dy * 19);
     g.stroke();
+  }
+  if (swell > 0) {
+    // the blob: reddening skin with pulsing veins
+    g.fillStyle = `rgba(190,15,40,${0.12 + 0.4 * swell})`;
+    g.beginPath();
+    g.arc(0, 0, 9 + 2 * swell, 0, TAU);
+    g.fill();
+    g.strokeStyle = `rgba(110,0,20,${0.4 + 0.5 * swell})`;
+    g.lineWidth = 0.8;
+    for (let i = 0; i < 5; i++) {
+      const a = i * 1.26 + 0.4,
+        p = 0.5 + 0.5 * Math.sin(G.time * 12 + i);
+      g.beginPath();
+      g.moveTo(Math.cos(a) * 3, Math.sin(a) * 3);
+      g.lineTo(Math.cos(a + 0.3 * p) * (7 + 2 * swell), Math.sin(a + 0.3 * p) * (7 + 2 * swell));
+      g.stroke();
+    }
   }
   // marked by the Hokuto Hyakuretsu Ken: a pulsing red aura until the blast
   if (w.doom > 0) {

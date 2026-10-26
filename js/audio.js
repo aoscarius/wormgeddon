@@ -74,6 +74,7 @@ function noiseBurst(dur, vol = 0.2, lp = 800) {
 const MP3_FILES = [
   'sounds/hallelujah.mp3', 
   'sounds/kamehameha.mp3',
+  'sounds/atatatatata.mp3',
   'sounds/omaewamoushindeiru.mp3',
   'sounds/wecamewesawwekickeditsass.mp3',
   'sounds/gomugomuno.mp3',
@@ -174,7 +175,8 @@ const SFX = {
     tone(2600, 180, 0.25, 'sawtooth', 0.07);
   },
   launch: () => tone(150, 60, 0.3, 'sawtooth', 0.07),
-  // Hokuto Hyakuretsu Ken: a short thud per punch, and the verdict.
+  // Hokuto Hyakuretsu Ken: a short thud per punch, ata, and the verdict.
+  ata: () => mp3Sfx('sounds/atatatatata.mp3'),
   thud: () => {
     noiseBurst(0.05, 0.12, 900);
     tone(110, 50, 0.06, 'square', 0.06);
@@ -206,6 +208,12 @@ const SFX = {
   stomp: () => {
     noiseBurst(0.6, 0.45, 300);
     tone(80, 28, 0.6, 'sine', 0.25);
+  },
+  // Splatter Mode: a wet burst (a low thump with a splash of filtered noise)
+  squelch: () => {
+    noiseBurst(0.35, 0.22, 700);
+    tone(140, 40, 0.3, 'sine', 0.12);
+    setTimeout(() => noiseBurst(0.18, 0.12, 1800), 90);
   },
   // Oni Giri: swords drawn, the dash, and a slice.
   draw: () => {

@@ -95,15 +95,65 @@ function bloodSplat(x, y) {
 }
 
 /**
+ * Paints a blood stain on the terrain picture (only where there is ground: `source-atop`), for Splatter Mode.
+ * Purely visual: the collision mask is untouched, so guests may differ without any consequence.
+ */
+function bloodStain(x, y, r) {
+  if (!T.ctx) return;
+  T.ctx.save();
+  T.ctx.globalCompositeOperation = 'source-atop';
+  for (let i = 0; i < 7; i++) {
+    T.ctx.fillStyle = ['#7d1020', '#a3122a', '#8a0f22'][i % 3];
+    T.ctx.globalAlpha = 0.55;
+    T.ctx.beginPath();
+    T.ctx.arc(x + (Math.random() - 0.5) * r * 1.6, y + (Math.random() - 0.5) * r * 0.9, r * (0.15 + Math.random() * 0.3), 0, TAU);
+    T.ctx.fill();
+  }
+  T.ctx.restore();
+}
+/** A shower of blood and gore: `n` droplets thrown up and out under gravity, plus a few heavy chunks. */
+function bloodShower(x, y, n, spread = 1) {
+  const cols = ['#5e0a16', '#7d1020', '#b5122b', '#d21f3c', '#ff4058'];
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.6 * spread,
+      speed = 90 + Math.random() * 330,
+      life = 0.7 + Math.random() * 0.9;
+    addP({
+      x,
+      y,
+      vx: Math.cos(a) * speed,
+      vy: Math.sin(a) * speed,
+      l: life,
+      m: life,
+      c: cols[(Math.random() * cols.length) | 0],
+      s: 1.4 + Math.random() * (i % 6 === 0 ? 5 : 2.6),
+      g: 560,
+      k: 'c',
+    });
+  }
+}
+
+/**
  * Turns one simulation event into visuals and sound. Runs on the host and on every guest.
  * Event types: x (explosion), dmg (floating damage), msg, log, nuke (background mushroom cloud), splash, snd, shot (tracer),
- * punch, tele, plane, quake, tsunami, bolt (lightning), flash, mark (homing target), turn, over, trail (particle trail).
+ * punch, burst (Splatter Mode), tele, plane, quake, tsunami, bolt (lightning), flash, mark (homing target), turn, over, trail (particle trail).
  * Terrain edits (x, cv, gd) are applied separately by applyTerrain().
  */
 function applyEvent(e) {
   switch (e.e) {
     case 'blood':
       if (UI.splatterMode) bloodSplat(e.x, e.y);
+      break;
+    case 'burst':
+      // Splatter Mode: the worm hit by the Hokuto Hyakuretsu Ken bursts in a shower of blood
+      if (UI.splatterMode) {
+        bloodShower(e.x, e.y - 4, 150, 1.2);
+        bloodShower(e.x, e.y - 4, 40, 0.5);
+        bloodStain(e.x, e.y + 6, 46);
+        FX.rings.push({ x: e.x, y: e.y, r: 40, t: 0, big: false });
+        UI.shake = Math.min(18, UI.shake + 6);
+        SFX.squelch();
+      }
       break;
     case 'x': {
       const r = e.r,
@@ -152,6 +202,24 @@ function applyEvent(e) {
       break;
     case 'slash':
       (FX.slashes = FX.slashes || []).push({ x: e.x, y: e.y, t: 0, f: e.f });
+      if (UI.splatterMode) {
+        // Splatter Mode: the sliced worm falls apart in two halves and its blood spurts out of the cut
+        const ang = e.f > 0 ? 0.9 : Math.PI - 0.9;
+        let tw = null,
+          best = 16;
+        for (const o of G.worms) {
+          const d = Math.hypot(o.x - e.x, o.y - 2 - e.y);
+          if (!o.dead && d < best) {
+            best = d;
+            tw = o;
+          }
+        }
+        if (tw) tw._cut = { t0: G.time, ang };
+        (FX.spurts = FX.spurts || []).push({ x: e.x, y: e.y, t: 0, ang });
+        bloodShower(e.x, e.y, 36, 0.7);
+        bloodStain(e.x, e.y + 8, 22);
+        SFX.squelch();
+      }
       puff(e.x, e.y, 10, 260, ['#fff', '#cfe8ff', '#ff4b4b'], 0.3, 2, 0, 'c');
       SFX.slash();
       break;
@@ -355,6 +423,31 @@ function fxUpdate(dt) {
   for (const b of FX.bolts) b.t += dt;
   FX.bolts = FX.bolts.filter(b => b.t < 0.35);
   FX.slashes = (FX.slashes || []).filter(s => (s.t += dt) < 0.3);
+  // blood pulsing out of a cut (Splatter Mode): a fountain along the cut's normal that weakens over 1 s
+  FX.spurts = (FX.spurts || []).filter(s => {
+    s.t += dt;
+    const k = Math.max(0, 1 - s.t),
+      n = Math.round(10 * k * dt * 60 * 0.5);
+    for (let i = 0; i < n; i++) {
+      const side = i % 2 ? 1 : -1,
+        sp = 120 + Math.random() * 220 * k,
+        a = s.ang + side * (Math.PI / 2) + (Math.random() - 0.5) * 0.5,
+        life = 0.45 + Math.random() * 0.5;
+      addP({
+        x: s.x,
+        y: s.y,
+        vx: Math.cos(a) * sp * 0.5,
+        vy: Math.sin(a) * sp - 120 - Math.random() * 160,
+        l: life,
+        m: life,
+        c: ['#7d1020', '#b5122b', '#d21f3c'][i % 3],
+        s: 1.5 + Math.random() * 2.4,
+        g: 560,
+        k: 'c',
+      });
+    }
+    return s.t < 1;
+  });
   FX.flats = (FX.flats || []).filter(f => (f.t += dt) < 2);
   if (FX.quake > 0) {
     FX.quake -= dt;

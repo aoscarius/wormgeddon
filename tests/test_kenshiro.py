@@ -1,12 +1,13 @@
 """Hokuto Hyakuretsu Ken: gatling punches on the worm in front, a dash past it to a safe distance with
-"You're already dead!", and 3 s after the last blow the victim explodes and dies. Misses mark nobody."""
+"You're already dead!" (the MP3 voice line, only when a worm was really hit), and HYAKU_FUSE s after the last blow the
+victim explodes and dies. Misses mark nobody and do not play the voice line."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
 
 JS = ARENA_JS + """
 const run = ([base]) => {
   const w = window.__wh, out = {};
-  const spoken = []; speechSynthesis.speak = u => spoken.push({t: u.text, lang: u.lang});
+  const spoken = []; const realMp3 = window.mp3Sfx; window.mp3Sfx = (src, v) => { spoken.push(src); };
   const setup = (victimX) => {
     w.newGame(Object.assign({seed: 'hk'}, base), [{name:'A',ctrl:'local'},{name:'B',ctrl:'local'}]);
     const g = w.G;
@@ -26,7 +27,7 @@ const run = ([base]) => {
     return {g, a, v, behind, far, t};
   };
   const play = (s, secs, hook) => {
-    const r = {ev: {punch: 0, dead: 0, say: 0, x: []}, phases: new Set(), doomAt: null, deadAt: null, blockers: [], t0: s.g.time};
+    const r = {ev: {punch: 0, ata: 0, dead: 0, say: 0, x: []}, phases: new Set(), doomAt: null, deadAt: null, blockers: [], t0: s.g.time};
     const old = window.emit;
     window.emit = e => {
       if (e.e === 'punch' && e.k === 'hyaku') r.ev.punch++;
@@ -57,12 +58,12 @@ const run = ([base]) => {
   out.A.dash = s.a.x - x0; out.A.pastVictim = s.a.x - s.v.x0; out.A.vDead = s.v.dead; out.A.vHp = s.v.hp; out.A.vX = s.v.x;
   out.A.spoken = spoken.slice(); out.A.aliveAtEnd = !s.a.dead; out.A.tool = !!s.a.tool;
   // muted: nothing is spoken
-  spoken.length = 0; muted = true; SFX.dead(); out.mutedSpoken = spoken.length; muted = false;
+  spoken.length = 0; SFX.dead(); SFX.ata(); out.voiceSrc = spoken.slice(); spoken.length = 0;
 
   // B) nobody in reach: no mark, no damage, still dashes forward
   s = setup(1100); spoken.length = 0;
   const x1 = s.a.x, hv = s.v.hp; s.g.weapon.id = 'hokuto'; LOCAL.fireP = 1;
-  out.B = play(s, 6); out.B.dash = s.a.x - x1; out.B.vLost = hv - s.v.hp; out.B.vDoom = s.v.doom || 0; out.B.vDead = s.v.dead;
+  out.B = play(s, 6); out.B.spoken = spoken.slice(); out.B.dash = s.a.x - x1; out.B.vLost = hv - s.v.hp; out.B.vDoom = s.v.doom || 0; out.B.vDead = s.v.dead;
 
   // C) Space does not stop it and the turn clock does not cut it
   s = setup(822); s.g.timer = 0.3; const x2 = s.a.x; s.g.weapon.id = 'hokuto'; LOCAL.fireP = 1;
@@ -82,10 +83,10 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- A: the barrage
     assert 15 <= A["ev"]["punch"] <= 24, f"gatling of punches: {A['ev']['punch']}"
     assert A["vLost"] >= 20 or A["vDead"], "the punches hurt the victim"
-    assert A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
+    assert A["ev"]["ata"] == 1 and A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
     sp = A["spoken"]
-    assert len(sp) == 1 and sp[0]["t"] == "You're already dead!" and sp[0]["lang"] == "en-EN", sp
-    assert r["mutedSpoken"] == 0, "muted: no voice"
+    assert len(sp) == 2 and sp[0] == ["sounds/omaewamoushindeiru.mp3"] and sp[1] == ["sounds/omaewamoushindeiru.mp3"], sp
+    assert r["voiceSrc"] == ["sounds/omaewamoushindeiru.mp3"]
     # --- A: the dash goes past the victim to a safe distance (blast reach is r+14 = 62 px)
     assert 0 in A["phases"] and 1 in A["phases"] and 2 in A["phases"]
     assert A["dash"] >= 22 + 85, f"dashed {A['dash']} px: not past the victim"
@@ -93,7 +94,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- A: the 3 s countdown, the block on the turn change, the lethal blast
     assert A["doomAt"] is not None and A["snap"][6] & 16, "marked worm is flagged in the snapshot"
     assert any(b and "doomed" in b for b in A["blockers"]) and None not in A["blockers"], A["blockers"]   # the turn cannot end while the countdown runs
-    assert A["deadAt"] is not None and abs((A["deadAt"] - A["doomAt"]) - 3.0) < 0.15, f"dies 3 s after the hit: {A['deadAt'] - A['doomAt']}"
+    assert A["deadAt"] is not None and abs((A["deadAt"] - A["doomAt"]) - 6.0) < 0.15, f"dies 6 s after the hit: {A['deadAt'] - A['doomAt']}"
     assert A["vDead"] and A["vHp"] == 0
     big = [e for e in A["ev"]["x"] if e["r"] >= 48]
     assert big and abs(big[0]["t"] - (A["deadAt"] - 0)) >= 0, "a lethal explosion"
@@ -103,6 +104,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- B: a miss marks nobody but the worm still dashes
     assert B["vDoom"] == 0 and not B["vDead"] and B["vLost"] == 0 and B["doomAt"] is None
     assert 100 < B["dash"] < 140, B["dash"]
+    assert B["ev"]["dead"] == 0 and B["ev"]["say"] == 0 and B["spoken"] == [], "a miss is silent"
 
     # --- C: not cancellable, not cut by the turn clock
     assert C["dash"] >= 22 + 85 and C["vDoomed"], C

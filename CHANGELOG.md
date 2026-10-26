@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-39 commits, 2026-10-18 to 2026-10-26. Up to commit `4b32516c798f9b7bfefbe6b8e6191d620c55d1fb`.
+40 commits, 2026-10-18 to 2026-10-26. Up to commit `05f9eb5f9e6062ce9f61acf1016fe4aa27dac86b`.
 
 ## 2026-10-18
 
@@ -311,8 +311,14 @@ fixed, changed or refactored.
 
 ## 2026-10-26
 
-### [`4b32516`](https://github.com/aoscarius/wormgeddon/commit/4b32516c798f9b7bfefbe6b8e6191d620c55d1fb)
+### [`c72ea9e`](https://github.com/aoscarius/wormgeddon/commit/c72ea9efaa2481ed27add0619e961fbd5a765bcd)
 
 **Changed**
 - Repleaced anime special weapons audio effects with real mp3 snippets
 - Synced audio with weapons animation
+
+### [`05f9eb5`](https://github.com/aoscarius/wormgeddon/commit/05f9eb5f9e6062ce9f61acf1016fe4aa27dac86b)
+
+**Changed**
+- Improved Splatter Mode: add blood effects and mechanics for Hokuto Hyakuretsu Ken and Oni Giri
+- Enhance visuals with blood stains and showers, and update related tests
