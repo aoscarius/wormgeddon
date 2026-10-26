@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-38 commits, 2026-10-18 to 2026-10-25. Up to commit `a12b727584b9c71be7be02f365db19cf0b6060f6`.
+39 commits, 2026-10-18 to 2026-10-26. Up to commit `4b32516c798f9b7bfefbe6b8e6191d620c55d1fb`.
 
 ## 2026-10-18
 
@@ -301,10 +301,18 @@ fixed, changed or refactored.
 - Added audio effects for the weapon's shout and stomp
 - Created tests to validate weapon functionality and interactions with other game elements
 
-### [`a12b727`](https://github.com/aoscarius/wormgeddon/commit/a12b727584b9c71be7be02f365db19cf0b6060f6)
+### [`47c8e46`](https://github.com/aoscarius/wormgeddon/commit/47c8e46024ab8defa59809ed3c19061a6f956e3b)
 
 **Added**
 - Added missing arsenal modes to the selection and enhanced teammate proximity checks for proton stream targeting
 
 **Changed**
 - Update arsenal options and improve proton stream mechanics
+
+## 2026-10-26
+
+### [`4b32516`](https://github.com/aoscarius/wormgeddon/commit/4b32516c798f9b7bfefbe6b8e6191d620c55d1fb)
+
+**Changed**
+- Repleaced anime special weapons audio effects with real mp3 snippets
+- Synced audio with weapons animation

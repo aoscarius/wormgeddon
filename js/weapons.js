@@ -387,6 +387,7 @@ registerWeapon({
   delay: 6,
   noEnd: true,
   fire(c) {
+    emit({ e: 'snd', s: 'kamevoice' });
     c.w.tool = { k: 'kame', t: 99, p: 0 };
     return 'keep';
   },

@@ -71,7 +71,13 @@ function noiseBurst(dur, vol = 0.2, lp = 800) {
 }
 /* ---- MP3 sound effects ---- */
 /** Files preloaded at start-up (see mp3Entry). Paths are relative to the page; `sounds/` ships with the build. */
-const MP3_FILES = ['sounds/hallelujah.mp3'];
+const MP3_FILES = [
+  'sounds/hallelujah.mp3', 
+  'sounds/kamehameha.mp3',
+  'sounds/omaewamoushindeiru.mp3',
+  'sounds/wecamewesawwekickeditsass.mp3',
+  'sounds/gomugomuno.mp3',
+];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
   MP3_VOICES = new Set();
@@ -173,20 +179,28 @@ const SFX = {
     noiseBurst(0.05, 0.12, 900);
     tone(110, 50, 0.06, 'square', 0.06);
   },
+  // dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 1.0, 0.5),
+  dead: () => mp3Sfx('sounds/omaewamoushindeiru.mp3'),
+  // Khameameah
   charge: () => tone(180, 900, 1.3, 'sine', 0.08),
   kame: () => {
     noiseBurst(1.4, 0.3, 700);
     tone(70, 240, 1.4, 'sawtooth', 0.1);
   },
+  // kamevoice: () => voice('Kamehameha', 'ja-JP', 1.2, 1.0),
+  kamevoice: () => mp3Sfx('sounds/kamehameha.mp3'),
   // Proton Stream: the packs power up, then a crackle on every damage tick.
   proton: () => tone(100, 160, 0.7, 'sawtooth', 0.06),
   zap: () => {
     noiseBurst(0.08, 0.12, 2500);
     tone(900, 300, 0.08, 'square', 0.04);
   },
+  // murray: () => voice('We came, we saw, we kicked its ass!', 'en-EN', 1.0, 1.5),
+  murray: () => mp3Sfx('sounds/wecamewesawwekickeditsass.mp3'),
   // Gomu Gomu no Gigant Axe: the shout and the rubber leg stretching, then the stomp.
   gigant: () => {
-    voice('Gomu Gomu no, Gigant Axe!', 'ja-JP', 1.0, 0.5);
+    // voice('Gomu Gomu no, Gigant Axe!', 'ja-JP', 1.0, 0.5);
+    mp3Sfx('sounds/gomugomuno.mp3'),
     tone(150, 700, 1.1, 'sine', 0.06);
   },
   stomp: () => {
@@ -205,7 +219,6 @@ const SFX = {
     noiseBurst(0.12, 0.2, 4000);
     tone(1800, 600, 0.12, 'sawtooth', 0.07);
   },
-  dead: () => voice('Omae wa mou shindeiru', 'ja-JP', 1.0, 0.5),
   pick: () => {
     tone(600, 900, 0.1, 'triangle', 0.1);
     setTimeout(() => tone(900, 1300, 0.12, 'triangle', 0.1), 90);

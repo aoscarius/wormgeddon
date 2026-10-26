@@ -157,7 +157,7 @@ function applyEvent(e) {
       break;
     case 'say':
       FX.txt.push({ x: e.x, y: e.y, t: e.t, c: '#ffd23f', l: 2.4 });
-      showMsg(tr(e.t), 1800);
+      // showMsg(tr(e.t), 1800);
       break;
     case 'msg':
       showMsg(tr(e.t, ...(e.a || []), e.w ? wname(e.w) : ''));

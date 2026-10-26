@@ -644,9 +644,9 @@ registerProj('supersheep', {
  * full-length beam stays and how long its tail takes to sweep out (s), and how far from the muzzle the carving starts
  * (so the shooter keeps the ground under its feet).
  */
-const KAME_CHARGE = 1.3,
+const KAME_CHARGE = 4.5,
   KAME_SPEED = 2000,
-  KAME_R = 20,
+  KAME_R = 25,
   KAME_DMG = 75,
   KAME_HOLD = 0.7,
   KAME_FADE = 0.5,
@@ -675,7 +675,7 @@ function kameFire(w) {
   if (dy > 1e-6) L = Math.min(L, (T.h + 60 - oy) / dy);
   else if (dy < -1e-6) L = Math.min(L, (-420 - oy) / dy);
   spawnProj('kamebeam', ox, oy, 0, 0, w, { a, net: [ox, oy, a, 0, 0, L], hits: new Set(), cd: KAME_START });
-  emit({ e: 'snd', s: 'kame' });
+  // emit({ e: 'snd', s: 'kame' });
   emit({ e: 'flash', c: '#bfe6ff' });
   emit({ e: 'quake', t: 2 });
 }
@@ -849,7 +849,10 @@ registerProj('proton', {
       if (g.n >= 2) explode(g.t.x, g.t.y, 34 + 6 * (g.n - 2), 30 + 10 * (g.n - 2), 300, { src: p.ow, fire: 3, noEnd: true });
       if (g.n === 3) {
         const caster = wById(p.ow);
-        if (caster) emit({ e: 'say', x: caster.x, y: caster.y - 24, t: tr('We came, we saw, we kicked its ass!') });
+        if (caster) {
+          emit({ e: 'say', x: caster.x, y: caster.y - 24, t: tr('We came, we saw, we kicked its ass!') });
+          emit({ e: 'snd', s: 'murray' });
+        }
       }
     }
     if (p.life >= end + PROTON_FADE) p.dead = true;

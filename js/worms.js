@@ -224,7 +224,7 @@ const HYAKU_REACH = 34,
   HYAKU_SPEED = 460,
   HYAKU_SAFE = 90,
   HYAKU_NOVIC = 120,
-  HYAKU_FUSE = 3,
+  HYAKU_FUSE = 6,
   HYAKU_BLAST = 48,
   HYAKU_SAY = 0.7;
 /**
@@ -475,7 +475,7 @@ function oniTick(w, tl, dt) {
 function kameTick(w, tl, dt) {
   if (tl.age === undefined) {
     tl.age = 0;
-    emit({ e: 'snd', s: 'charge' });
+    // emit({ e: 'snd', s: 'charge' });
   }
   tl.age += dt;
   tl.p = +Math.min(1, tl.age / KAME_CHARGE).toFixed(2);
