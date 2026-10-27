@@ -1,0 +1,22 @@
+{
+  "defaults": {
+    "lufs": -16.0,
+    "tp": -1.5,
+    "sr": 44100,
+    "channels": 1,
+    "bitrate": "96k",
+    "highpass": 90,
+    "lowpass": 9000,
+    "eq_limit_db": 5.0,
+    "tempo": null,
+    "maxdur": null
+  },
+  "files": {
+    "atatatatata.mp3": { "kind": "voice" },
+    "omaewamoushindeiru.mp3": { "kind": "voice" },
+    "wecamewesawwekickeditsass.mp3": { "kind": "voice" },
+    "gomugomuno.mp3": { "kind": "voice" },
+    "kamehameha.mp3": { "kind": "voice" },
+    "hallelujah.mp3": { "kind": "music", "eq_limit_db": 2.0 }
+  }
+}

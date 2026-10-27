@@ -18,6 +18,7 @@ This guide is the overview. Each topic below has its own document with the full 
 | [Weapons](WEAPONS.md) | the `registerWeapon` record, the fire state machine, **weapon categories and the panel tabs**, the list of all weapons, the add-a-weapon checklist |
 | [Projectiles](PROJECTILES.md) | `registerProj`, the `tick` hook, one tick in order, turn flow, sprites and network sync, recipes |
 | [Customising](CUSTOMIZING.md) | "I want to change X" cookbook: tuning numbers, adding things, recipes, conventions |
+| [Audio](AUDIO.md) | sound layers, the MP3 consistency tool (`tools/audio_tool.py`), the synthetic worm voices |
 
 - [Wormgeddon developer guide](#wormgeddon-developer-guide)
   - [Detailed guides](#detailed-guides)
@@ -33,6 +34,7 @@ This guide is the overview. Each topic below has its own document with the full 
     - [6.1 Levels folder (PNG levels)](#61-levels-folder-png-levels)
     - [6.2 Generated level styles](#62-generated-level-styles)
     - [6.3 Themes](#63-themes)
+      - [Seasonal and special themes (`theme-fx.js`)](#seasonal-and-special-themes-theme-fxjs)
     - [6.4 Sky](#64-sky)
   - [7. Menu options and match settings](#7-menu-options-and-match-settings)
   - [8. Languages](#8-languages)
@@ -40,7 +42,7 @@ This guide is the overview. Each topic below has its own document with the full 
   - [10. Bots](#10-bots)
   - [11. Online play and the network protocol](#11-online-play-and-the-network-protocol)
   - [12. Debugging and tests](#12-debugging-and-tests)
-  - [Changelog](#changelog)
+    - [Changelog](#changelog)
   - [13. Conventions and gotchas](#13-conventions-and-gotchas)
 
 ---

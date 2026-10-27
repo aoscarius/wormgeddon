@@ -31,6 +31,7 @@ WH_BUILD=1 python3 tests/run_all.py   # test the minified dist/index.html (run n
 | `test_themes.py` | Halloween / Christmas / Manga: props and look differ, deterministic from the seed, props vanish with their ground, terrain texture hook, hats, `Random` never picks a special theme, `Seasonal` by date, menu + Italian names |
 | `test_weapon_keys.py` | weapon panel by keyboard only: cursor on the armed weapon, arrows / Home / End, Tab categories, letter jump, Enter / Space arm and close, empty weapons refused, Esc, game keys back |
 | `test_swipe_tabs.py` | mobile weapon panel: swipe left / right changes category (wraps), short / vertical / mouse drags do not, a swipe arms nothing, active tab scrolls into view |
+| `test_audio_tool.py` | `tools/audio_tool.py`: one format / loudness / balance for every MP3, trailing silence trimmed, originals kept, repeatable, `maxdur`, `sounds/` passes `check` (needs ffmpeg) |
 | `test_sky.py` | day / night / cloudy / rainy render (night much darker, rain darker than cloud), defaults to day, `random` yields concrete skies |
 | `test_audio.py` | Holy Hand Grenade choir plays once, with the blast, MP3s respect mute and stop, the dragon roars instead of singing |
 | `test_damage_display.py` | a hit keeps the old health on screen (label, team bars, guest snapshot) until `-N` is announced, then counts down; heals show at once |

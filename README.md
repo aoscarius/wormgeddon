@@ -221,6 +221,7 @@ themes, languages, crates, menu options and network state, with worked examples.
 - [Physics](docs/PHYSICS.md)
 - [Weapons](docs/WEAPONS.md) (categories, panel tabs, checklist)
 - [Projectiles](docs/PROJECTILES.md)
+- [Audio](docs/AUDIO.md) (MP3 consistency tool, worm voices)
 - [Changelog](CHANGELOG.md), generated from git by `python3 tools/changelog.py` (see the developer guide)
 - [Customising](docs/CUSTOMIZING.md) (cookbook)
 

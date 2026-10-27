@@ -6,6 +6,7 @@
 dist/
 node_modules/
 __pycache__/
+**/audio-src/
 *.pyc
 .todo
 .prompt
