@@ -1,5 +1,5 @@
 """Hokuto Hyakuretsu Ken: gatling punches on the worm in front, a dash past it to a safe distance with
-"You're already dead!" (the MP3 voice line, only when a worm was really hit), and HYAKU_FUSE s after the last blow the
+"You're already dead!" (the MP3 verdict line, only when a worm was really hit; the "ata" cry plays at the start of every barrage), and HYAKU_FUSE s after the last blow the
 victim explodes and dies. Misses mark nobody and do not play the voice line."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
@@ -31,6 +31,7 @@ const run = ([base]) => {
     const old = window.emit;
     window.emit = e => {
       if (e.e === 'punch' && e.k === 'hyaku') r.ev.punch++;
+      if (e.e === 'snd' && e.s === 'ata') r.ev.ata++;
       if (e.e === 'snd' && e.s === 'dead') r.ev.dead++;
       if (e.e === 'say') r.ev.say++;
       if (e.e === 'x') r.ev.x.push({x: e.x, y: e.y, r: e.r, t: s.g.time - r.t0});
@@ -85,8 +86,8 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert A["vLost"] >= 20 or A["vDead"], "the punches hurt the victim"
     assert A["ev"]["ata"] == 1 and A["ev"]["dead"] == 1 and A["ev"]["say"] == 1
     sp = A["spoken"]
-    assert len(sp) == 2 and sp[0] == ["sounds/omaewamoushindeiru.mp3"] and sp[1] == ["sounds/omaewamoushindeiru.mp3"], sp
-    assert r["voiceSrc"] == ["sounds/omaewamoushindeiru.mp3"]
+    assert sp == ["sounds/atatatatata.mp3", "sounds/omaewamoushindeiru.mp3"], sp   # the "ata" barrage at the start, the verdict once a worm was hit
+    assert r["voiceSrc"] == ["sounds/omaewamoushindeiru.mp3", "sounds/atatatatata.mp3"]
     # --- A: the dash goes past the victim to a safe distance (blast reach is r+14 = 62 px)
     assert 0 in A["phases"] and 1 in A["phases"] and 2 in A["phases"]
     assert A["dash"] >= 22 + 85, f"dashed {A['dash']} px: not past the victim"
@@ -104,7 +105,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     # --- B: a miss marks nobody but the worm still dashes
     assert B["vDoom"] == 0 and not B["vDead"] and B["vLost"] == 0 and B["doomAt"] is None
     assert 100 < B["dash"] < 140, B["dash"]
-    assert B["ev"]["dead"] == 0 and B["ev"]["say"] == 0 and B["spoken"] == [], "a miss is silent"
+    assert B["ev"]["ata"] == 1 and B["ev"]["dead"] == 0 and B["ev"]["say"] == 0 and B["spoken"] == ["sounds/atatatatata.mp3"], "a miss has the barrage cry but no verdict"
 
     # --- C: not cancellable, not cut by the turn clock
     assert C["dash"] >= 22 + 85 and C["vDoomed"], C

@@ -38,7 +38,7 @@ with game_page() as (pg, errors):
       const count = () => { render(); const d = ctx2.getImageData(0, 0, cvs.width, cvs.height).data; let n = 0;
         for (let i = 0; i < d.length; i += 4) if (d[i] > 150 && d[i+1] < 70 && d[i+2] < 90) n++; return n; };
       const out = {};
-      v.doom = 3;
+      UI.splatterMode = true; v.doom = 3;
       v._doomT = G.time - Math.max(0, HYAKU_SWELL - 0.1);   out.fresh = count();
       v._doomT = G.time - (HYAKU_SWELL + HYAKU_FUSE);        out.swollen = count();
       UI.splatterMode = false; v._doomT = G.time - 6;      out.off = count();

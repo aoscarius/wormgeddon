@@ -7,7 +7,7 @@ from arena import ARENA_JS
 JS = ARENA_JS + """
 const run = ([base]) => {
   const w = window.__wh, out = {};
-  const spoken = []; speechSynthesis.speak = u => spoken.push({t: u.text, lang: u.lang});
+  const spoken = []; const realMp3 = window.mp3Sfx; window.mp3Sfx = (src, v) => { spoken.push(src); };
   // o.foes = x of each enemy, o.mates = x of each teammate
   const setup = (o = {}) => {
     w.newGame(Object.assign({seed: 'ga'}, base), [{name:'A',ctrl:'local'},{name:'B',ctrl:'local'}]);
@@ -116,7 +116,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert A["flats"] == 3, f"three worms flattened: {A['flats']}"
     assert A["snap"] == ["axe", A["snap"][1]] and 0.5 <= A["snap"][1] <= 2, "guests get the progress"
     sp = A["spoken"]
-    assert len(sp) == 1 and sp[0]["t"].startswith("Gomu Gomu no Gigant Axe") and sp[0]["lang"] == "ja-JP", sp
+    assert sp == ["sounds/gomugomuno.mp3"], sp
     # --- B: the edge of the radius
     assert B["state"][0][0] and not B["state"][1][0], B["state"]
     # --- C: objects (each alone)
@@ -134,7 +134,8 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert ix == F["ax"] + 60 and iy == 700, F["spot"]
     assert 0.1 < g[0]["sc"] < 0.15 and abs(g[4]["sc"] - 1) < 1e-9, "from a small foot to a full-size one"
     assert all(b["sc"] > a["sc"] for a, b in zip(g[:5], g[1:5])) and all(b["y"] < a["y"] for a, b in zip(g[:5], g[1:5])), "rises while growing"
-    assert abs(g[4]["y"] - (iy - 170)) < 1e-9 and abs(g[4]["x"] - ix) < 1e-9
+    apex = min(F["ay"] - 170, iy - 170)         # the foot rises AXE_H above the higher of the worm and the landing spot
+    assert abs(g[4]["y"] - apex) < 1e-9 and abs(g[4]["x"] - ix) < 1e-9
     assert all(abs(x["x"] - ix) < 1e-9 for x in g[4:]) and all(b["y"] > a["y"] for a, b in zip(g[4:], g[5:])), "then straight down"
     assert abs(g[8]["y"] - iy) < 1e-9 and all(x["sc"] == 1 for x in g[4:]), "planted on the ground"
     assert r["G"] == {"update": "ok", "event": "ok", "render": "ok"}, r["G"]

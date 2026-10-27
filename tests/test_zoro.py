@@ -24,9 +24,9 @@ const run = ([base]) => {
     return {g, a, named, hp: Object.fromEntries(Object.entries(named).map(([k, o]) => [k, o.hp])), hpA: a.hp};
   };
   const play = (s, secs, hook) => {
-    const r = {slash: 0, draw: 0, swoosh: 0, phases: [], moved: null, hit: {}, x0: s.a.x, toolAt: {}, snap: null};
+    const r = {slash: 0,  oni:0, /*draw: 0, swoosh: 0,*/ phases: [], moved: null, hit: {}, x0: s.a.x, toolAt: {}, snap: null};
     const old = window.emit; const t0 = s.g.time;
-    window.emit = e => { if (e.e === 'slash') r.slash++; if (e.e === 'snd' && e.s === 'draw') r.draw++; if (e.e === 'snd' && e.s === 'swoosh') r.swoosh++; return old(e); };
+    window.emit = e => { if (e.e === 'slash') r.slash++; if (e.e === 'snd' && e.s === 'oni') r.oni++; /*if (e.e === 'snd' && e.s === 'draw') r.draw++; if (e.e === 'snd' && e.s === 'swoosh') r.swoosh++;*/ return old(e); };
     const last = Object.fromEntries(Object.entries(s.named).map(([k, o]) => [k, o.hp]));
     LOCAL.fireP = 1;
     for (let i = 0; i < 60 * secs; i++) {
@@ -71,7 +71,8 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     print("A", A); print("B", {k: v for k, v in B.items() if k != "hit"}); print("C", {k: v for k, v in C.items() if k != "hit"})
     DMG = 38
     # --- A
-    assert A["draw"] == 1 and A["swoosh"] == 1 and A["phases"] == [0, 1, 2], A["phases"]
+    # assert A["draw"] == 1 and A["swoosh"] == 1 and A["phases"] == [0, 1, 2], A["phases"]
+    assert A["oni"] == 1 and A["phases"] == [0, 1, 2], A["phases"]
     assert 0.85 < A["moved"] < 1.1, f"charges for ~0.9 s before moving: {A['moved']}"
     for k in ("w0", "w1"):
         h = A["hit"].get(k)

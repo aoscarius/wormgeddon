@@ -426,7 +426,8 @@ function oniTick(w, tl, dt) {
     tl.ph = 0;
     tl.p = 0;
     tl.cut = new Set();
-    emit({ e: 'snd', s: 'draw' });
+    // emit({ e: 'snd', s: 'draw' });
+    emit({ e: 'snd', s: 'oni' });
   }
   if (tl.ph === 0) {
     physWorm(w, dt, false);
@@ -439,15 +440,24 @@ function oniTick(w, tl, dt) {
       tl.d = far ? far + ONI_SAFE : ONI_NOVIC;
       tl.ph = 1;
       tl.p = 1;
-      emit({ e: 'snd', s: 'swoosh' });
+      // emit({ e: 'snd', s: 'swoosh' });
     }
-  } else if (tl.ph === 1) {
+    } else if (tl.ph === 1) {
     const x0 = w.x,
       step = Math.min(tl.d, ONI_SPEED * dt);
-    let ok = true;
+    let ok = true,
+      moved = step;
     if (w.grounded) {
       w.vx = 0;
-      ok = walkStep(w, w.face * step);
+      moved = 0;
+      while (moved < step) {
+        const part = Math.min(3, step - moved);
+        if (!walkStep(w, w.face * part)) {
+          ok = false;
+          break;
+        }
+        moved += part;
+      }
     } else w.vx = w.face * ONI_SPEED;
     physWorm(w, dt, true);
     tl.d -= step;

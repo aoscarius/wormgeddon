@@ -76,6 +76,7 @@ const MP3_FILES = [
   'sounds/kamehameha.mp3',
   'sounds/atatatatata.mp3',
   'sounds/omaewamoushindeiru.mp3',
+  'sounds/onigiri.mp3',
   'sounds/wecamewesawwekickeditsass.mp3',
   'sounds/gomugomuno.mp3',
 ];
@@ -216,13 +217,14 @@ const SFX = {
     setTimeout(() => noiseBurst(0.18, 0.12, 1800), 90);
   },
   // Oni Giri: swords drawn, the dash, and a slice.
-  draw: () => {
-    for (let i = 0; i < 3; i++) setTimeout(() => tone(2200 + i * 500, 3400 + i * 500, 0.12, 'triangle', 0.05), i * 110);
-  },
-  swoosh: () => {
-    noiseBurst(0.3, 0.15, 2500);
-    tone(300, 1400, 0.3, 'sine', 0.05);
-  },
+  oni: () => mp3Sfx('sounds/onigiri.mp3'),
+  // draw: () => {
+  //   for (let i = 0; i < 3; i++) setTimeout(() => tone(2200 + i * 500, 3400 + i * 500, 0.12, 'triangle', 0.05), i * 110);
+  // },
+  // swoosh: () => {
+  //   noiseBurst(0.3, 0.15, 2500);
+  //   tone(300, 1400, 0.3, 'sine', 0.05);
+  // },
   slash: () => {
     noiseBurst(0.12, 0.2, 4000);
     tone(1800, 600, 0.12, 'sawtooth', 0.07);

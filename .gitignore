@@ -1,6 +1,7 @@
 # Ignore Folders
 .vscode
 .trash
+.venv
 
 # Build output, dependencies and Python caches
 dist/

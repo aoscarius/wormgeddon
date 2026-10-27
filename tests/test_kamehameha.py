@@ -1,4 +1,4 @@
-"""Kamehameha: a 1.3 s charge, then a beam along the aim across the whole map that carves a straight tunnel of a fixed
+"""Kamehameha: a 4.5 s charge, then a beam along the aim across the whole map that carves a straight tunnel of a fixed
 radius and damages / destroys worms, mines, oil drums and crates in its path - and nothing off its line."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
@@ -55,7 +55,7 @@ const run = ([base]) => {
   // 1) horizontal shot through the mound
   let s = setup(0);
   const solidBefore = {a: mk(800, 705), behind: mk(700, 705), far: mk(2300, 705), mound: mk(1100, 691)};
-  out.A = shot(s, 6);
+  out.A = shot(s, 8);
   out.A.before = solidBefore;
   out.A.tunnel = {mid: mk(1100, 691), up15: mk(1100, 676), down15: mk(1100, 706), above26: mk(1100, 665), far: mk(2300, 705), edge: mk(T.w - 5, 705), behind: mk(700, 705), underShooter: mk(800, 700), x1050: mk(1050, 691), x1190: mk(1190, 691)};
   out.A.foeLost = s.hp.foe - s.foe.hp; out.A.foeDead = s.foe.dead; out.A.mateLost = s.hp.mate - s.mate.hp; out.A.aLost = s.hp.a - s.a.hp;
@@ -66,7 +66,7 @@ const run = ([base]) => {
   // 2) shot aimed up: it flies out of the top of the map and leaves the mound alone
   s = setup(-1.0);
   const moundBefore = mk(1100, 691);
-  out.B = shot(s, 6);
+  out.B = shot(s, 8);
   out.B.moundAfter = mk(1100, 691); out.B.moundBefore = moundBefore; out.B.foeLost = s.hp.foe - s.foe.hp; out.B.mateLost = s.hp.mate - s.mate.hp;
   out.B.endY = out.B.o[1] + Math.sin(out.B.ang) * out.B.L; out.B.endX = out.B.o[0] + Math.cos(out.B.ang) * out.B.L;
   out.B.diag = mk(out.B.o[0] + Math.cos(out.B.ang) * 300, out.B.o[1] + Math.sin(out.B.ang) * 300);   // carved (it was air anyway)
@@ -81,7 +81,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     print({k: v for k, v in A.items() if k not in ("evx", "toolP", "snapNet")}); print("toolP", A["toolP"][:6], "snap", A["snapNet"]); print({k: v for k, v in B.items() if k not in ("evx", "toolP", "snapNet")})
 
     # charge: nothing happens for ~1.3 s, then the beam appears
-    assert 1.2 < A["firstBeamAt"] < 1.45, A["firstBeamAt"]
+    assert 4.4 < A["firstBeamAt"] < 4.7, A["firstBeamAt"]
     assert A["toolP"] and A["toolP"][0] < A["toolP"][-1] and max(A["toolP"]) <= 1, "charge progress grows"
     assert A["preBeamMask"] == 1, "no tunnel while charging"
     # whole map: the head reaches the full length, which ends beyond the right edge
