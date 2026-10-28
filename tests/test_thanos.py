@@ -39,7 +39,8 @@ const run = ([base]) => {
   g.weapon.id = 'thanos';
   const ev = [], old = window.emit;
   window.emit = e => { ev.push(e.e + (e.s ? ':' + e.s : '')); return old(e); };
-  const t0 = g.time, hp0 = g.worms.map(x => x.hp), n = g.worms.length;
+  const t0 = g.time, hp0 = g.worms.map(x => x.hp), n = g.worms.length, expect = Math.max(1, Math.round(n * THANOS_SHARE));
+  out.n = n; out.expect = expect;
   LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
   out.tool = a.tool && a.tool.k;
   out.inevitableAtLaunch = ev.includes('snd:inevitable');
@@ -51,25 +52,38 @@ const run = ([base]) => {
     w.stepOnce(1/60);
     const t = g.time - t0;
     if (t < SNAP_AT - 0.1 && g.worms.some(x => x.dust > 0)) early = t;
-    if (dustAt === null && g.worms.every(x => x.dust > 0)) dustAt = t;
-    if (dustAt !== null && t < dustAt + 1 && !snapshotFlags) { const s = snapshot(true).w; snapshotFlags = {flag: s.every(r => r[6] & 32), p: s.map(r => r[12])}; }
+    if (dustAt === null && g.worms.filter(x => x.dust > 0).length === expect) dustAt = t;
+    if (dustAt !== null && t < dustAt + 1 && !snapshotFlags) { const s = snapshot(true).w; snapshotFlags = {flag: s.filter(r => r[6] & 32).length === expect, p: s.map(r => r[12])}; }
     if (dustAt !== null && !sample && t > dustAt + 1.5) {
       // dust grains: spawned by fxUpdate, drifting with the wind (positive here)
       FX.p.length = 0; for (let k = 0; k < 20; k++) fxUpdate(1/60);
       const dp = FX.p.filter(p => p.k === 'w');
       sample = {n: dp.length, vxMean: dp.reduce((s, p) => s + p.vx, 0) / Math.max(1, dp.length)};
     }
-    if (deadAt === null && g.worms.every(x => x.dead)) { deadAt = t; break; }
+    if (deadAt === null && g.worms.filter(x => x.dead).length === expect) { deadAt = t; break; }
   }
   window.emit = old;
   out.early = early; out.dustAt = dustAt; out.deadAt = deadAt; out.snapshotFlags = snapshotFlags; out.sample = sample;
-  out.allDusted = g.worms.every(x => x.dusted && x.dead && x.hp === 0);
-  out.casterDead = a.dead;
+  out.allDusted = g.worms.filter(x => x.dusted && x.dead && x.hp === 0).length === expect && g.worms.filter(x => x.dead).length === expect;
+  out.survivorsOk = g.worms.filter(x => !x.dead).every(x => !x.dusted && !(x.dust > 0) && x.hp === 100);
+  out.teamsHit = new Set(g.worms.filter(x => x.dusted).map(x => x.team)).size;
   out.ev = ev.filter(e => e.startsWith('snd:inevitable') || e.startsWith('snd:snap') || e === 'msg').slice(0, 4);
   out.craters = ev.filter(e => e === 'x').length;
   for (let i = 0; i < 60 * 8; i++) w.stepOnce(1/60);
   out.over = g.over; out.winner = g.winner; out.phase = g.phase;
-  // negative wind: the grains drift the other way
+  // the victims are random: several snaps pick different sets, from both teams
+  const sets = new Set(); let both = false;
+  for (let k = 0; k < 12; k++) {
+    w.newGame(Object.assign({seed: 'thanos-r' + k}, base, {arsenal: 'std'}), [{name:'A',ctrl:'local'},{name:'B',ctrl:'local'}]);
+    for (let i = 0; i < 30; i++) w.stepOnce(1/60);
+    const c = G.worms.find(x => x.id === G.active);
+    c.tool = {k: 'snap', t: 99, p: 0, age: SNAP_AT - 0.01};
+    for (let i = 0; i < 3; i++) w.stepOnce(1/60);
+    const hit = G.worms.filter(x => x.dust > 0);
+    sets.add(hit.map(x => x.id).join(','));
+    if (new Set(hit.map(x => x.team)).size > 1) both = true;
+  }
+  out.picks = {distinct: sets.size, bothTeams: both};
   return out;
 };
 """
@@ -86,13 +100,13 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["snapAt"] == 5.2 and r["snapT"] == 6.0, "snap timing"
     assert r["dustAt"] is not None and abs(r["dustAt"] - r["snapAt"]) <= 1 / 30, "every worm starts to dissolve at the snap"
     assert r["snapshotFlags"]["flag"] and max(r["snapshotFlags"]["p"]) > 0, "guests see the dust"
-    assert r["allDusted"] and r["casterDead"], "all worms die, the caster too, without a grave"
+    assert r["expect"] == 5 and r["allDusted"] and r["survivorsOk"], "exactly three quarters of the worms die, without a grave; the rest are untouched"
     assert r["deadAt"] is not None and abs((r["deadAt"] - r["dustAt"]) - r["dustT"]) <= 1 / 30, f"dust lasts {r['dustT']} s: {r['deadAt']}"
     assert r["craters"] == 0, "no explosion"
     assert r["sample"] and r["sample"]["n"] > 5 and r["sample"]["vxMean"] > 20, "grains blow along the wind"
     assert r["inevitableAtLaunch"] and "snd:snap" in r["ev"], "inevitable and snap audio events play"
     assert "msg" in r["ev"]
-    assert r["over"] and r["winner"] == -1, "everyone gone: a draw"
+    assert r["picks"]["distinct"] >= 3 and r["picks"]["bothTeams"], f"the victims are random and span the teams: {r['picks']}"
     # the weapon panel hides it until the team owns one
     h = pg.evaluate("""([base]) => {
       const w = window.__wh;

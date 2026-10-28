@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-44 commits, 2026-10-18 to 2026-10-28. Up to commit `15fb3cd4c567c73078a2564292b3e166d99b9aab`.
+45 commits, 2026-10-18 to 2026-10-28. Up to commit `f6ebe89d44e53236729e39055f4e1516267424be`.
 
 ## 2026-10-18
 
@@ -344,7 +344,7 @@ fixed, changed or refactored.
 **Changed**
 - Enhance Kamehameha mechanics: lock aim during charge, add impact line for straight-line weapons, and update related tests
 
-### [`15fb3cd`](https://github.com/aoscarius/wormgeddon/commit/15fb3cd4c567c73078a2564292b3e166d99b9aab)
+### [`2cc331e`](https://github.com/aoscarius/wormgeddon/commit/2cc331e5c3b9f99c6995b587470c7dea840c8c02)
 
 **Added**
 - Implement Thanos' Gauntlet weapon with snap mechanic as an extremely rare weapon, available only in crates
@@ -354,3 +354,14 @@ fixed, changed or refactored.
 
 **Changed**
 - Updated weapon arsenal and rarity logic to reflect the new weapon
+
+### [`f6ebe89`](https://github.com/aoscarius/wormgeddon/commit/f6ebe89d44e53236729e39055f4e1516267424be)
+
+**Added**
+- Added support for Kamehameha charge levels, allowing players to widen the beam with extra presses of Fire during the charge, increasing its damage and tunnel width
+
+**Fixed**
+- Adjusted Thanos' Gauntlet functionality to ensure random selection of worms affected by the snap, with a focus on team distribution
+
+**Changed**
+- Enhance Kamehameha weapon functionality and localization

@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, THANOS_RADIUS, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -513,9 +513,10 @@ function doomBlast(o) {
 }
 /**
  * Thanos' Gauntlet: the worm raises the gauntlet and snaps its fingers (tl.p = 0..1 over SNAP_T s, sent to guests). At
- * SNAP_AT s every living worm in the level starts to turn to dust.
+ * SNAP_AT s three quarters of the living worms in the level (all teams, at random) start to turn to dust.
  */
 const THANOS_RADIUS = Infinity,
+  THANOS_SHARE = 3 / 4, // the fraction of the worms in range that turns to dust, picked at random
   SNAP_AT = 5.2,
   SNAP_T = 6.0,
   DUST_T = 3;
@@ -530,11 +531,16 @@ function snapTick(w, tl, dt) {
     emit({ e: 'flash', c: '#e8d8ff' });
     emit({ e: 'quake', t: 1 });
     emit({ e: 'msg', t: 'Snap!' });
-    for (const o of G.worms)
-      if (/*o !== w &&*/ !o.dead && !(o.dust > 0) && Math.hypot(o.x - w.x, o.y - w.y) <= THANOS_RADIUS) {
-        o.dust = DUST_T;
-        o.dustP = 0;
-      }
+    // three quarters of the worms in range, of every team and picked at random (the caster can be one of them)
+    const pool = G.worms.filter(o => !o.dead && !(o.dust > 0) && Math.hypot(o.x - w.x, o.y - w.y) <= THANOS_RADIUS);
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    for (const o of pool.slice(0, Math.max(1, Math.round(pool.length * THANOS_SHARE)))) {
+      o.dust = DUST_T;
+      o.dustP = 0;
+    }
   }
   if (tl.age >= SNAP_T) tl.t = 0;
 }

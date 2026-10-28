@@ -650,7 +650,8 @@ const KAME_CHARGE = 4.5,
   KAME_DMG = 75,
   KAME_HOLD = 0.7,
   KAME_FADE = 0.5,
-  KAME_START = 26;
+  KAME_START = 26,
+  KAME_MAX_LV = 3; // extra presses of Fire during the charge widen the beam: x2, x3 (KAME_R * level)
 /** Distance from point (px, py) to the segment (x1, y1)-(x2, y2). */
 function segDist(px, py, x1, y1, x2, y2) {
   const vx = x2 - x1,
@@ -677,11 +678,11 @@ function kameGeom(w) {
   else if (dx < -1e-6) L = Math.min(L, (-60 - ox) / dx);
   if (dy > 1e-6) L = Math.min(L, (T.h + 60 - oy) / dy);
   else if (dy < -1e-6) L = Math.min(L, (-420 - oy) / dy);
-  return { ox, oy, a, L };
+  return { ox, oy, a, L, lv: tl && tl.lv ? tl.lv : 1 };
 }
 function kameFire(w) {
-  const { ox, oy, a, L } = kameGeom(w);
-  spawnProj('kamebeam', ox, oy, 0, 0, w, { a, net: [ox, oy, a, 0, 0, L], hits: new Set(), cd: KAME_START });
+  const { ox, oy, a, L, lv } = kameGeom(w);
+  spawnProj('kamebeam', ox, oy, 0, 0, w, { a, net: [ox, oy, a, 0, 0, L, lv], hits: new Set(), cd: KAME_START });
   // emit({ e: 'snd', s: 'kame' });
   emit({ e: 'flash', c: '#bfe6ff' });
   emit({ e: 'quake', t: 2 });
@@ -696,21 +697,22 @@ registerProj('kamebeam', {
   fixedAngle: true,
   tick(p, dt) {
     const n = p.net,
+      R = KAME_R * (n[6] || 1), // beam radius, widened by the charge level
       dx = Math.cos(n[2]),
       dy = Math.sin(n[2]);
     n[3] = Math.min(n[5], n[3] + KAME_SPEED * dt);
     while (p.cd <= n[3]) {
       const x = n[0] + dx * p.cd,
         y = n[1] + dy * p.cd;
-      if (x > -KAME_R && x < T.w + KAME_R && y > -KAME_R && y < T.h + KAME_R) emit({ e: 'cv', x, y, r: KAME_R, s: 1 });
-      p.cd += KAME_R / 2;
+      if (x > -R && x < T.w + R && y > -R && y < T.h + R) emit({ e: 'cv', x, y, r: R, s: 1 });
+      p.cd += R / 2;
     }
     const x1 = n[0] + dx * n[4],
       y1 = n[1] + dy * n[4],
       x2 = n[0] + dx * n[3],
       y2 = n[1] + dy * n[3],
       once = (key, x, y, r) => {
-        if (p.hits.has(key) || segDist(x, y, x1, y1, x2, y2) >= KAME_R + r) return false;
+        if (p.hits.has(key) || segDist(x, y, x1, y1, x2, y2) >= R + r) return false;
         p.hits.add(key);
         return true;
       };

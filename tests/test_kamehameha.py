@@ -104,7 +104,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert A["crateGone"], "crate destroyed"
     assert A["blocker"] is None or "tool" not in A["blocker"]
     # guests receive the beam geometry
-    assert A["snapNet"] and len(A["snapNet"]) == 6 and abs(A["snapNet"][0] - A["o"][0]) < 0.1
+    assert A["snapNet"] and len(A["snapNet"]) == 7 and A["snapNet"][6] == 1 and abs(A["snapNet"][0] - A["o"][0]) < 0.1
     # --- aimed up: straight line, out of the top, nothing else touched
     assert B["endY"] <= -419 and B["endX"] < B["T"][0] + 60, "beam ends where it leaves the map"
     assert B["moundBefore"] == 1 and B["moundAfter"] == 1, "the mound is not on the beam's line"

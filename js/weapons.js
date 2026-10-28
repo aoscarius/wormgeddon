@@ -394,7 +394,7 @@ registerWeapon({
   },
 });
 // Kamehameha: the worm charges an energy ball (4.5 s, aim locked when it starts), then fires a beam across the whole map
-// along the aim that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
+// along the aim (extra presses of Fire during the charge widen it x2 / x3, costing 1 more ammo each) that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
 registerWeapon({
   id: 'kamehameha',
   name: 'Kamehameha',
@@ -404,7 +404,7 @@ registerWeapon({
   noEnd: true,
   fire(c) {
     emit({ e: 'snd', s: 'kamevoice' });
-    c.w.tool = { k: 'kame', t: 99, p: 0, a: c.w.aim, f: c.w.face }; // the aim is locked for the whole charge
+    c.w.tool = { k: 'kame', t: 99, p: 0, a: c.w.aim, f: c.w.face, lv: 1 }; // the aim is locked for the whole charge
     return 'keep';
   },
 });
@@ -1107,6 +1107,20 @@ function handleFire(w, t, inp, dt) {
     w.rope = null;
     w.jet = null;
     inp.fireP = 0;
+    return;
+  }
+  // Kamehameha charge: every further press of Fire widens the beam (x2, then x3 at most)
+  if (inp.fireP && w.tool && w.tool.k === 'kame') {
+    inp.fireP = 0;
+    // level n costs n charges of ammo (the first was spent when the charge began): one more per press
+    if (w.tool.lv < KAME_MAX_LV) {
+      if (t.ammo.kamehameha !== 0) {
+        if (t.ammo.kamehameha > 0) t.ammo.kamehameha--;
+        w.tool.lv++;
+        emit({ e: 'snd', s: 'pick' });
+        emit({ e: 'msg', t: 'Kamehameha x{0}', a: [w.tool.lv] });
+      } else emit({ e: 'msg', t: 'Not enough Kamehameha ammo' });
+    }
     return;
   }
   if (inp.fireP && w.tool && !TOOL_LOCKED[w.tool.k]) {

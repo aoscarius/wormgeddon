@@ -356,6 +356,7 @@ function spriteProj(p) {
       if (!n) break;
       ctx2.translate(-p.x, -p.y);
       const [ox, oy, a, hd, tl, L] = n,
+        KR = KAME_R * (n[6] || 1),
         dx = Math.cos(a),
         dy = Math.sin(a),
         ax = ox + dx * tl,
@@ -370,9 +371,9 @@ function spriteProj(p) {
       ctx2.lineCap = 'round';
       ctx2.strokeStyle = gr;
       for (const [w, al] of [
-        [KAME_R * 2 * pulse, 0.28],
-        [KAME_R * 1.4 * pulse, 0.5],
-        [KAME_R * 0.8 * pulse, 0.85],
+        [KR * 2 * pulse, 0.28],
+        [KR * 1.4 * pulse, 0.5],
+        [KR * 0.8 * pulse, 0.85],
       ]) {
         ctx2.globalAlpha = al;
         ctx2.lineWidth = w;
@@ -383,7 +384,7 @@ function spriteProj(p) {
       }
       ctx2.globalAlpha = 0.95;
       ctx2.strokeStyle = '#fff';
-      ctx2.lineWidth = KAME_R * 0.35 * pulse;
+      ctx2.lineWidth = KR * 0.35 * pulse;
       ctx2.beginPath();
       ctx2.moveTo(ax, ay);
       ctx2.lineTo(bx, by);
@@ -394,7 +395,7 @@ function spriteProj(p) {
       ctx2.lineWidth = 1.5;
       for (let i = 0; i < 10; i++) {
         const s0 = tl + Math.random() * Math.max(1, hd - tl),
-          off = (Math.random() - 0.5) * KAME_R * 1.8,
+          off = (Math.random() - 0.5) * KR * 1.8,
           len = 20 + Math.random() * 90;
         ctx2.beginPath();
         ctx2.moveTo(ox + dx * s0 - dy * off, oy + dy * s0 + dx * off);
@@ -404,8 +405,8 @@ function spriteProj(p) {
       // orbs at the muzzle (until the tail has left it) and at the racing head
       ctx2.globalAlpha = 1;
       for (const [x, y, r, on] of [
-        [ox, oy, KAME_R * 0.9 * pulse, tl < 1],
-        [bx, by, KAME_R * 1.5 * pulse, hd < L],
+        [ox, oy, KR * 0.9 * pulse, tl < 1],
+        [bx, by, KR * 1.5 * pulse, hd < L],
       ]) {
         if (!on) continue;
         const rg = ctx2.createRadialGradient(x, y, 0, x, y, r);

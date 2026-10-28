@@ -323,6 +323,8 @@ I18N.it = {
   'Hokuto Hyakuretsu Ken': 'Hokuto Hyakuretsu Ken',
   'You\'re already dead!': 'Tu sei già morto!',
   Kamehameha: 'Kamehameha',
+  'Kamehameha x{0}': 'Kamehameha x{0}',
+  'Not enough Kamehameha ammo': 'Munizioni Kamehameha insufficienti',
   'Oni Giri': 'Oni Giri',
   'Gomu Gomu no Gigant Axe': 'Gomu Gomu no Gigant Axe',
   'Proton Stream': 'Raggio protonico',

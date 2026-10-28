@@ -4,6 +4,12 @@ A turn-based artillery game for the browser, in the spirit of Worms Armageddon. 
 no framework, no assets: maps, sound, icons and worms are all generated or drawn in code.
 Online multiplayer uses [PeerJS](https://peerjs.com) (WebRTC).
 
+##  Play Now
+
+The game is completely **free, open-source, and accessible directly from your browser** here: [**Wormgeddon**](https://aoscarius.github.io/wormgeddon/). Thanks to its Peer-to-Peer (P2P) architecture, you don't need to download anything: click the link below, create a room or join an existing match, and start playing instantly!
+
+![Wormgeddon Preview](build/preview.png)
+
 ## Features
 
 - **2-8 teams**, each human or bot, up to 40 worms in total. Humans share the keyboard in turns.

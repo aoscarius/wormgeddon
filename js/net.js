@@ -87,6 +87,7 @@ function snapshot(withAmmo) {
       Math.round(w.pend || 0), // damage not announced yet (the shown health lags behind hp)
       w.tool && w.tool.p ? w.tool.p : 0, // phase of a multi-stage tool (Hokuto Hyakuretsu Ken, ...)
       +(w.dustP || 0).toFixed(2), // how far the worm has turned to dust (Thanos' Gauntlet)
+      w.tool && w.tool.lv ? w.tool.lv : 0, // Kamehameha charge level
     ]),
     p: G.projs.map(p => [
       p.id,
@@ -148,7 +149,7 @@ function applySnapshot(s) {
     w.dustP = a[12] || 0;
     w.rope = a[7] ? { ax: a[7][0], ay: a[7][1] } : null;
     w.jet = a[8] ? { on: a[8] === 2 } : null;
-    w.tool = a[9] ? { k: a[9], p: a[11] || 0 } : null;
+    w.tool = a[9] ? { k: a[9], p: a[11] || 0, lv: a[13] || 0 } : null;
     w.pend = a[10] || 0;
   }
   const old = new Map(G.projs.map(p => [p.id, p]));

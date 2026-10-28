@@ -397,10 +397,10 @@ function linearShot(aw, id) {
     let d = KAME_START, hit = null;
     // the beam carves through terrain, so only worms are marked on the way; the first ground it meets starts the tunnel
     for (; d < bd; d += 3)
-      if (G.worms.some(o => !o.dead && o !== aw && segDist(o.x, o.y, g.ox, g.oy, g.ox + ex * d, g.oy + ey * d) < KAME_R + (o.r || 6) && Math.hypot(o.x - g.ox, o.y - g.oy) <= d + KAME_R)) { hit = 'worm'; break; }
+      if (G.worms.some(o => !o.dead && o !== aw && segDist(o.x, o.y, g.ox, g.oy, g.ox + ex * d, g.oy + ey * d) < KAME_R * g.lv + (o.r || 6) && Math.hypot(o.x - g.ox, o.y - g.oy) <= d + KAME_R * g.lv)) { hit = 'worm'; break; }
     d = Math.min(d, bd);
     const gr = dbgWalk(g.ox, g.oy, ex, ey, bd, aw, false);
-    return { x1: g.ox, y1: g.oy, x2: g.ox + ex * bd, y2: g.oy + ey * bd, mx: g.ox + ex * d, my: g.oy + ey * d, gx: gr.hit ? gr.x : undefined, gy: gr.y, hit, w: KAME_R };
+    return { x1: g.ox, y1: g.oy, x2: g.ox + ex * bd, y2: g.oy + ey * bd, mx: g.ox + ex * d, my: g.oy + ey * d, gx: gr.hit ? gr.x : undefined, gy: gr.y, hit, w: KAME_R * g.lv };
   }
   if (id === 'hammer') {
     let tw = null, best = 70;
