@@ -393,6 +393,22 @@ registerWeapon({
     return 'keep';
   },
 });
+// Gandalf's Staff: the track plays while the worm raises its staff; STAFF_DELAY s later it slams the staff down and the
+// ground in front collapses into the sea (see staffTick / staffSlam in worms.js).
+registerWeapon({
+  id: 'gandalf',
+  name: "Gandalf's Staff",
+  code: 'GS',
+  ammo: 1,
+  delay: 5,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'staff', t: 99, p: 0 };
+    emit({ e: 'snd', s: 'gandalf' });
+    emit({ e: 'say', x: c.w.x, y: c.w.y - 24, t: tr('You shall not pass!') });
+    return 'keep';
+  },
+});
 // Kamehameha: the worm charges an energy ball (4.5 s, aim locked when it starts), then fires a beam across the whole map
 // along the aim (extra presses of Fire during the charge widen it x2 / x3, costing 1 more ammo each) that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
 registerWeapon({

@@ -704,6 +704,64 @@ function drawWormBody(w) {
           g.stroke();
         }
       }
+    } else if (w.tool.k === 'staff') {
+      // Raise the staff vertically, then slam it straight down without rotating it.
+      const age = (w.tool.p || 0) * (STAFF_DELAY + STAFF_SLAM),
+        raise = Math.min(1, age / 1.0),
+        slam = clamp((age - STAFF_DELAY) / 0.15, 0, 1),
+        handX = f * 5,
+        handY = -1 - 13 * raise + 24 * slam,
+        topY = handY - 25,
+        bottomY = handY + 14,
+        glow = clamp(age / STAFF_DELAY, 0, 1);
+      // Draw the arm up to the grip.
+      g.strokeStyle = '#4a3216';
+      g.lineWidth = 4;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(f * 2, -1);
+      g.lineTo(handX, handY);
+      g.stroke();
+      // Keep the staff straight, with a shorter section above the hand.
+      g.strokeStyle = '#4a3216';
+      g.lineWidth = 4;
+      g.beginPath();
+      g.moveTo(handX, topY);
+      g.lineTo(handX, bottomY);
+      g.stroke();
+      g.strokeStyle = '#9a7238';
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.moveTo(handX, topY + 1);
+      g.lineTo(handX, bottomY - 1);
+      g.stroke();
+      // Draw the hand over the staff at the grip point.
+      g.fillStyle = rgbStr(WORM_SKIN, 0.92);
+      g.strokeStyle = WORM_INK;
+      g.lineWidth = 0.9;
+      wCircle(g, handX, handY, 2.2);
+      g.fill();
+      g.stroke();
+      // Add the glowing tip above the hand.
+      g.globalCompositeOperation = 'lighter';
+      g.fillStyle = `rgba(170,210,255,${0.25 + 0.5 * glow})`;
+      wCircle(g, handX, topY, 4 + 7 * glow + Math.sin(G.time * 18) * 0.8);
+      g.fill();
+      g.globalCompositeOperation = 'source-over';
+      g.fillStyle = '#f4faff';
+      wCircle(g, handX, topY, 2.6);
+      g.fill();
+      if (age >= STAFF_DELAY && age < STAFF_DELAY + 0.3) {
+        g.strokeStyle = 'rgba(255,255,255,.9)';
+        g.lineWidth = 1.6;
+        for (let i = 0; i < 7; i++) {
+          const a = -0.2 - i * 0.45;
+          g.beginPath();
+          g.moveTo(handX + Math.cos(a) * 5, bottomY + Math.sin(a) * 5);
+          g.lineTo(handX + Math.cos(a) * 14, bottomY + Math.sin(a) * 14);
+          g.stroke();
+        }
+      }
     } else if (w.tool.k === 'snap') {
       // Thanos' Gauntlet: the arm is raised, the golden glove glows with the six stones, then the fingers snap
       const age = (w.tool.p || 0) * SNAP_T,

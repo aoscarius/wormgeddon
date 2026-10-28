@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-45 commits, 2026-10-18 to 2026-10-28. Up to commit `f6ebe89d44e53236729e39055f4e1516267424be`.
+46 commits, 2026-10-18 to 2026-10-28. Up to commit `bdad97e16ef2da827d2491f829628760128b32b8`.
 
 ## 2026-10-18
 
@@ -355,7 +355,7 @@ fixed, changed or refactored.
 **Changed**
 - Updated weapon arsenal and rarity logic to reflect the new weapon
 
-### [`f6ebe89`](https://github.com/aoscarius/wormgeddon/commit/f6ebe89d44e53236729e39055f4e1516267424be)
+### [`a9d5246`](https://github.com/aoscarius/wormgeddon/commit/a9d52465e2b57e242f714d512e49e5919e2e0b09)
 
 **Added**
 - Added support for Kamehameha charge levels, allowing players to widen the beam with extra presses of Fire during the charge, increasing its damage and tunnel width
@@ -365,3 +365,9 @@ fixed, changed or refactored.
 
 **Changed**
 - Enhance Kamehameha weapon functionality and localization
+
+### [`bdad97e`](https://github.com/aoscarius/wormgeddon/commit/bdad97e16ef2da827d2491f829628760128b32b8)
+
+**Added**
+- Add Gandalf's Staff weapon with collapsing terrain effect and associated audio
+- Implemented weapon mechanics, localization, and tests to ensure correct functionality

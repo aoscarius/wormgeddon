@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -210,8 +210,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -544,6 +544,43 @@ function snapTick(w, tl, dt) {
   }
   if (tl.age >= SNAP_T) tl.t = 0;
 }
+/**
+ * Gandalf's Staff: the worm raises its staff while the track plays (tl.p = 0..1 over STAFF_DELAY + STAFF_SLAM s, sent to
+ * guests), slams it down STAFF_DELAY s after the start (set it to the length of sounds/gandalf.mp3), and the ground in front
+ * of it, within STAFF_R px of the point STAFF_DIST px ahead, collapses completely into the sea.
+ */
+const STAFF_DELAY = 3.0, // s from the start (and the audio) to the slam
+  STAFF_SLAM = 0.8, // s the slam pose is held
+  STAFF_DIST = 90, // px in front of the worm to the centre of the collapsing section
+  STAFF_R = 60; // px: half the width of the section (the worm itself stands outside it)
+function staffTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / (STAFF_DELAY + STAFF_SLAM)).toFixed(2);
+  physWorm(w, dt, false);
+  if (!tl.done && tl.age >= STAFF_DELAY) {
+    tl.done = true;
+    staffSlam(w);
+  }
+  if (tl.age >= STAFF_DELAY + STAFF_SLAM) tl.t = 0;
+}
+/** The slam: heavy thud, a quake, and every column of the section below the worm's head height is cut away down to the sea bed. */
+function staffSlam(w) {
+  const cx = w.x + w.face * STAFF_DIST,
+    x0 = clamp(cx - STAFF_R, 0, T.w - 1),
+    x1 = clamp(cx + STAFF_R, 0, T.w - 1),
+    y0 = Math.max(0, Math.floor(w.y - STAFF_R));
+  emit({ e: 'snd', s: 'thud' });
+  emit({ e: 'quake', t: 2 });
+  emit({ e: 'rc', x0, y0, x1, y1: T.h - 1 });
+  // everything that stood on it has lost its ground
+  for (const o of G.worms)
+    if (!o.dead && o.x >= x0 - o.r && o.x <= x1 + o.r) {
+      o.grounded = false;
+      o.rope = null;
+    }
+  for (const o of G.objs) if (o.x >= x0 && o.x <= x1) o.landed = false;
+}
 /** A worm turning to dust: its progress (0..1) feeds the drawing; at the end it is dead for certain, without a grave. */
 function dustTick(o, dt) {
   o.dust -= dt;
@@ -629,6 +666,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'proton') protonTick(w, tl, dt);
     else if (tl.k === 'axe') axeTick(w, tl, dt);
     else if (tl.k === 'snap') snapTick(w, tl, dt);
+    else if (tl.k === 'staff') staffTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

@@ -309,6 +309,15 @@ const ICON_DRAW = {
     icLine(g, 24, 54, 16, 61, 2, IC.ink);
     icLine(g, 40, 54, 48, 61, 2, IC.ink);
   },
+  // Gandalf's Staff: a gnarled staff topped with a glowing stone, over a cracked ground.
+  gandalf(g) {
+    icLine(g, 22, 58, 40, 10, 5, IC.brown);
+    icLine(g, 22, 58, 40, 10, 2, '#b58a4a');
+    icCircle(g, 41, 9, 8, IC.white);
+    icCircle(g, 41, 9, 4, IC.blue);
+    icLine(g, 6, 58, 58, 58, 3, IC.dgreen);
+    icLine(g, 36, 58, 44, 63, 2, IC.ink);
+  },
   // Thanos' Gauntlet: a golden glove with the six infinity stones.
   thanos(g) {
     icRect(g, 14, 36, 34, 22, IC.yellow, 4);

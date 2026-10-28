@@ -80,6 +80,7 @@ const MP3_FILES = [
   'sounds/wecamewesawwekickeditsass.mp3',
   'sounds/gomugomuno.mp3',
   'sounds/iaminevitable.mp3',
+  'sounds/shallnotpass.mp3',
 ];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
@@ -226,6 +227,13 @@ const SFX = {
     noiseBurst(0.35, 0.22, 700);
     tone(140, 40, 0.3, 'sine', 0.12);
     setTimeout(() => noiseBurst(0.18, 0.12, 1800), 90);
+  },
+  // Gandalf's Staff: the track (see STAFF_DELAY for its length), then the heavy thud of the slam.
+  gandalf: () => mp3Sfx('sounds/shallnotpass.mp3'),
+  thud: () => {
+    noiseBurst(0.9, 0.5, 220);
+    tone(70, 22, 0.8, 'sine', 0.4);
+    setTimeout(() => noiseBurst(0.5, 0.25, 120), 120);
   },
   // Oni Giri: swords drawn, the dash, and a slice.
   oni: () => mp3Sfx('sounds/onigiri.mp3'),

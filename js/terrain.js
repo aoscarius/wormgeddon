@@ -487,6 +487,21 @@ function carve(x, y, r, scorch = true) {
 }
 
 /**
+ * Removes a whole rectangle of terrain (a collapsing section, Gandalf's Staff) from the mask and the canvas.
+ * Coordinates are inclusive pixel bounds.
+ */
+function carveRect(x0, y0, x1, y1) {
+  const { w, h, mask, ctx } = T;
+  x0 = Math.max(0, Math.floor(x0));
+  y0 = Math.max(0, Math.floor(y0));
+  x1 = Math.min(w - 1, Math.ceil(x1));
+  y1 = Math.min(h - 1, Math.ceil(y1));
+  if (x1 < x0 || y1 < y0) return;
+  ctx.clearRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+  for (let yy = y0; yy <= y1; yy++) mask.fill(0, yy * w + x0, yy * w + x1 + 1);
+}
+
+/**
  * Places a steel girder (a rotated rectangle) onto the terrain, but only over open air.
  * @param {number} ang rotation in radians;  @param {number} len length in pixels
  */

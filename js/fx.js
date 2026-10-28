@@ -273,6 +273,42 @@ function applyEvent(e) {
     case 'quake':
       FX.quake = e.t;
       break;
+    case 'rc': {
+      // Break the collapsing section into staggered chunks that fall toward the sea.
+      const width = e.x1 - e.x0,
+        height = Math.max(1, Math.min(e.y1, G.waterY) - e.y0),
+        step = clamp(Math.sqrt((width * height) / 180), 10, 26),
+        cols = [T.theme.top, T.theme.dirt, T.theme.deep, [100, 92, 80]];
+      for (let y = e.y0; y < Math.min(e.y1, G.waterY); y += step) {
+        for (let x = e.x0; x < e.x1; x += step) {
+          const col = cols[(Math.random() * cols.length) | 0];
+          addP({
+            x: x + step * (0.35 + Math.random() * 0.3),
+            y: y + step * (0.35 + Math.random() * 0.3),
+            vx: rnd(-28, 28),
+            vy: rnd(-12, 35),
+            l: rnd(1.8, 2.6),
+            m: 2.6,
+            c: `rgb(${col[0]},${col[1]},${col[2]})`,
+            s: step * rnd(0.75, 1.15),
+            g: 520,
+            k: 'd',
+            wait: (y - e.y0) / height * 0.22 + Math.random() * 0.06,
+          });
+        }
+      }
+      // Delay the spray so it appears when the falling debris reaches the water.
+      for (let x = e.x0; x < e.x1; x += 24) {
+        const first = FX.p.length;
+        puff(x, G.waterY, 4, 220, ['#cfe9ff', '#8cc4ee', '#fff'], 0.9, 3, 520, 'd');
+        const delay = 0.35 + Math.random() * 0.25;
+        for (let i = first; i < FX.p.length; i++) FX.p[i].wait = delay;
+      }
+      UI.shake = Math.min(18, UI.shake + 8);
+      camImpact((e.x0 + e.x1) / 2, e.y0);
+      break;
+    }
+
     case 'tsunami':
       FX.waves.push({ dir: e.dir, D: e.D, H0: e.H0, t: 0 });
       FX.quake = Math.max(FX.quake, 2);
