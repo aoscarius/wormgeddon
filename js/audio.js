@@ -79,6 +79,7 @@ const MP3_FILES = [
   'sounds/onigiri.mp3',
   'sounds/wecamewesawwekickeditsass.mp3',
   'sounds/gomugomuno.mp3',
+  'sounds/iaminevitable.mp3',
 ];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
@@ -211,6 +212,16 @@ const SFX = {
     tone(80, 28, 0.6, 'sine', 0.25);
   },
   // Splatter Mode: a wet burst (a low thump with a splash of filtered noise)
+  // Thanos' Gauntlet: the snap, a deep boom and a fading wind of dust.
+  inevitable: () => mp3Sfx('sounds/iaminevitable.mp3'),
+  snap: () => {
+    noiseBurst(0.04, 0.5, 6000);
+    tone(1800, 500, 0.05, 'square', 0.12);
+    setTimeout(() => {
+      tone(90, 30, 1.4, 'sine', 0.3);
+      noiseBurst(1.6, 0.18, 500);
+    }, 60);
+  },
   squelch: () => {
     noiseBurst(0.35, 0.22, 700);
     tone(140, 40, 0.3, 'sine', 0.12);

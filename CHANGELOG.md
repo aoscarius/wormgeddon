@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-43 commits, 2026-10-18 to 2026-10-28. Up to commit `bf07e09b624af8f7cb0733e3fd1613ea3071e63d`.
+44 commits, 2026-10-18 to 2026-10-28. Up to commit `15fb3cd4c567c73078a2564292b3e166d99b9aab`.
 
 ## 2026-10-18
 
@@ -339,7 +339,18 @@ fixed, changed or refactored.
 
 ## 2026-10-28
 
-### [`bf07e09`](https://github.com/aoscarius/wormgeddon/commit/bf07e09b624af8f7cb0733e3fd1613ea3071e63d)
+### [`18b8181`](https://github.com/aoscarius/wormgeddon/commit/18b818125388f42e6d9080c1f2baa28ed3e473e0)
 
 **Changed**
 - Enhance Kamehameha mechanics: lock aim during charge, add impact line for straight-line weapons, and update related tests
+
+### [`15fb3cd`](https://github.com/aoscarius/wormgeddon/commit/15fb3cd4c567c73078a2564292b3e166d99b9aab)
+
+**Added**
+- Implement Thanos' Gauntlet weapon with snap mechanic as an extremely rare weapon, available only in crates
+- Implemented snap functionality that turns all worms in range to dust, including the caster
+- Introduced new audio for the snap effect and associated sound events
+- Added tests to ensure correct behavior of the Thanos' Gauntlet mechanics and rarity
+
+**Changed**
+- Updated weapon arsenal and rarity logic to reflect the new weapon

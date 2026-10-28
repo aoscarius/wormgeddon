@@ -190,6 +190,7 @@ function hudPanel(t, mine) {
       for (const x of WLIST) {
         if (UI.wcat !== 'all' && x.cat !== UI.wcat) continue;
         if (!arsenalHas(G.cfg.arsenal, x.id)) continue;
+        if (x.rare && !(t.ammo[x.id] > 0)) continue; // extremely rare weapons stay hidden until the team finds one
         const ok = avail(t, x.id),
           ammo = t.ammo[x.id];
         // Badge: remaining ammo, infinity, or the round the weapon unlocks in.

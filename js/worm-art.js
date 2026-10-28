@@ -354,7 +354,7 @@ function drawWormBody(w) {
   g.save();
   g.translate(w.x, w.y);
   if (w.dead) {
-    if (!w.sunk) drawGrave(g, team);
+    if (!w.sunk && !w.dusted) drawGrave(g, team); // a worm turned to dust leaves nothing behind
     g.restore();
     return;
   }
@@ -371,6 +371,14 @@ function drawWormBody(w) {
     g.translate(0, 6);
     g.scale(s, s * (1 - 0.06 * Math.sin(G.time * 17) * swell));
     g.translate(0, -6);
+  }
+  // Thanos' Gauntlet: the worm crumbles away from the downwind side (the dust itself is spawned in fxUpdate)
+  if (w.dustP > 0) {
+    const dir = G.wind >= 0 ? 1 : -1;
+    g.beginPath();
+    if (dir > 0) g.rect(-26, -34, 52 - 52 * w.dustP, 60);
+    else g.rect(26 - (52 - 52 * w.dustP), -34, 52 - 52 * w.dustP, 60);
+    g.clip();
   }
   const f = w.face,
     t = G.time,
@@ -696,6 +704,83 @@ function drawWormBody(w) {
           g.stroke();
         }
       }
+    } else if (w.tool.k === 'snap') {
+      // Thanos' Gauntlet: the arm is raised, the golden glove glows with the six stones, then the fingers snap
+      const age = (w.tool.p || 0) * SNAP_T,
+            snapped = age >= SNAP_AT,
+            ax = f * 8,
+            ay = -11 - (snapped ? 0 : Math.sin(age * 9) * 0.6);
+
+      g.save();
+      g.strokeStyle = '#5a3f08';
+      g.lineWidth = 5;
+      g.beginPath();
+      g.moveTo(f * 2, -1);
+      g.lineTo(ax, ay + 2);
+      g.stroke();
+      g.strokeStyle = '#d9a520';
+      g.lineWidth = 3;
+      g.beginPath();
+      g.moveTo(f * 2, -1);
+      g.lineTo(ax, ay + 2);
+      g.stroke();
+      g.fillStyle = '#dfb130';
+      g.strokeStyle = '#5a3f08';
+      g.lineWidth = 1.2;
+      g.beginPath();
+      g.roundRect ? g.roundRect(ax - 4.5 * f, ay - 4, 9 * f, 7, 2) : g.rect(ax - 4.5 * f, ay - 4, 9 * f, 7);
+      g.fill();
+      g.stroke();
+      g.fillStyle = '#b88610';
+      for(let i = 0; i < 4; i++) {
+        const kx = ax + (i - 1.5) * 2.2 * f;
+        const ky = ay - 4.5;
+        g.beginPath();
+        g.arc(kx, ky, 1.4, 0, TAU);
+        g.fill();
+        g.stroke();
+      }
+      const stones = [
+        { c: '#e03030', x: -3.3, y: -2.0 }, // Reality (Red)
+        { c: '#3090ff', x: -1.1, y: -3.2 }, // Space (Blue)
+        { c: '#b040ff', x:  1.1, y: -3.2 }, // Power (Purple)
+        { c: '#30c040', x:  3.3, y: -2.0 }, // Time (Green)
+        { c: '#ff9020', x:  0.0, y: -4.5 }, // Soul (Orange)
+        { c: '#f0e020', x:  0.0, y:  0.2 }  // Mind (Yellow - Center)
+      ];
+      stones.forEach((s, i) => {
+        const sx = ax + s.x * f;
+        const sy = ay + s.y;
+        const radius = (i === 5) ? 1.6 : 1.0;
+        g.fillStyle = s.c;
+        g.beginPath();
+        g.arc(sx, sy, radius + 0.5, 0, TAU);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.beginPath();
+        g.arc(sx, sy, radius * 0.5, 0, TAU);
+        g.fill();
+      });
+      if (!snapped) {
+        const k = age / SNAP_AT;
+        g.globalCompositeOperation = 'lighter';
+        g.fillStyle = `rgba(190, 120, 255, ${0.2 + 0.3 * k})`;
+        g.beginPath();
+        g.arc(ax, ay, 8 + 7 * k + Math.sin(age * 20) * 1.5, 0, TAU);
+        g.fill();
+        g.globalCompositeOperation = 'source-over';
+      } else if (age < SNAP_AT + 0.3) {
+        g.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+        g.lineWidth = 1.8;
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * TAU;
+          g.beginPath();
+          g.moveTo(ax + Math.cos(a) * 6, ay + Math.sin(a) * 6);
+          g.lineTo(ax + Math.cos(a) * 16, ay + Math.sin(a) * 16);
+          g.stroke();
+        }
+      }
+      g.restore();
     } else if (w.tool.k === 'kame') {
       // energy ball between the hands, growing with the charge, with sparks drawn into it
       const k = w.tool.p || 0,

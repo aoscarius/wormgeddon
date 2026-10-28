@@ -386,6 +386,26 @@ function applyEvent(e) {
 }
 /** Ages and moves all particles, texts, tracers, planes and rings; decays screen shake and flash. */
 function fxUpdate(dt) {
+  // Thanos' Gauntlet: a worm turning to dust sheds grains from the crumbling edge; the wind carries them away
+  for (const w of G.worms)
+    if (w.dustP > 0 && w.dustP < 1 && !w.dead) {
+      const dir = G.wind >= 0 ? 1 : -1;
+      for (let i = 0; i < 90 * dt * (0.4 + w.dustP) + Math.random(); i++) {
+        const fx = w.x + dir * (13 - 26 * w.dustP) + rnd(-3, 3);
+        addP({
+          x: fx,
+          y: w.y + rnd(-14, 8),
+          vx: dir * rnd(10, 50),
+          vy: rnd(-30, 5),
+          l: rnd(1.2, 2.8),
+          m: 2.8,
+          c: ['#cfc6b8', '#a89f93', '#8a8178', '#e0d8c8'][(Math.random() * 4) | 0],
+          s: rnd(0.8, 2.2),
+          g: 0,
+          k: 'w',
+        });
+      }
+    }
   for (let i = FX.p.length - 1; i >= 0; i--) {
     const p = FX.p[i];
     p.l -= dt;
@@ -398,6 +418,12 @@ function fxUpdate(dt) {
     p.y += p.vy * dt;
     if (p.k === 'd' && solid(p.x, p.y)) {
       p.l = 0;
+    }
+    if (p.k === 'w') {
+      // dust: eases towards the wind speed (never still), rising a little as it thins out
+      const sp = (60 + 160 * Math.abs(G.wind)) * (G.wind >= 0 ? 1 : -1);
+      p.vx += (sp - p.vx) * 1.4 * dt;
+      p.vy += (-18 - p.vy) * dt;
     }
     if (p.k === 's') {
       p.s += dt * 6;

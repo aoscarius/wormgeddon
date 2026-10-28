@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, THANOS_RADIUS, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -210,8 +210,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -512,11 +512,57 @@ function doomBlast(o) {
   processDeaths();
 }
 /**
+ * Thanos' Gauntlet: the worm raises the gauntlet and snaps its fingers (tl.p = 0..1 over SNAP_T s, sent to guests). At
+ * SNAP_AT s every living worm in the level starts to turn to dust.
+ */
+const THANOS_RADIUS = Infinity,
+  SNAP_AT = 5.2,
+  SNAP_T = 6.0,
+  DUST_T = 3;
+function snapTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / SNAP_T).toFixed(2);
+  physWorm(w, dt, false);
+  if (!tl.done && tl.age >= SNAP_AT) {
+    tl.done = true;
+    emit({ e: 'snd', s: 'snap' });
+    emit({ e: 'flash', c: '#e8d8ff' });
+    emit({ e: 'quake', t: 1 });
+    emit({ e: 'msg', t: 'Snap!' });
+    for (const o of G.worms)
+      if (/*o !== w &&*/ !o.dead && !(o.dust > 0) && Math.hypot(o.x - w.x, o.y - w.y) <= THANOS_RADIUS) {
+        o.dust = DUST_T;
+        o.dustP = 0;
+      }
+  }
+  if (tl.age >= SNAP_T) tl.t = 0;
+}
+/** A worm turning to dust: its progress (0..1) feeds the drawing; at the end it is dead for certain, without a grave. */
+function dustTick(o, dt) {
+  o.dust -= dt;
+  o.dustP = clamp(1 - o.dust / DUST_T, 0, 1);
+  if (o.dust > 0) return;
+  o.dust = 0;
+  o.dustP = 1;
+  o.dusted = true;
+  o.pend = (o.pend || 0) + Math.max(0, o.hp);
+  o.hp = 0;
+  processDeaths();
+  // the caster dissolving ends the turn (nobody is left to run the turn clock)
+  if (o.id === G.active && (G.phase === 'turn' || G.phase === 'retreat')) toSettle();
+}
+/**
  * Applies the active player's input to their worm for one tick, in priority order:
  * digging tools / kamikaze, jet pack, rope, then normal walking, jumping and aiming.
  * @param {object} inp input record (l, r, u, d, jump, back, fireP, ...)
  */
 function controlWorm(w, inp, dt) {
+  // a worm turning to dust cannot do anything any more (but still finishes its snap if it is the caster)
+  if (w.dust > 0 && !w.tool) {
+    physWorm(w, dt, false);
+    return;
+  }
   const retreat = G.phase === 'retreat';
   // tools (blowtorch / drill / kamikaze)
   // 1) Tools: blowtorch tunnels along the aim, drill digs down, kamikaze flies along the aim and explodes.
@@ -576,6 +622,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'oni') oniTick(w, tl, dt);
     else if (tl.k === 'proton') protonTick(w, tl, dt);
     else if (tl.k === 'axe') axeTick(w, tl, dt);
+    else if (tl.k === 'snap') snapTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

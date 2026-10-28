@@ -6,7 +6,7 @@
  * Falling supply crates and oil drums: spawning, per-tick update and pickup.
  *
  * Depends on: core, combat
- * Globals defined: CRATE_UTIL, CRATE_WEAP, spawnCrate, updateObjs, collectCrate
+ * Globals defined: CRATE_UTIL, CRATE_WEAP, CRATE_RARE, spawnCrate, updateObjs, collectCrate
  */
 
 /* ===== Crates & objects ===== */
@@ -57,6 +57,8 @@ const CRATE_WEAP = [
   'tornado',
   'tsunami',
 ];
+/** Extremely rare weapons: never in the normal pool, each has this chance of replacing the item of a weapon crate. */
+const CRATE_RARE = { thanos: 0.03 };
 /** Drops a crate (35% health, 40% weapon, 25% utility) at a random x above the map. */
 function spawnCrate() {
   const x = 80 + Math.random() * (T.w - 160),
@@ -65,7 +67,10 @@ function spawnCrate() {
   // A restricted arsenal only drops its own weapons (and health when it has none to offer).
   const pool = (type === 'weapon' ? CRATE_WEAP : CRATE_UTIL).filter(id => arsenalHas(G.cfg.arsenal, id));
   if (!pool.length) type = 'health';
-  const item = type === 'health' ? null : pick(pool);
+  let item = type === 'health' ? null : pick(pool);
+  if (type === 'weapon')
+    for (const [id, chance] of Object.entries(CRATE_RARE))
+      if (arsenalHas(G.cfg.arsenal, id) && Math.random() < chance) item = id;
   G.objs.push({
     id: G.nid++,
     k: 'crate',

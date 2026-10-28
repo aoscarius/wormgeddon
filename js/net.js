@@ -80,12 +80,13 @@ function snapshot(withAmmo) {
       Math.round(w.hp),
       w.face,
       +w.aim.toFixed(2),
-      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0) | (w.doom > 0 ? 16 : 0),
+      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0) | (w.doom > 0 ? 16 : 0) | (w.dust > 0 ? 32 : 0) | (w.dusted ? 64 : 0),
       w.rope ? [w.rope.ax | 0, w.rope.ay | 0] : 0,
       w.jet ? (w.jet.on ? 2 : 1) : 0,
       w.tool ? w.tool.k : 0,
       Math.round(w.pend || 0), // damage not announced yet (the shown health lags behind hp)
       w.tool && w.tool.p ? w.tool.p : 0, // phase of a multi-stage tool (Hokuto Hyakuretsu Ken, ...)
+      +(w.dustP || 0).toFixed(2), // how far the worm has turned to dust (Thanos' Gauntlet)
     ]),
     p: G.projs.map(p => [
       p.id,
@@ -142,6 +143,9 @@ function applySnapshot(s) {
     w.sunk = !!(a[6] & 4);
     w.chute = !!(a[6] & 8);
     w.doom = a[6] & 16 ? 1 : 0;
+    w.dust = a[6] & 32 ? 1 : 0;
+    w.dusted = !!(a[6] & 64);
+    w.dustP = a[12] || 0;
     w.rope = a[7] ? { ax: a[7][0], ay: a[7][1] } : null;
     w.jet = a[8] ? { on: a[8] === 2 } : null;
     w.tool = a[9] ? { k: a[9], p: a[11] || 0 } : null;

@@ -91,6 +91,8 @@ function step(dt, inputs) {
       o.doom -= dt;
       if (o.doom <= 0) doomBlast(o);
     }
+  // worms turned to dust by Thanos' Gauntlet die when the dissolve is over
+  for (const o of G.worms) if (o.dust > 0 && !o.dead) dustTick(o, dt);
   for (const p of G.projs) {
     updateProj(p, dt);
     if (!p.dead && p.y > G.waterY + 2) {

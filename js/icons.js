@@ -309,6 +309,17 @@ const ICON_DRAW = {
     icLine(g, 24, 54, 16, 61, 2, IC.ink);
     icLine(g, 40, 54, 48, 61, 2, IC.ink);
   },
+  // Thanos' Gauntlet: a golden glove with the six infinity stones.
+  thanos(g) {
+    icRect(g, 14, 36, 34, 22, IC.yellow, 4);
+    icRect(g, 14, 50, 34, 8, IC.orange, 3);
+    for (const x of [14, 23, 32, 41]) icRect(g, x, 12, 8, 28, IC.yellow, 3);
+    icRect(g, 46, 28, 12, 9, IC.yellow, 3);
+    [IC.red, IC.orange, IC.yellow, IC.green, IC.blue, '#b040ff'].forEach((c, i) =>
+      icCircle(g, 19 + (i % 3) * 10, 41 + ((i / 3) | 0) * 8, 3.3, c));
+    icLine(g, 6, 8, 10, 14, 2, IC.white);
+    icLine(g, 2, 16, 9, 18, 2, IC.white);
+  },
   // Proton Stream: two streams that cross, with a flare at the crossing.
   proton(g) {
     icLine(g, 6, 54, 50, 14, 5, IC.orange);

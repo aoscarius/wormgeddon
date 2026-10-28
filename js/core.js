@@ -41,7 +41,7 @@ for (const [cat, ids] of Object.entries({
   body: ['firepunch', 'dragonball', 'bat', 'kamikaze', 'hokuto', 'onigiri', 'gigantaxe'], // direct contact with the worm's body
   short: ['shotgun', 'handgun', 'uzi', 'dynamite', 'mine', 'petrol', 'sheep', 'supersheep'], // close to the shooter
   long: ['bazooka', 'homing', 'mortar', 'grenade', 'cluster', 'banana', 'holy', 'airstrike', 'napalm', 'minestrike'],
-  destructive: ['donkey', 'armageddon', 'nuke', 'earthquake', 'tsunami'], // hits the whole level
+  destructive: ['donkey', 'armageddon', 'nuke', 'earthquake', 'tsunami', 'thanos'], // hits the whole level
   anime: ['dragonfire', 'thunder', 'hammer', 'kamehameha', 'proton', 'timecar', 'tornado'], // fantasy and elemental powers
   tools: ['rope', 'jetpack', 'teleport', 'girder', 'blowtorch', 'drill', 'parachute'], // movement and digging
   special: ['scales', 'select', 'skip', 'surrender'], // everything else, and the turn controls

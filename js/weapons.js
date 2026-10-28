@@ -377,6 +377,22 @@ registerWeapon({
     return 'keep';
   },
 });
+// Thanos' Gauntlet (extremely rare, crates only): the worm snaps its fingers and every worm in range, itself included,
+// turns to dust that the wind blows away (see snapTick / dustTick in worms.js).
+registerWeapon({
+  id: 'thanos',
+  name: "Thanos' Gauntlet",
+  code: 'TG',
+  ammo: 0,
+  delay: 0,
+  rare: true,
+  noEnd: true,
+  fire(c) {
+    emit({ e: 'snd', s: 'inevitable' });
+    c.w.tool = { k: 'snap', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Kamehameha: the worm charges an energy ball (4.5 s, aim locked when it starts), then fires a beam across the whole map
 // along the aim that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
 registerWeapon({

@@ -184,6 +184,11 @@ function arsenalHas(mode, id) {
 /** Fills a team's ammo table for the chosen arsenal: 'std', 'full', 'bazooka', 'chaos' or a key of ARSENALS. -1 = unlimited. */
 function initAmmo(t, mode) {
   for (const d of WLIST) {
+    if (d.rare) {
+      // extremely rare: only from crates (and 1 in the Full arsenal, or by luck in Chaos)
+      t.ammo[d.id] = mode === 'full' || (mode === 'chaos' && Math.random() < 0.1) ? 1 : 0;
+      continue;
+    }
     let a = d.ammo;
     if (isRestrictedArsenal(mode)) a = !arsenalHas(mode, d.id) ? 0 : a < 0 ? -1 : Math.max(a, ARSENAL_MIN_AMMO);
     else if (mode === 'full') a = a < 0 ? -1 : 99;
@@ -287,6 +292,7 @@ function quietBlocker() {
   for (const o of G.objs) if (o.lit) return 'burning drum';
   for (const w of G.worms) {
     if (w.doom > 0 && !w.dead) return 'worm ' + w.name + ' doomed';
+    if (w.dust > 0 && !w.dead) return 'worm ' + w.name + ' turning to dust';
     if (w.dead && w.y > G.waterY) continue;
     if (!w.grounded) return 'worm ' + w.name + ' in the air';
     if (Math.abs(w.vx) > 6) return 'worm ' + w.name + ' sliding';
@@ -312,8 +318,8 @@ function processDeaths() {
       w.jet = null;
       w.tool = null;
       emit({ e: 'msg', t: '{0} ({1}) died', a: [w.name, teamOf(w).name] });
-      emit({ e: 'log', t: '{0} was eliminated', a: [w.name], c: teamOf(w).color });
-      explode(w.x, w.y, 26, 18, 160, { k: 0, src: null, noEnd: true });
+      emit({ e: 'log', t: w.dusted ? '{0} turned to dust' : '{0} was eliminated', a: [w.name], c: teamOf(w).color });
+      if (!w.dusted) explode(w.x, w.y, 26, 18, 160, { k: 0, src: null, noEnd: true }); // dust leaves no crater
     }
   return any;
 }
