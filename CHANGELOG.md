@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-40 commits, 2026-10-18 to 2026-10-26. Up to commit `05f9eb5f9e6062ce9f61acf1016fe4aa27dac86b`.
+43 commits, 2026-10-18 to 2026-10-28. Up to commit `bf07e09b624af8f7cb0733e3fd1613ea3071e63d`.
 
 ## 2026-10-18
 
@@ -317,8 +317,29 @@ fixed, changed or refactored.
 - Repleaced anime special weapons audio effects with real mp3 snippets
 - Synced audio with weapons animation
 
-### [`05f9eb5`](https://github.com/aoscarius/wormgeddon/commit/05f9eb5f9e6062ce9f61acf1016fe4aa27dac86b)
+### [`a55fc93`](https://github.com/aoscarius/wormgeddon/commit/a55fc938e8efabea49f75bb0d7cbde614700f4e7)
 
 **Changed**
 - Improved Splatter Mode: add blood effects and mechanics for Hokuto Hyakuretsu Ken and Oni Giri
 - Enhance visuals with blood stains and showers, and update related tests
+
+## 2026-10-27
+
+### [`ea5bc33`](https://github.com/aoscarius/wormgeddon/commit/ea5bc332a6dabcd1584dd6e9ec0e357bb3ac3de0)
+
+**Added**
+- Added audio processing tools and documentation
+- Added AUDIO.md to document audio processing features and tools
+- Created audio_tool.py for normalizing MP3 files to a consistent format and loudness
+
+### [`b5463a1`](https://github.com/aoscarius/wormgeddon/commit/b5463a17ff64b6d3ce8817c324b719fac2aeb989)
+
+**Added**
+- Add Oni Giri audio effects and update related functionality
+
+## 2026-10-28
+
+### [`bf07e09`](https://github.com/aoscarius/wormgeddon/commit/bf07e09b624af8f7cb0733e3fd1613ea3071e63d)
+
+**Changed**
+- Enhance Kamehameha mechanics: lock aim during charge, add impact line for straight-line weapons, and update related tests

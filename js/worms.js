@@ -524,8 +524,13 @@ function controlWorm(w, inp, dt) {
     const tl = w.tool;
     tl.t -= dt;
     const [dx, dy] = aimDir(w);
-    if (inp.u) w.aim = clamp(w.aim - 1.2 * dt, -1.5, 1.5);
-    if (inp.d) w.aim = clamp(w.aim + 1.2 * dt, -1.5, 1.5);
+    // the Kamehameha keeps the aim chosen before the charge (see kameGeom)
+    if (tl.k === 'kame') {
+      if (tl.a !== undefined) w.aim = tl.a;
+    } else {
+      if (inp.u) w.aim = clamp(w.aim - 1.2 * dt, -1.5, 1.5);
+      if (inp.d) w.aim = clamp(w.aim + 1.2 * dt, -1.5, 1.5);
+    }
     if (tl.k === 'torch') {
       if (tl.dx === undefined) {
         tl.dx = dx; tl.dy = 0;

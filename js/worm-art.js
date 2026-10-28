@@ -894,6 +894,19 @@ function drawHeldWeaponBox(w) {
 function drawAim(w) {
   const W = G.weapon,
     d = WEAPONS[W.id];
+  if (w.tool && w.tool.k === 'kame' && G.phase === 'turn' && !w.dead) {
+    // Kamehameha charge: the locked aim line, so the player sees where the beam will go
+    const [kx, ky] = aimDir(w), sc = 1 / CAM.s;
+    ctx2.strokeStyle = 'rgba(150,215,255,.8)';
+    ctx2.lineWidth = 1.5 * sc;
+    ctx2.setLineDash([6 * sc, 5 * sc]);
+    ctx2.beginPath();
+    ctx2.moveTo(w.x + kx * 14, w.y - 2 + ky * 14);
+    ctx2.lineTo(w.x + kx * 90, w.y - 2 + ky * 90);
+    ctx2.stroke();
+    ctx2.setLineDash([]);
+    return;
+  }
   if (!d || G.phase !== 'turn' || w.tool || ((w.jet || w.rope) && !holdingOther(w)) || w.dead) return;
   if ((d.click && ! d.id === 'homing') || d.instant || d.id === 'jetpack' || d.id === 'blowtorch' || d.id === 'drill')
     return;

@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: KAME_*, PROTON_*, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
+ * Globals defined: KAME_*, PROTON_*, kameGeom, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -664,8 +664,11 @@ function segDist(px, py, x1, y1, x2, y2) {
  * geometry lives in p.net = [originX, originY, angle, headDistance, tailDistance, fullLength] (sent to guests as is).
  * The full length is the distance to the edge of the map (and a bit beyond), so it always crosses the whole level.
  */
-function kameFire(w) {
-  const [dx, dy] = aimDir(w),
+function kameGeom(w) {
+  // The aim is the one locked when the charge began (w.tool.a / .f), so nothing done during the charge can bend the
+  // shot; without a tool (debug prediction) it is the worm's current aim. The beam starts on the aim line, at the muzzle.
+  const tl = w.tool && w.tool.k === 'kame' ? w.tool : null,
+    [dx, dy] = aimDir(tl && tl.a !== undefined ? { face: tl.f, aim: tl.a } : w),
     ox = w.x + dx * 10,
     oy = w.y - 2 + dy * 10,
     a = Math.atan2(dy, dx);
@@ -674,6 +677,10 @@ function kameFire(w) {
   else if (dx < -1e-6) L = Math.min(L, (-60 - ox) / dx);
   if (dy > 1e-6) L = Math.min(L, (T.h + 60 - oy) / dy);
   else if (dy < -1e-6) L = Math.min(L, (-420 - oy) / dy);
+  return { ox, oy, a, L };
+}
+function kameFire(w) {
+  const { ox, oy, a, L } = kameGeom(w);
   spawnProj('kamebeam', ox, oy, 0, 0, w, { a, net: [ox, oy, a, 0, 0, L], hits: new Set(), cd: KAME_START });
   // emit({ e: 'snd', s: 'kame' });
   emit({ e: 'flash', c: '#bfe6ff' });

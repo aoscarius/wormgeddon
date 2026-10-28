@@ -361,12 +361,92 @@ function drawDebug() {
   ctx2.stroke();
   ctx2.setLineDash([]);
 }
+/**
+ * F4 debug: impact line of a straight-line weapon at the current aim / cursor, or null when the selected weapon is not one.
+ * Uses the very same geometry as the weapons: ray() for the hitscan guns, kameGeom() for the Kamehameha, lightningRay()
+ * for Thor's Hammer, streamRay() for the Proton Stream. `end` is where it stops; `hit` what it stops on; `w` the half
+ * width of the line (the Kamehameha tunnel).
+ */
+const LINEAR_RANGE = { shotgun: 330, handgun: 300, uzi: 280 };
+const LINEAR_MELEE = { firepunch: 24, dragonball: 34, bat: 22 };
+/** Walks from (x, y) along (dx, dy) in 3 px steps up to `len`; stops at the first solid pixel (or worm when `worms`). */
+function dbgWalk(x, y, dx, dy, len, skip, worms) {
+  let d = 0;
+  for (; d < len; d += 3) {
+    const px = x + dx * (d + 3), py = y + dy * (d + 3);
+    if (worms && G.worms.some(o => !o.dead && o !== skip && Math.abs(o.x - px) < 6 && Math.abs(o.y - py) < 8)) return { x: px, y: py, hit: 'worm' };
+    if (solid(px, py)) return { x: px, y: py, hit: 'ground' };
+  }
+  return { x: x + dx * len, y: y + dy * len, hit: null };
+}
+function linearShot(aw, id) {
+  const [dx, dy] = aimDir(aw), f = aw.face || 1;
+  const line = (x1, y1, e, extra) => Object.assign({ x1, y1, x2: e.x, y2: e.y, hit: e.hit, w: 0 }, extra);
+  if (LINEAR_RANGE[id]) return line(aw.x + dx * 8, aw.y - 2 + dy * 8, dbgWalk(aw.x + dx * 8, aw.y - 2 + dy * 8, dx, dy, LINEAR_RANGE[id], aw, true));
+  if (LINEAR_MELEE[id]) {
+    const bat = id === 'bat', ux = bat ? dx : f, uy = bat ? dy : 0, L = LINEAR_MELEE[id];
+    return line(aw.x, aw.y - 2, { x: aw.x + ux * L, y: aw.y - 2 + uy * L, hit: null }, { r: L });
+  }
+  if (id === 'kamehameha') {
+    const g = kameGeom(aw), ex = Math.cos(g.a), ey = Math.sin(g.a);
+    // the beam is longer than the level: draw it up to the map border
+    let bd = g.L;
+    if (ex > 1e-6) bd = Math.min(bd, (T.w - g.ox) / ex); else if (ex < -1e-6) bd = Math.min(bd, -g.ox / ex);
+    if (ey > 1e-6) bd = Math.min(bd, (T.h - g.oy) / ey); else if (ey < -1e-6) bd = Math.min(bd, -g.oy / ey);
+    bd = Math.max(0, bd);
+    let d = KAME_START, hit = null;
+    // the beam carves through terrain, so only worms are marked on the way; the first ground it meets starts the tunnel
+    for (; d < bd; d += 3)
+      if (G.worms.some(o => !o.dead && o !== aw && segDist(o.x, o.y, g.ox, g.oy, g.ox + ex * d, g.oy + ey * d) < KAME_R + (o.r || 6) && Math.hypot(o.x - g.ox, o.y - g.oy) <= d + KAME_R)) { hit = 'worm'; break; }
+    d = Math.min(d, bd);
+    const gr = dbgWalk(g.ox, g.oy, ex, ey, bd, aw, false);
+    return { x1: g.ox, y1: g.oy, x2: g.ox + ex * bd, y2: g.oy + ey * bd, mx: g.ox + ex * d, my: g.oy + ey * d, gx: gr.hit ? gr.x : undefined, gy: gr.y, hit, w: KAME_R };
+  }
+  if (id === 'hammer') {
+    let tw = null, best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o === aw) continue;
+      const d = Math.hypot(o.x - UI.mx, o.y - UI.my);
+      if (d < best) { best = d; tw = o; }
+    }
+    const x = clamp(tw ? tw.x : UI.mx, 8, T.w - 8);
+    let y = tw ? tw.y : surfaceAt(x);
+    if (y == null) y = G.waterY - 4;
+    const x1 = aw.x + f * 7, y1 = aw.y - 38 - 8;
+    return line(x1, y1, lightningRay(x1, y1, x, y, aw.id), { r: 20 });
+  }
+  if (id === 'proton') {
+    let tw = null, best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o.team === aw.team) continue;
+      const d = Math.hypot(o.x - UI.mx, o.y - UI.my);
+      if (d < best) { best = d; tw = o; }
+    }
+    if (!tw) return null;
+    const sf = tw.x >= aw.x ? 1 : -1, mx = aw.x + sf * 9, my = aw.y - 4, d = Math.hypot(tw.x - mx, tw.y - my),
+      k = d > PROTON_RANGE ? PROTON_RANGE / d : 1;
+    return line(mx, my, streamRay(mx, my, mx + (tw.x - mx) * k, my + (tw.y - my) * k, [aw.id]));
+  }
+  if (id === 'rope') return line(aw.x, aw.y - 4, dbgWalk(aw.x, aw.y - 4, dx, dy, 290, aw, false));
+  if (id === 'supersheep') return line(aw.x + dx * 10, aw.y - 6 + dy * 10, dbgWalk(aw.x + dx * 10, aw.y - 6 + dy * 10, dx, dy, 900, aw, false));
+  if (id === 'kamikaze') return line(aw.x, aw.y, dbgWalk(aw.x, aw.y, dx, dy, 320 * 1.3, aw, false), { r: 42 });
+  if (id === 'blowtorch') return line(aw.x + f * 11, aw.y, { x: aw.x + f * (11 + 38 * 5), y: aw.y, hit: null }, { w: 10 });
+  if (id === 'drill') return line(aw.x, aw.y + 9, { x: aw.x, y: aw.y + 9 + 70 * 5, hit: null }, { w: 10 });
+  if (id === 'onigiri') return line(aw.x, aw.y, { x: aw.x + f * (ONI_REACH + ONI_SAFE), y: aw.y, hit: null }, { w: 16 });
+  if (id === 'hokuto') return line(aw.x, aw.y, { x: aw.x + f * HYAKU_REACH, y: aw.y, hit: null }, { w: 18 });
+  if (id === 'gigantaxe') {
+    const sp = axeSpot(aw);
+    return line(sp.x, sp.y - AXE_H, { x: sp.x, y: sp.y, hit: 'ground' }, { w: AXE_R });
+  }
+  return null;
+}
 /** Recorded flight paths for the debug view: projectile id -> {pts, col, gone}. */
 const DBG_PATHS = new Map();
 /**
- * Debug trajectories (F4 while the debug view is on). Two things are drawn:
+ * Debug trajectories (F4 while the debug view is on). Three things are drawn:
  *  - the real path of every projectile and of the active worm, recorded frame by frame and kept
  *    for 8 s after the projectile is gone;
+ *  - the impact line of straight-line weapons (linearShot);
  *  - a prediction of the selected weapon's shot at the current aim (and at the current charge, or
  *    full power when not charging), simulated with the same physics and terrain collision.
  * Weapons opt in to the prediction through `fire.launch = {type, lo, hi}` (set by throwP()).
@@ -403,6 +483,38 @@ function drawTrajectories() {
     ctx2.stroke();
   }
   ctx2.globalAlpha = 1;
+  // impact line of the straight-line weapons (hitscan guns, Kamehameha, Thor's Hammer, Proton Stream)
+  const lin = aw && !aw.dead && G.weapon && (G.phase === 'turn' || (G.phase === 'retreat' && aw.tool)) && linearShot(aw, aw.tool && aw.tool.k === 'kame' ? 'kamehameha' : G.weapon.id);
+  if (lin) {
+    const a = Math.atan2(lin.y2 - lin.y1, lin.x2 - lin.x1), nx = -Math.sin(a) * lin.w, ny = Math.cos(a) * lin.w,
+      ix = lin.mx === undefined ? lin.x2 : lin.mx, iy = lin.my === undefined ? lin.y2 : lin.my;
+    // the visible part of a very long line stops at the map border
+    let ex = lin.x2, ey = lin.y2;
+    const path = () => {
+      ctx2.beginPath();
+      ctx2.moveTo(lin.x1, lin.y1);
+      ctx2.lineTo(ex, ey);
+      if (lin.w) {
+        ctx2.moveTo(lin.x1 + nx, lin.y1 + ny); ctx2.lineTo(ex + nx, ey + ny);
+        ctx2.moveTo(lin.x1 - nx, lin.y1 - ny); ctx2.lineTo(ex - nx, ey - ny);
+      }
+    };
+    ctx2.lineCap = 'round';
+    ctx2.setLineDash([]);
+    ctx2.strokeStyle = '#4ad8ff';
+    ctx2.lineWidth = 2.2 / S;
+    ctx2.setLineDash([8 / S, 5 / S]);
+    path();
+    ctx2.stroke();
+    ctx2.setLineDash([]);
+    // markers: where it first meets ground (orange, Kamehameha) and where it ends / hits (red), with a label
+    const mark = (x, y, col, r) => {
+      ctx2.strokeStyle = col; ctx2.lineWidth = 2.2 / S;
+      ctx2.beginPath(); ctx2.arc(x, y, r, 0, TAU); ctx2.moveTo(x - r - 4, y); ctx2.lineTo(x + r + 4, y); ctx2.moveTo(x, y - r - 4); ctx2.lineTo(x, y + r + 4); ctx2.stroke();
+    };
+    if (lin.gx !== undefined) mark(lin.gx, lin.gy, '#ffa020', 7);
+    mark(ix, iy, '#ff3030', Math.min(lin.r || 8, 60));
+  }
   // prediction of the selected weapon
   const d = G.weapon && WEAPONS[G.weapon.id];
   if (!aw || aw.dead || !d || !d.fire.launch || G.phase !== 'turn') return;

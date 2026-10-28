@@ -520,6 +520,11 @@ sandboxed iframes such as the artifact preview.
   of the selected weapon at the current aim/charge, ending in a red circle at the blast radius.
   Weapons built with `throwP()` are predicted automatically (`fire.launch`); for others set
   `fn.launch = {type, lo, hi}` on the `fire` function.
+  Every other aimed or straight-line weapon gets a cyan dashed *impact line* instead (from
+  `linearShot()` in `render.js`, reusing the weapons' own geometry: `kameGeom`, `lightningRay`, `streamRay`): hitscan
+  guns, melee (fire punch, dragon ball, bat), Ninja Rope, supersheep, kamikaze, blowtorch, drill, Oni Giri, Hokuto,
+  Gigant Axe, Kamehameha (tunnel width; orange = first ground, red = first worm / map border), Thor's Hammer and
+  Proton Stream. Add a weapon to `linearShot()` when it fires along a line.
 * **Console:** `window.__wh` gives `newGame(cfg, teams)`, `G`, `stepOnce(dt)`; handy for scripted
   scenarios (see `tests/`).
 * **Tests** (`tests/`, setup and the list of tests in `tests/README.md`): `smoke.py` generates every

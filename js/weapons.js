@@ -377,7 +377,7 @@ registerWeapon({
     return 'keep';
   },
 });
-// Kamehameha: the worm charges an energy ball (1.3 s, aim still adjustable), then fires a beam across the whole map
+// Kamehameha: the worm charges an energy ball (4.5 s, aim locked when it starts), then fires a beam across the whole map
 // along the aim that carves a tunnel and wrecks worms, mines, oil drums and crates (see kameFire / kamebeam).
 registerWeapon({
   id: 'kamehameha',
@@ -388,7 +388,7 @@ registerWeapon({
   noEnd: true,
   fire(c) {
     emit({ e: 'snd', s: 'kamevoice' });
-    c.w.tool = { k: 'kame', t: 99, p: 0 };
+    c.w.tool = { k: 'kame', t: 99, p: 0, a: c.w.aim, f: c.w.face }; // the aim is locked for the whole charge
     return 'keep';
   },
 });
