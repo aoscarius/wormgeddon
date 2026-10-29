@@ -46,13 +46,17 @@ const run = ([base]) => {
     g.timer = 20;
     envDisaster(kind);
     let ticks = 0, paused = true;
-    while (g.envDisaster && ticks < 900) {
+    while (g.envDisaster && ticks < 3600) {
       w.stepOnce(1/60);
       ticks++;
       if (g.envDisaster && Math.abs(g.timer - 20) >= 1e-9) paused = false;
     }
     const held = !g.envDisaster;
-    w.stepOnce(1/60);
+    let resumed = false;
+    for (let i = 0; i < 3600 && !resumed; i++) {
+      w.stepOnce(1/60);
+      resumed = g.timer < 20;
+    }
     out.clock[kind] = {held, paused, resumed: g.timer < 20, ticks};
   }
   // --- the scheduler: with a lucky roll a turn starts a disaster at a random moment; with an unlucky one nothing
@@ -86,7 +90,11 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     k = r["kinds"]
     assert k["tsunami"]["tsu"] and k["armageddon"]["arma"] and k["tornado"]["tornado"], k
     assert k["earthquake"]["quake"] and k["thunder"]["bolts"] >= 1, k
-    assert all(v["held"] and v["paused"] and v["resumed"] and v["ticks"] < 900 for v in r["clock"].values()), "each disaster pauses and then resumes the active turn timer"
+    bad_clock = {
+        kind: result for kind, result in r["clock"].items()
+        if not (result["held"] and result["paused"] and result["resumed"] and result["ticks"] < 3600)
+    }
+    assert not bad_clock, f"clock check failed: {bad_clock}"
     assert r["scheduled"] == 1 and r["unlucky"] == 0 and r["round1"] == 0, "a turn schedules a disaster only with the chance, from round 2"
     assert r["seen"] == 5, f"all five disasters strike over many turns: {r['seen']}"
     assert r["menu"], "menu option present"

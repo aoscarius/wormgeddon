@@ -384,6 +384,16 @@ function drawWormBody(w) {
     g.beginPath();
     g.arc(0, -4, 24, 0, TAU);
     g.fill();
+    for (let i = 0; i < 3; i++) {
+      const pulse = 0.5 + 0.5 * Math.sin(G.time * 8 + i * TAU / 3),
+        rx = 6 + pulse * 8,
+        ry = 2.5 + pulse * 3;
+      g.strokeStyle = `rgba(130,180,255,${0.3 + pulse * 0.4})`;
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.ellipse(0, 1, rx, ry, 0, 0, TAU);
+      g.stroke();
+    }
     g.globalCompositeOperation = 'source-over';
   }
   // Thanos' Gauntlet: the worm crumbles away from the downwind side (the dust itself is spawned in fxUpdate)

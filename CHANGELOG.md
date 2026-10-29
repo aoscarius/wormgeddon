@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-50 commits, 2026-10-18 to 2026-10-29. Up to commit `08d84be39b8738d1becf884689fdf75c6790b50a`.
+52 commits, 2026-10-18 to 2026-10-29. Up to commit `e0e086cb34e4db3e8986b37ad22eaae50e49461e`.
 
 ## 2026-10-18
 
@@ -396,10 +396,23 @@ fixed, changed or refactored.
 - Added options for players to enable or disable disasters, updated game logic to trigger disasters randomly, and localized new terms in Italian
 - Included tests to ensure correct functionality of the new feature
 
-### [`08d84be`](https://github.com/aoscarius/wormgeddon/commit/08d84be39b8738d1becf884689fdf75c6790b50a)
+### [`274ef3c`](https://github.com/aoscarius/wormgeddon/commit/274ef3cc4c243a0bde23e076823816e61bff9821)
 
 **Added**
 - Implement Gandalf's slab effect: add ground cracking and falling mechanics
 
 **Changed**
 - Update rendering and event handling for slab interactions, and enhance tests to verify functionality
+
+### [`d2e3fed`](https://github.com/aoscarius/wormgeddon/commit/d2e3fed71d5a18a2db4f659f3877808225fbb15e)
+
+**Changed**
+- Enhance Environmental Chaos feature: pause active turn clock during disasters, update disaster mechanics, and improve related tests for functionality
+
+### [`e0e086c`](https://github.com/aoscarius/wormgeddon/commit/e0e086cb34e4db3e8986b37ad22eaae50e49461e)
+
+**Changed**
+- Enhance worm drawing with pulsing ellipses for visual effect
+
+**Refactored**
+- Refactored Force Choke effects: removed blood emission from hurt function, adjust blood effects in choke event

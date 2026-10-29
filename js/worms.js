@@ -647,9 +647,8 @@ function forceTick(w, tl, dt) {
   } else if (!tl.done) {
     tl.done = true;
     if (t.held) {
-      // let go and fling it away from the caster, a little upwards
-      let dx = t.x - w.x,
-        dy = t.y - w.y;
+      // let go and fling it away from the caster
+      let dx = -w.face, dy = 0;
       const d = Math.hypot(dx, dy) || 1;
       dx /= d;
       dy = Math.min(dy / d, 0) - 0.25;

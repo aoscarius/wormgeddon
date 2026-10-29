@@ -19,7 +19,6 @@ function hurt(w, amt, o = {}) {
   if (w.dead || amt <= 0) return;
   w.hp -= amt;
   w.pend += amt;
-  emit({ e: 'blood', x: w.x, y: w.y });
   if (w.id === G.active && (G.phase === 'turn' || G.phase === 'retreat') && !o.noEnd) toSettle();
   emit({ e: 'snd', s: 'hurt', q: 1 });
 }

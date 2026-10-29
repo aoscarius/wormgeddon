@@ -380,12 +380,14 @@ function applyEvent(e) {
       break;
     case 'choke':
       // Force Choke: blood from the squeezed worm (a spray when it crashes into the ground); a smaller one without Splatter Mode
-      bloodSplat(e.x, e.y);
-      if (UI.splatterMode) {
-        bloodShower(e.x, e.y - 4, e.hit ? 90 : 14, e.hit ? 1.4 : 0.5);
-        if (e.hit) bloodStain(e.x, e.y + 6, 36);
+      if (e.hit) {
+        bloodSplat(e.x, e.y);
+        if (UI.splatterMode) {
+          bloodShower(e.x, e.y - 4, 90, 1.4);
+          bloodStain(e.x, e.y + 6, 36);
+        }
+        UI.shake = Math.min(18, UI.shake + 6);
       }
-      if (e.hit) UI.shake = Math.min(18, UI.shake + 6);
       break;
     case 'avada': {
       // the end of the green beam: a flash of green and a death rattle when it hit, a fizzle when it did not
@@ -403,22 +405,6 @@ function applyEvent(e) {
       // the shards fall (slabRelease already cut them from the ground); dust, then a rain of loose rocks
       const mid = (e.x0 + e.x1) / 2,
         cols = [T.theme.top, T.theme.dirt, T.theme.deep, [100, 92, 80]];
-      // for (let i = 0; i < 80; i++) {
-      //   const col = cols[(Math.random() * cols.length) | 0];
-      //   addP({
-      //     x: rnd(e.x0, e.x1),
-      //     y: rnd(-20, 40),
-      //     vx: rnd(-25, 25),
-      //     vy: rnd(20, 80),
-      //     l: 6,
-      //     m: 6,
-      //     c: `rgb(${col[0]},${col[1]},${col[2]})`,
-      //     s: rnd(3, 9),
-      //     g: 620,
-      //     k: 'd',
-      //     wait: rnd(0.5, 2.4),
-      //   });
-      // }
       for (let x = e.x0; x < e.x1; x += 24) {
         const first = FX.p.length;
         puff(x, G.waterY, 4, 220, ['#cfe9ff', '#8cc4ee', '#fff'], 0.9, 3, 520, 'd');
