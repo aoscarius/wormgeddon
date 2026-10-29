@@ -56,7 +56,7 @@ function step(dt, inputs) {
   if (w && !w.dead && curInp) {
     const inp = curInp;
     if (G.phase === 'turn' || G.phase === 'retreat') {
-      G.timer -= dt;
+      if (!G.envDisaster) G.timer -= dt;
       if (G.weapon.ch === false || G.phase === 'retreat') {
       }
       handleFire(w, t, inp, dt);
@@ -178,7 +178,9 @@ function step(dt, inputs) {
       G.arma = 0;
       G.quake = 0;
       G.tsu = null;
+      G.envThunder = 0;
       G.sched.length = 0;
     }
   }
+  if (G.envDisaster && !envDisasterActive()) G.envDisaster = null;
 }

@@ -38,6 +38,23 @@ const run = ([base]) => {
     kinds[k] = {tsu: !!g.tsu, quake: g.quake > 0 || g.quakeStarted, arma: g.arma > 0, tornado: g.projs.some(p => p.t === 'tornado'), bolts: FX.bolts.length, sched: g.sched.length};
   }
   out.kinds = kinds;
+  // --- natural disasters pause only the active turn clock, then let it resume
+  out.clock = {};
+  for (const kind of ENV_WEAPONS) {
+    g = start(1, 'full', 'env-clock-' + kind);
+    g.sched.length = 0;
+    g.timer = 20;
+    envDisaster(kind);
+    let ticks = 0, paused = true;
+    while (g.envDisaster && ticks < 900) {
+      w.stepOnce(1/60);
+      ticks++;
+      if (g.envDisaster && Math.abs(g.timer - 20) >= 1e-9) paused = false;
+    }
+    const held = !g.envDisaster;
+    w.stepOnce(1/60);
+    out.clock[kind] = {held, paused, resumed: g.timer < 20, ticks};
+  }
   // --- the scheduler: with a lucky roll a turn starts a disaster at a random moment; with an unlucky one nothing
   const orig = Math.random;
   g = start(1, 'full', 'env-sched'); g.round = 3; g.sched.length = 0;
@@ -69,6 +86,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     k = r["kinds"]
     assert k["tsunami"]["tsu"] and k["armageddon"]["arma"] and k["tornado"]["tornado"], k
     assert k["earthquake"]["quake"] and k["thunder"]["bolts"] >= 1, k
+    assert all(v["held"] and v["paused"] and v["resumed"] and v["ticks"] < 900 for v in r["clock"].values()), "each disaster pauses and then resumes the active turn timer"
     assert r["scheduled"] == 1 and r["unlucky"] == 0 and r["round1"] == 0, "a turn schedules a disaster only with the chance, from round 2"
     assert r["seen"] == 5, f"all five disasters strike over many turns: {r['seen']}"
     assert r["menu"], "menu option present"

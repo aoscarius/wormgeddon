@@ -723,10 +723,15 @@ registerWeapon({
   instant: true,
   fire(c) {
     const tx = c.target.x;
+    const environmental = c.w.id === -1;
+    if (environmental) G.envThunder = 5;
     emit({ e: 'msg', t: 'THUNDERSTORM' });
     emit({ e: 'storm', x: tx, l: 2.6 });
     for (let i = 0; i < 5; i++)
-      sched(0.6 + i * 0.4, () => lightningBolt(clamp(tx + (i ? rnd(-110, 110) : 0), 8, T.w - 8), c.w));
+      sched(0.6 + i * 0.4, () => {
+        lightningBolt(clamp(tx + (i ? rnd(-110, 110) : 0), 8, T.w - 8), c.w);
+        if (environmental) G.envThunder--;
+      });
   },
 });
 // Dragon Fire: click a target; a dragon crosses the top of the level and breathes fire around it.

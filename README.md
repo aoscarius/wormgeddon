@@ -78,7 +78,7 @@ runs offline without them (only online play and the display font are lost).
   battlefield has come to rest.
 - Standard arsenal: strong weapons unlock in later rounds; crates unlock them early. Other arsenals: everything, bazooka only, chaos, and the game modes **Special weapons only**, **Anime weapons only**, **Melee only** and **Artillery only**.
 - Sea level rise (optional): the water climbs a little every 1, 2, 3 or 5 rounds.
-- Natural disasters (optional): *Environmental Chaos* takes Tornado, Thunderstorm, Tsunami, Earthquake and Armageddon out of the players' hands (no ammo, not in the panel or crates); instead, from round 2 on, a disaster strikes at a random moment of about every other turn, at a random place.
+- Natural disasters (optional): *Environmental Chaos* takes Tornado, Thunderstorm, Tsunami, Earthquake and Armageddon out of the players' hands (no ammo, not in the panel or crates); instead, from round 2 on, a disaster strikes at a random moment of about every other turn, at a random place. The active turn clock pauses while the disaster runs.
 - Sudden death: every worm drops to 1 HP and the water rises each round.
 - Last team standing wins.
 

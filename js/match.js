@@ -55,6 +55,8 @@ function newGame(cfg, teamDefs) {
     fired: false,
     switched: false,
     arma: 0,
+    envDisaster: null,
+    envThunder: 0,
     gap: 0,
     surr: 0,
   };
@@ -284,10 +286,29 @@ function envChaos() {
 /** Sets off disaster `kind` now, at a random place, with no worm behind it (nobody is credited with it). */
 function envDisaster(kind) {
   if (!G || G.over || !WEAPONS[kind]) return;
+  G.envDisaster = kind;
   const x = rnd(80, T.w - 80),
     caster = { id: -1, team: -1, face: Math.random() < 0.5 ? 1 : -1, x, y: 0, hp: 0, dead: true };
   emit({ e: 'msg', t: ENV_NAMES[kind] || kind });
   WEAPONS[kind].fire({ w: caster, wdef: WEAPONS[kind], target: { x, y: rnd(100, G.waterY - 100) }, power: 1 });
+}
+/** Whether the current environmental disaster is still running. */
+function envDisasterActive() {
+  if (!G) return false;
+  switch (G.envDisaster) {
+    case 'tornado':
+      return G.projs.some(p => p.t === 'tornado' && p.ow === -1);
+    case 'thunder':
+      return G.envThunder > 0;
+    case 'tsunami':
+      return !!G.tsu;
+    case 'earthquake':
+      return G.quake > 0;
+    case 'armageddon':
+      return G.arma > 0;
+    default:
+      return false;
+  }
 }
 /** Ends player control. The match now waits for everything to come to rest (see quiet()). */
 function toSettle() {
