@@ -15,6 +15,31 @@ function spriteProj(p) {
   ctx2.save();
   ctx2.translate(p.x, p.y);
   switch (d.spr) {
+    case 'avada': {
+      // the green beam: a bright orb with a tail along its heading and a pulsing glow
+      const pulse = 1 + Math.sin(G.time * 40) * 0.12;
+      ctx2.rotate(p.a);
+      ctx2.globalCompositeOperation = 'lighter';
+      const tail = ctx2.createLinearGradient(-34, 0, 0, 0);
+      tail.addColorStop(0, 'rgba(20,200,60,0)');
+      tail.addColorStop(1, 'rgba(90,255,130,.8)');
+      ctx2.fillStyle = tail;
+      ctx2.beginPath();
+      ctx2.moveTo(-34, 0);
+      ctx2.lineTo(0, -3.2);
+      ctx2.lineTo(0, 3.2);
+      ctx2.fill();
+      const gl = ctx2.createRadialGradient(0, 0, 0, 0, 0, 11 * pulse);
+      gl.addColorStop(0, 'rgba(230,255,235,1)');
+      gl.addColorStop(0.35, 'rgba(90,255,130,.85)');
+      gl.addColorStop(1, 'rgba(20,160,50,0)');
+      ctx2.fillStyle = gl;
+      ctx2.beginPath();
+      ctx2.arc(0, 0, 11 * pulse, 0, TAU);
+      ctx2.fill();
+      ctx2.globalCompositeOperation = 'source-over';
+      break;
+    }
     case 'rocket':
       ctx2.rotate(p.a);
       ctx2.fillStyle = '#9aa6b2';

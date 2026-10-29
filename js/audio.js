@@ -81,6 +81,7 @@ const MP3_FILES = [
   'sounds/gomugomuno.mp3',
   'sounds/iaminevitable.mp3',
   'sounds/shallnotpass.mp3',
+  'sounds/avadakedavra.mp3',
 ];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
@@ -227,6 +228,16 @@ const SFX = {
     noiseBurst(0.35, 0.22, 700);
     tone(140, 40, 0.3, 'sine', 0.12);
     setTimeout(() => noiseBurst(0.18, 0.12, 1800), 90);
+  },
+  // Avada Kedavra: the incantation (WAND_DELAY = its length), the zap of a hit and the fizzle of a beam that found no way.
+  avada: () => mp3Sfx('sounds/avadakedavra.mp3'),
+  zap: () => {
+    noiseBurst(0.25, 0.3, 5000);
+    tone(1800, 120, 0.3, 'sawtooth', 0.12);
+  },
+  fizzle: () => {
+    noiseBurst(0.5, 0.18, 3500);
+    tone(900, 90, 0.5, 'triangle', 0.08);
   },
   // Gandalf's Staff: the track (see STAFF_DELAY for its length), then the heavy thud of the slam.
   gandalf: () => mp3Sfx('sounds/shallnotpass.mp3'),

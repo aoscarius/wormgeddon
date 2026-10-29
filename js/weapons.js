@@ -393,6 +393,41 @@ registerWeapon({
     return 'keep';
   },
 });
+// Avada Kedavra: click a worm; the wand points at it while the incantation plays, then a green beam finds its way through
+// the open air around the terrain to the target and kills it on the spot. If it is walled in, the beam dies on the ground.
+registerWeapon({
+  id: 'avada',
+  name: 'Avada Kedavra',
+  code: 'AK',
+  ammo: 1,
+  delay: 8,
+  click: true,
+  instant: true,
+  noEnd: true,
+  fire(c) {
+    // the target is the living worm closest to the click (within 70 px)
+    let tw = null,
+      best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o === c.w) continue;
+      const d = Math.hypot(o.x - c.target.x, o.y - c.target.y);
+      if (d < best) {
+        best = d;
+        tw = o;
+      }
+    }
+    if (!tw) {
+      emit({ e: 'msg', t: 'Click a worm' });
+      return 'miss';
+    }
+    c.w.face = tw.x >= c.w.x ? 1 : -1;
+    emit({ e: 'say', x: c.w.x, y: c.w.y - 24, t: tr('Avada Kedavra!') });
+    emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
+    emit({ e: 'snd', s: 'avada' });
+    c.w.tool = { k: 'wand', t: 99, p: 0, tw: tw.id };
+    return 'keep';
+  },
+});
 // Gandalf's Staff: the track plays while the worm raises its staff; STAFF_DELAY s later it slams the staff down and the
 // ground in front collapses into the sea (see staffTick / staffSlam in worms.js).
 registerWeapon({

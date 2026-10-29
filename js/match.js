@@ -319,7 +319,7 @@ function processDeaths() {
       w.tool = null;
       emit({ e: 'msg', t: '{0} ({1}) died', a: [w.name, teamOf(w).name] });
       emit({ e: 'log', t: w.dusted ? '{0} turned to dust' : '{0} was eliminated', a: [w.name], c: teamOf(w).color });
-      if (!w.dusted) explode(w.x, w.y, 26, 18, 160, { k: 0, src: null, noEnd: true }); // dust leaves no crater
+      if (!w.dusted && !w.quiet) explode(w.x, w.y, 26, 18, 160, { k: 0, src: null, noEnd: true }); // dust leaves no crater
     }
   return any;
 }

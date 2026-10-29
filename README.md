@@ -23,10 +23,10 @@ The game is completely **free, open-source, and accessible directly from your br
   destructible. In online games the host sends the map to the guests.
 - **Destructible terrain**, wind, fall damage, drowning, rising water (sudden death), mines, oil
   drums and supply crates.
-- **50 weapons and tools**, each with a hand-drawn icon, sorted into categories (body, short range, long range, destructive, anime, tools, special) with tabs in the weapon panel: Bazooka, Homing Missile, Mortar, Grenade,
+- **51 weapons and tools**, each with a hand-drawn icon, sorted into categories (body, short range, long range, destructive, anime, tools, special) with tabs in the weapon panel: Bazooka, Homing Missile, Mortar, Grenade,
   Cluster Bomb, Banana Bomb, Holy Hand Grenade, Petrol Bomb, Dynamite, Mine, Sheep, Super Sheep,
   Shotgun, Handgun, Uzi, Fire Punch, Dragon Ball, Baseball Bat, Kamikaze, Air Strike, Napalm
-  Strike, Mine Strike, Concrete Donkey, Armageddon, Nuclear Test, Earthquake, Dragon Fire, Thunderstorm, Thor's Hammer, Hokuto Hyakuretsu Ken, Kamehameha, Oni Giri, Gomu Gomu no Gigant Axe, Gandalf's Staff, Thanos' Gauntlet (extremely rare, crates only), Proton Stream, Time Car, Tornado, Tsunami, Scales of Justice, Ninja Rope,
+  Strike, Mine Strike, Concrete Donkey, Armageddon, Nuclear Test, Earthquake, Dragon Fire, Thunderstorm, Thor's Hammer, Hokuto Hyakuretsu Ken, Kamehameha, Oni Giri, Gomu Gomu no Gigant Axe, Gandalf's Staff, Avada Kedavra, Thanos' Gauntlet (extremely rare, crates only), Proton Stream, Time Car, Tornado, Tsunami, Scales of Justice, Ninja Rope,
   Jet Pack, Teleport, Girder, Blowtorch, Pneumatic Drill, Parachute, Select Worm, Skip Go,
   Surrender.
 - **Stylised worms**: segmented bodies, eyes that follow the aim, expressive faces and one

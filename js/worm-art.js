@@ -704,6 +704,31 @@ function drawWormBody(w) {
           g.stroke();
         }
       }
+    } else if (w.tool.k === 'wand') {
+      // Avada Kedavra: the wand is held out towards the target, its tip glowing a sickly green that builds with the incantation
+      const age = (w.tool.p || 0) * (WAND_DELAY + WAND_HOLD),
+        glow = clamp(age / WAND_DELAY, 0, 1),
+        hx = f * 7,
+        hy = -5,
+        tx = hx + f * 22,
+        ty = hy - 9;
+      g.strokeStyle = '#2a1a10';
+      g.lineWidth = 2.2;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(hx, hy);
+      g.lineTo(tx, ty);
+      g.stroke();
+      g.globalCompositeOperation = 'lighter';
+      const rg = g.createRadialGradient(tx, ty, 0, tx, ty, 4 + 9 * glow);
+      rg.addColorStop(0, `rgba(210,255,220,${0.5 + 0.5 * glow})`);
+      rg.addColorStop(0.5, `rgba(70,240,110,${0.3 + 0.5 * glow})`);
+      rg.addColorStop(1, 'rgba(20,160,50,0)');
+      g.fillStyle = rg;
+      g.beginPath();
+      g.arc(tx, ty, 4 + 9 * glow + Math.sin(G.time * 22) * 0.8, 0, TAU);
+      g.fill();
+      g.globalCompositeOperation = 'source-over';
     } else if (w.tool.k === 'staff') {
       // Raise the staff vertically, then slam it straight down without rotating it.
       const age = (w.tool.p || 0) * (STAFF_DELAY + STAFF_SLAM),

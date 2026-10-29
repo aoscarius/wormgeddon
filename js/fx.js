@@ -273,6 +273,15 @@ function applyEvent(e) {
     case 'quake':
       FX.quake = e.t;
       break;
+    case 'avada': {
+      // the end of the green beam: a flash of green and a death rattle when it hit, a fizzle when it did not
+      const cols = ['#b8ffc4', '#4be86a', '#1fb83e', '#0e7a2a'];
+      puff(e.x, e.y, e.hit ? 70 : 24, e.hit ? 260 : 120, cols, e.hit ? 1.0 : 0.6, e.hit ? 3 : 2, e.hit ? -60 : 0);
+      FX.rings.push({ x: e.x, y: e.y, r: e.hit ? 46 : 18, t: 0, big: false });
+      if (e.hit) UI.shake = Math.min(18, UI.shake + 5);
+      if (SFX[e.hit ? 'zap' : 'fizzle']) SFX[e.hit ? 'zap' : 'fizzle']();
+      break;
+    }
     case 'rc': {
       // Break the collapsing section into staggered chunks that fall toward the sea.
       const width = e.x1 - e.x0,
@@ -390,6 +399,19 @@ function applyEvent(e) {
           s: 3,
           g: 0,
           k: 's',
+        });
+      else if (e.k === 'avada')
+        addP({
+          x: e.x + rnd(-2, 2),
+          y: e.y + rnd(-2, 2),
+          vx: rnd(-25, 25),
+          vy: rnd(-25, 25),
+          l: 0.55,
+          m: 0.55,
+          c: pick(['#b8ffc4', '#4be86a', '#1fb83e']),
+          s: rnd(1.4, 2.6),
+          g: 0,
+          k: 'c',
         });
       else if (e.k === 'fire')
         addP({

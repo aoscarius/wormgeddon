@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -210,8 +210,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -581,6 +581,25 @@ function staffSlam(w) {
     }
   for (const o of G.objs) if (o.x >= x0 && o.x <= x1) o.landed = false;
 }
+/**
+ * Avada Kedavra: the worm points its wand at the target (tl.tw) while the incantation plays (tl.p = 0..1 over WAND_DELAY +
+ * WAND_HOLD s, sent to guests); WAND_DELAY s after the start (the length of sounds/avadakedavra.mp3) the beam leaves the tip.
+ */
+const WAND_DELAY = 1.5,
+  WAND_HOLD = 0.5;
+function wandTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / (WAND_DELAY + WAND_HOLD)).toFixed(2);
+  physWorm(w, dt, false);
+  if (!tl.done && tl.age >= WAND_DELAY) {
+    tl.done = true;
+    const t = wById(tl.tw);
+    if (t && !t.dead) avadaFire(w, t);
+    else emit({ e: 'avada', x: w.x + w.face * 14, y: w.y - 6, hit: 0 }); // the target is already gone
+  }
+  if (tl.age >= WAND_DELAY + WAND_HOLD) tl.t = 0;
+}
 /** A worm turning to dust: its progress (0..1) feeds the drawing; at the end it is dead for certain, without a grave. */
 function dustTick(o, dt) {
   o.dust -= dt;
@@ -667,6 +686,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'axe') axeTick(w, tl, dt);
     else if (tl.k === 'snap') snapTick(w, tl, dt);
     else if (tl.k === 'staff') staffTick(w, tl, dt);
+    else if (tl.k === 'wand') wandTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

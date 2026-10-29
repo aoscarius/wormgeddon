@@ -309,6 +309,15 @@ const ICON_DRAW = {
     icLine(g, 24, 54, 16, 61, 2, IC.ink);
     icLine(g, 40, 54, 48, 61, 2, IC.ink);
   },
+  // Avada Kedavra: a wand shooting a green bolt.
+  avada(g) {
+    icLine(g, 8, 56, 34, 30, 4, IC.ink);
+    icLine(g, 8, 56, 34, 30, 2, IC.brown);
+    icLine(g, 38, 26, 58, 8, 6, IC.green);
+    icLine(g, 38, 26, 58, 8, 2.5, IC.white);
+    icCircle(g, 38, 26, 5, IC.green);
+    icCircle(g, 38, 26, 2.2, IC.white);
+  },
   // Gandalf's Staff: a gnarled staff topped with a glowing stone, over a cracked ground.
   gandalf(g) {
     icLine(g, 22, 58, 40, 10, 5, IC.brown);
