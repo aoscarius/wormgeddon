@@ -43,7 +43,7 @@ const run = ([base]) => {
   out.foeDead = foe.dead; out.foeSunk = !!foe.sunk || foe.y > g.waterY; out.mateAlive = !mate.dead; out.aAlive = !a.dead;
   out.toolDone = !a.tool;
   // the track: the sound exists and is registered
-  out.mp3Listed = MP3_FILES.includes('sounds/gandalf.mp3');
+  out.mp3Listed = MP3_FILES.includes('sounds/shallnotpass.mp3');
   return out;
 };
 """

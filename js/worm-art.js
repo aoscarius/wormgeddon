@@ -372,6 +372,20 @@ function drawWormBody(w) {
     g.scale(s, s * (1 - 0.06 * Math.sin(G.time * 17) * swell));
     g.translate(0, -6);
   }
+  // Force Choke: the held worm trembles in a faint blue grip
+  if (w.held) {
+    g.translate(Math.sin(G.time * 47) * 1.3, Math.sin(G.time * 31) * 0.8);
+    g.globalCompositeOperation = 'lighter';
+    const hg = g.createRadialGradient(0, -4, 4, 0, -4, 24);
+    hg.addColorStop(0, 'rgba(120,170,255,0)');
+    hg.addColorStop(0.7, `rgba(120,170,255,${0.25 + 0.1 * Math.sin(G.time * 20)})`);
+    hg.addColorStop(1, 'rgba(120,170,255,0)');
+    g.fillStyle = hg;
+    g.beginPath();
+    g.arc(0, -4, 24, 0, TAU);
+    g.fill();
+    g.globalCompositeOperation = 'source-over';
+  }
   // Thanos' Gauntlet: the worm crumbles away from the downwind side (the dust itself is spawned in fxUpdate)
   if (w.dustP > 0) {
     const dir = G.wind >= 0 ? 1 : -1;
@@ -703,6 +717,43 @@ function drawWormBody(w) {
           g.lineTo(-f * (24 + Math.random() * 26), ly);
           g.stroke();
         }
+      }
+    } else if (w.tool.k === 'force') {
+      // Force Choke: an arm stretched out towards the victim, fingers curled, with rings of force travelling along it
+      const age = (w.tool.p || 0) * (FORCE_CHOKE + FORCE_AFTER),
+        on = age < FORCE_CHOKE,
+        hx = f * 14,
+        hy = -12;
+      g.strokeStyle = '#d99a85';
+      g.lineWidth = 3;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(f * 3, -3);
+      g.lineTo(hx, hy);
+      g.stroke();
+      g.fillStyle = '#f4b9a8';
+      g.beginPath();
+      g.arc(hx, hy, 3.2, 0, TAU);
+      g.fill();
+      for (let i = 0; i < 4; i++) {
+        g.strokeStyle = '#d99a85';
+        g.lineWidth = 1.2;
+        g.beginPath();
+        g.moveTo(hx + f * 1.5, hy - 1.5 + i * 1.5);
+        g.lineTo(hx + f * 5.5, hy - 3 + i * 2.2);
+        g.stroke();
+      }
+      if (on) {
+        g.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 3; i++) {
+          const k = ((G.time * 1.6 + i / 3) % 1);
+          g.strokeStyle = `rgba(130,180,255,${0.7 * (1 - k)})`;
+          g.lineWidth = 1.4;
+          g.beginPath();
+          g.arc(hx + f * (6 + 26 * k), hy, 3 + 7 * k, 0, TAU);
+          g.stroke();
+        }
+        g.globalCompositeOperation = 'source-over';
       }
     } else if (w.tool.k === 'wand') {
       // Avada Kedavra: the wand is held out towards the target, its tip glowing a sickly green that builds with the incantation

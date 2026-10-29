@@ -273,6 +273,15 @@ function applyEvent(e) {
     case 'quake':
       FX.quake = e.t;
       break;
+    case 'choke':
+      // Force Choke: blood from the squeezed worm (a spray when it crashes into the ground); a smaller one without Splatter Mode
+      bloodSplat(e.x, e.y);
+      if (UI.splatterMode) {
+        bloodShower(e.x, e.y - 4, e.hit ? 90 : 14, e.hit ? 1.4 : 0.5);
+        if (e.hit) bloodStain(e.x, e.y + 6, 36);
+      }
+      if (e.hit) UI.shake = Math.min(18, UI.shake + 6);
+      break;
     case 'avada': {
       // the end of the green beam: a flash of green and a death rattle when it hit, a fizzle when it did not
       const cols = ['#b8ffc4', '#4be86a', '#1fb83e', '#0e7a2a'];

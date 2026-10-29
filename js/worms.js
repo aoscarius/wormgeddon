@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -68,6 +68,11 @@ function supported(w) {
 }
 
 function physWorm(w, dt, active) {
+  if (w.held) {
+    // choked by the Force: suspended in the air (forceTick moves it)
+    w.vx = w.vy = 0;
+    return;
+  }
   if (w.rope) return ropePhys(w, dt, active);
   if (w.grounded) {
     if (!supported(w)) {
@@ -90,6 +95,12 @@ function physWorm(w, dt, active) {
     if (w.chute && w.vy > 70) w.vy = 70;
     if (w.chute && w.vx) w.vx *= 0.995;
     const c = stepBody(w, dt);
+    if (c && w.fly) {
+      // flung by the Force: the crash into the terrain hurts on top of the usual fall damage
+      w.fly = 0;
+      hurt(w, FORCE_IMPACT, { noEnd: true });
+      emit({ e: 'choke', x: w.x, y: w.y, hit: 1 });
+    }
     if (c) {
       if (c.n[1] < -0.4) {
         if (c.speed > FALLV && !w.chute && !jet) {
@@ -210,8 +221,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -546,7 +557,7 @@ function snapTick(w, tl, dt) {
 }
 /**
  * Gandalf's Staff: the worm raises its staff while the track plays (tl.p = 0..1 over STAFF_DELAY + STAFF_SLAM s, sent to
- * guests), slams it down STAFF_DELAY s after the start (set it to the length of sounds/gandalf.mp3), and the ground in front
+ * guests), slams it down STAFF_DELAY s after the start (set it to the length of its track), and the ground in front
  * of it, within STAFF_R px of the point STAFF_DIST px ahead, collapses completely into the sea.
  */
 const STAFF_DELAY = 3.0, // s from the start (and the audio) to the slam
@@ -580,6 +591,72 @@ function staffSlam(w) {
       o.rope = null;
     }
   for (const o of G.objs) if (o.x >= x0 && o.x <= x1) o.landed = false;
+}
+/**
+ * Force Choke: the caster raises an arm (tl.p = 0..1 over FORCE_CHOKE + FORCE_AFTER s, sent to guests) and the target
+ * (tl.tw) is lifted FORCE_LIFT px into the air within FORCE_RAISE s and held there, losing FORCE_DMG health every FORCE_TICK s
+ * with blood, while the track plays (FORCE_CHOKE = its length). Then it is flung away from the caster at FORCE_SPEED px/s
+ * and takes FORCE_IMPACT more damage when it hits the terrain (w.fly, see physWorm).
+ */
+const FORCE_RANGE = 450,
+  FORCE_LIFT = 70,
+  FORCE_RAISE = 0.9,
+  FORCE_CHOKE = 4.0,
+  FORCE_AFTER = 0.6,
+  FORCE_TICK = 0.4,
+  FORCE_DMG = 3,
+  FORCE_SPEED = 900,
+  FORCE_IMPACT = 18;
+function forceTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / (FORCE_CHOKE + FORCE_AFTER)).toFixed(2);
+  physWorm(w, dt, false);
+  const t = wById(tl.tw);
+  if (!t || t.dead) {
+    // the target is gone (killed or drowned): the grip loosens and the track stops
+    if (t) t.held = null;
+    if (!tl.over) mp3Stop();
+    tl.over = true;
+    tl.t = 0;
+    return;
+  }
+  if (tl.age < FORCE_CHOKE) {
+    if (!t.held) t.held = { y0: t.y, x0: t.x, tick: 0 };
+    const k = Math.min(1, tl.age / FORCE_RAISE),
+      h = t.held;
+    t.x = h.x0;
+    t.y = h.y0 - FORCE_LIFT * (1 - (1 - k) * (1 - k));
+    t.vx = t.vy = 0;
+    t.grounded = false;
+    h.tick += dt;
+    if (tl.age >= FORCE_RAISE && h.tick >= FORCE_TICK) {
+      h.tick -= FORCE_TICK;
+      hurt(t, FORCE_DMG, { src: w.id, noEnd: true });
+      emit({ e: 'choke', x: t.x, y: t.y });
+      if (t.hp <= 0) processDeaths();
+    }
+  } else if (!tl.done) {
+    tl.done = true;
+    if (t.held) {
+      // let go and fling it away from the caster, a little upwards
+      let dx = t.x - w.x,
+        dy = t.y - w.y;
+      const d = Math.hypot(dx, dy) || 1;
+      dx /= d;
+      dy = Math.min(dy / d, 0) - 0.25;
+      const n = Math.hypot(dx, dy);
+      t.held = null;
+      t.vx = (dx / n) * FORCE_SPEED;
+      t.vy = (dy / n) * FORCE_SPEED;
+      t.fly = 1;
+      t.grounded = false;
+      t.rope = null;
+      emit({ e: 'snd', s: 'whoosh' });
+      emit({ e: 'quake', t: 1 });
+    }
+  }
+  if (tl.age >= FORCE_CHOKE + FORCE_AFTER) tl.t = 0;
 }
 /**
  * Avada Kedavra: the worm points its wand at the target (tl.tw) while the incantation plays (tl.p = 0..1 over WAND_DELAY +
@@ -687,6 +764,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'snap') snapTick(w, tl, dt);
     else if (tl.k === 'staff') staffTick(w, tl, dt);
     else if (tl.k === 'wand') wandTick(w, tl, dt);
+    else if (tl.k === 'force') forceTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

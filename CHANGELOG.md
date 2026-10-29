@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-46 commits, 2026-10-18 to 2026-10-28. Up to commit `bdad97e16ef2da827d2491f829628760128b32b8`.
+48 commits, 2026-10-18 to 2026-10-29. Up to commit `d2fc7989dfee871914e787b029004b3e01355e5e`.
 
 ## 2026-10-18
 
@@ -366,8 +366,25 @@ fixed, changed or refactored.
 **Changed**
 - Enhance Kamehameha weapon functionality and localization
 
-### [`bdad97e`](https://github.com/aoscarius/wormgeddon/commit/bdad97e16ef2da827d2491f829628760128b32b8)
+### [`57d515e`](https://github.com/aoscarius/wormgeddon/commit/57d515ecc9608b0dded29aa6d83e9ff193a5f2d5)
 
 **Added**
 - Add Gandalf's Staff weapon with collapsing terrain effect and associated audio
 - Implemented weapon mechanics, localization, and tests to ensure correct functionality
+
+## 2026-10-29
+
+### [`9aa9daf`](https://github.com/aoscarius/wormgeddon/commit/9aa9daf371db5bb6f65c6965b103a2eb5a6c6074)
+
+**Added**
+- Introduced the Avada Kedavra weapon, allowing players to target and eliminate an enemy worm instantly
+- Implemented mechanics for the wand's incantation, beam pathfinding, and effects on the target
+
+### [`d2fc798`](https://github.com/aoscarius/wormgeddon/commit/d2fc7989dfee871914e787b029004b3e01355e5e)
+
+**Added**
+- Introduced the Force Choke weapon, allowing players to lift and choke an enemy worm, causing damage over time
+- Implemented mechanics for lifting, holding, and flinging the target, including impact damage upon collision
+
+**Fixed**
+- Fixed Gandalf's Staff test to reference the correct audio file

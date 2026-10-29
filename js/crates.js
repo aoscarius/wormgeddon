@@ -42,6 +42,7 @@ const CRATE_WEAP = [
   'gigantaxe',
   'gandalf',
   'avada',
+  'forcechoke',
   'proton',
   'airstrike',
   'napalm',

@@ -334,6 +334,8 @@ I18N.it = {
   'Avada Kedavra': 'Avada Kedavra',
   'Avada Kedavra!': 'Avada Kedavra!',
   'Click a worm': 'Clicca un verme',
+  'Force Choke': 'Soffocamento della Forza',
+  'Target too far': 'Bersaglio troppo lontano',
   'Snap!': 'Schiocco!',
   '{0} turned to dust': '{0} è ridotto in polvere',
   'Click an enemy worm': 'Clicca un verme nemico',

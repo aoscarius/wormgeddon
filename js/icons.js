@@ -309,6 +309,16 @@ const ICON_DRAW = {
     icLine(g, 24, 54, 16, 61, 2, IC.ink);
     icLine(g, 40, 54, 48, 61, 2, IC.ink);
   },
+  // Force Choke: an open hand reaching out, with force rings.
+  forcechoke(g) {
+    icEllipse(g, 24, 38, 14, 16, IC.skin);
+    for (const [x, y] of [[14, 20], [22, 15], [30, 15], [38, 20]]) icLine(g, x, y, x + 1, y + 14, 5, IC.skin);
+    icLine(g, 40, 40, 52, 34, 5, IC.skin);
+    for (const r of [14, 22]) {
+      icLine(g, 44 + r * 0.2, 12, 44 + r * 0.5, 52, 1.5, IC.blue);
+    }
+    icCircle(g, 52, 12, 3, IC.blue);
+  },
   // Avada Kedavra: a wand shooting a green bolt.
   avada(g) {
     icLine(g, 8, 56, 34, 30, 4, IC.ink);

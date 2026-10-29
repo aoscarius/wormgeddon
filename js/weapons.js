@@ -393,6 +393,43 @@ registerWeapon({
     return 'keep';
   },
 });
+// Force Choke: click a worm within FORCE_RANGE px; the caster raises an arm while the track plays, the worm is lifted into the
+// air and choked (damage and blood), then flung away and hurt again when it hits the terrain (see forceTick in worms.js).
+registerWeapon({
+  id: 'forcechoke',
+  name: 'Force Choke',
+  code: 'FC',
+  ammo: 1,
+  delay: 8,
+  click: true,
+  instant: true,
+  noEnd: true,
+  fire(c) {
+    let tw = null,
+      best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o === c.w) continue;
+      const d = Math.hypot(o.x - c.target.x, o.y - c.target.y);
+      if (d < best) {
+        best = d;
+        tw = o;
+      }
+    }
+    if (!tw) {
+      emit({ e: 'msg', t: 'Click a worm' });
+      return 'miss';
+    }
+    if (Math.hypot(tw.x - c.w.x, tw.y - c.w.y) > FORCE_RANGE) {
+      emit({ e: 'msg', t: 'Target too far' });
+      return 'miss';
+    }
+    c.w.face = tw.x >= c.w.x ? 1 : -1;
+    emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
+    emit({ e: 'snd', s: 'forcechoke' });
+    c.w.tool = { k: 'force', t: 99, p: 0, tw: tw.id };
+    return 'keep';
+  },
+});
 // Avada Kedavra: click a worm; the wand points at it while the incantation plays, then a green beam finds its way through
 // the open air around the terrain to the target and kills it on the spot. If it is walled in, the beam dies on the ground.
 registerWeapon({
