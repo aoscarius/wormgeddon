@@ -175,6 +175,7 @@ const ARSENAL_MIN_AMMO = 2;
 const isRestrictedArsenal = mode => Object.prototype.hasOwnProperty.call(ARSENALS, mode);
 /** Is weapon `id` part of arsenal `mode`? (Always true for the unrestricted modes.) */
 function arsenalHas(mode, id) {
+  if (envBlocked(id)) return false; // Environmental Chaos: the disasters are not the players' to use
   if (!isRestrictedArsenal(mode)) return true;
   const a = ARSENALS[mode],
     d = WEAPONS[id];
@@ -184,6 +185,10 @@ function arsenalHas(mode, id) {
 /** Fills a team's ammo table for the chosen arsenal: 'std', 'full', 'bazooka', 'chaos' or a key of ARSENALS. -1 = unlimited. */
 function initAmmo(t, mode) {
   for (const d of WLIST) {
+    if (envBlocked(d.id)) {
+      t.ammo[d.id] = 0;
+      continue;
+    }
     if (d.rare) {
       // extremely rare: only from crates (and 1 in the Full arsenal, or by luck in Chaos)
       t.ammo[d.id] = mode === 'full' || (mode === 'chaos' && Math.random() < 0.1) ? 1 : 0;
@@ -259,9 +264,30 @@ function startTurn() {
   G.weapon = { id: 'bazooka', fuse: 3, pw: 0, ch: false, shots: 0, ang: 0, tx: null, ty: null };
   if (!avail(t, G.weapon.id)) G.weapon.id = WLIST.find(d => avail(t, d.id) && !d.noFire).id;
   if (Math.random() < +G.cfg.crates) spawnCrate();
+  if (G.cfg.env) envChaos();
   emit({ e: 'turn', team: k, worm: w.id });
   emit({ e: 'snd', s: 'turn' });
   if (t.ctrl === 'ai') aiBegin(w);
+}
+/**
+ * Environmental Chaos: at the start of a turn (from the second round on) a natural disaster strikes with probability
+ * ENV_CHANCE, at a random moment of the turn, as one of ENV_WEAPONS at a random spot of the level.
+ */
+const ENV_CHANCE = 0.45;
+const ENV_NAMES = { tornado: 'A tornado is coming', thunder: 'A thunderstorm is brewing', tsunami: 'A tsunami is coming', earthquake: 'The ground trembles', armageddon: 'Meteors are falling' };
+function envChaos() {
+  if (G.round < 2 || Math.random() >= ENV_CHANCE) return;
+  const kind = pick(ENV_WEAPONS),
+    delay = rnd(1.5, Math.max(2, +G.cfg.turnTime * 0.6));
+  sched(delay, () => envDisaster(kind));
+}
+/** Sets off disaster `kind` now, at a random place, with no worm behind it (nobody is credited with it). */
+function envDisaster(kind) {
+  if (!G || G.over || !WEAPONS[kind]) return;
+  const x = rnd(80, T.w - 80),
+    caster = { id: -1, team: -1, face: Math.random() < 0.5 ? 1 : -1, x, y: 0, hp: 0, dead: true };
+  emit({ e: 'msg', t: ENV_NAMES[kind] || kind });
+  WEAPONS[kind].fire({ w: caster, wdef: WEAPONS[kind], target: { x, y: rnd(100, G.waterY - 100) }, power: 1 });
 }
 /** Ends player control. The match now waits for everything to come to rest (see quiet()). */
 function toSettle() {

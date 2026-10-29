@@ -56,6 +56,7 @@ function readCfg() {
     crates: +$('oCrates').value,
     sd: +$('oSD').value,
     rise: +$('oRise').value,
+    env: +$('oEnv').value,
     worms: +$('oWorms').value,
   };
 }

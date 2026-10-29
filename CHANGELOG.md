@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-48 commits, 2026-10-18 to 2026-10-29. Up to commit `d2fc7989dfee871914e787b029004b3e01355e5e`.
+49 commits, 2026-10-18 to 2026-10-29. Up to commit `c3b21a92f33fed56c0fbe3e63e4de0bebd1d5c15`.
 
 ## 2026-10-18
 
@@ -380,7 +380,7 @@ fixed, changed or refactored.
 - Introduced the Avada Kedavra weapon, allowing players to target and eliminate an enemy worm instantly
 - Implemented mechanics for the wand's incantation, beam pathfinding, and effects on the target
 
-### [`d2fc798`](https://github.com/aoscarius/wormgeddon/commit/d2fc7989dfee871914e787b029004b3e01355e5e)
+### [`408873a`](https://github.com/aoscarius/wormgeddon/commit/408873a0c3b49a1764fa2905a046a5270ce598db)
 
 **Added**
 - Introduced the Force Choke weapon, allowing players to lift and choke an enemy worm, causing damage over time
@@ -388,3 +388,10 @@ fixed, changed or refactored.
 
 **Fixed**
 - Fixed Gandalf's Staff test to reference the correct audio file
+
+### [`c3b21a9`](https://github.com/aoscarius/wormgeddon/commit/c3b21a92f33fed56c0fbe3e63e4de0bebd1d5c15)
+
+**Added**
+- Implemented Environmental Chaos feature with natural disasters affecting gameplay
+- Added options for players to enable or disable disasters, updated game logic to trigger disasters randomly, and localized new terms in Italian
+- Included tests to ensure correct functionality of the new feature

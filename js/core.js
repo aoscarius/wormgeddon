@@ -7,7 +7,7 @@
  * accessors. Everything that wants to add content calls registerWeapon() / registerProj().
  *
  * Depends on: util
- * Globals defined: GRAV, WIND_ACC, FALLV, WORM_R, RAD_TIME, RAD_DMG, RAD_EVERY, WEAPON_CATS, WEAPON_CAT, WEAPONS, WLIST, PTYPES, registerWeapon,
+ * Globals defined: ENV_WEAPONS, envBlocked, GRAV, WIND_ACC, FALLV, WORM_R, RAD_TIME, RAD_DMG, RAD_EVERY, WEAPON_CATS, WEAPON_CAT, WEAPONS, WLIST, PTYPES, registerWeapon,
  *     registerProj, G, curInp, wById, teamOf, activeWorm, aimDir, teamAlive, emit, sched,
  *     MAX_WORMS_TOTAL, SEA_RISE_STEP, MAX_TEAMS, TEAM_COLORS, TEAM_NAMES, WORM_NAMES
  */
@@ -47,6 +47,13 @@ for (const [cat, ids] of Object.entries({
   special: ['scales', 'select', 'skip', 'surrender'], // everything else, and the turn controls
 }))
   for (const id of ids) WEAPON_CAT[id] = cat;
+/**
+ * Environmental Chaos (cfg.env): these devastating environmental weapons cannot be chosen by the players any more; the game
+ * triggers them by itself as natural disasters (see envChaos in match.js).
+ */
+const ENV_WEAPONS = ['tornado', 'thunder', 'tsunami', 'earthquake', 'armageddon'];
+/** Is weapon `id` switched off by the Environmental Chaos mode of the running match? */
+const envBlocked = id => !!(G && G.cfg && G.cfg.env && ENV_WEAPONS.includes(id));
 /**
  * Adds a weapon to the game. Fields of `d`:
  *   id, name, code      identity; `code` is a 2-letter fallback badge for the icon

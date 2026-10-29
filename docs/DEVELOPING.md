@@ -408,7 +408,7 @@ add an entry to `ARSENALS`, an `<option value="key">` to `#oArs` and the Italian
 
 Other tunables: physics constants (`GRAV`, `WIND_ACC`, `FALLV`, `WORM_R`) in `core.js`;
 explosion data in `projectiles.js` / `weapons.js`; camera behaviour in `view.js` (`camFocus`);
-turn timing in `match.js` / `step.js`; sea level rise and sudden death in `match.js`.
+turn timing in `match.js` / `step.js`; sea level rise and sudden death in `match.js`. **Environmental Chaos** (`cfg.env`, menu option `oEnv`): `ENV_WEAPONS` / `envBlocked()` in core.js switch the five disaster weapons off (`arsenalHas` and `initAmmo` honour it, so ammo, panel and crates all follow); `envChaos()` (called from `startTurn`) schedules, with chance `ENV_CHANCE` from round 2, `envDisaster(kind)` at a random moment of the turn, which fires the weapon with a caster-less pseudo worm at a random place.
 
 ---
 

@@ -166,8 +166,8 @@ function hudWeapon(t, mine) {
 /** Rebuilds the weapon grid when ammo, round or selection changes. */
 function hudPanel(t, mine) {
   // A restricted arsenal hides the categories it has no weapon in.
-  if (mine && UI.tabsFor !== G.cfg.arsenal) {
-    UI.tabsFor = G.cfg.arsenal;
+  if (mine && UI.tabsFor !== G.cfg.arsenal + '|' + (G.cfg.env ? 1 : 0)) {
+    UI.tabsFor = G.cfg.arsenal + '|' + (G.cfg.env ? 1 : 0);
     for (const b of document.querySelectorAll('#wtabs [data-cat]'))
       b.hidden = b.dataset.cat !== 'all' && !WLIST.some(x => x.cat === b.dataset.cat && arsenalHas(G.cfg.arsenal, x.id));
     const cur = document.querySelector(`#wtabs [data-cat="${UI.wcat}"]`);
