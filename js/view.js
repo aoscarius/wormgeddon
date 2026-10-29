@@ -59,7 +59,10 @@ function applyTerrain(e) {
   if (e.e === 'x') {
     if (e.c) carve(e.x, e.y, e.r, true);
   } else if (e.e === 'cv') carve(e.x, e.y, e.r, !!e.s);
-  else if (e.e === 'rc') carveRect(e.x0, e.y0, e.x1, e.y1);
+  else if (e.e === 'rc') {
+    if (typeof slabRelease === 'function') slabRelease(e); // grab the ground as it is, before it is cut away
+    carveRect(e.x0, e.y0, e.x1, e.y1);
+  }
   else if (e.e === 'gd') addGirder(e.x, e.y, e.a, e.l);
 }
 

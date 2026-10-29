@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-49 commits, 2026-10-18 to 2026-10-29. Up to commit `c3b21a92f33fed56c0fbe3e63e4de0bebd1d5c15`.
+50 commits, 2026-10-18 to 2026-10-29. Up to commit `08d84be39b8738d1becf884689fdf75c6790b50a`.
 
 ## 2026-10-18
 
@@ -389,9 +389,17 @@ fixed, changed or refactored.
 **Fixed**
 - Fixed Gandalf's Staff test to reference the correct audio file
 
-### [`c3b21a9`](https://github.com/aoscarius/wormgeddon/commit/c3b21a92f33fed56c0fbe3e63e4de0bebd1d5c15)
+### [`885629f`](https://github.com/aoscarius/wormgeddon/commit/885629ffc64498822d15b0c46866ebfab4f1d65e)
 
 **Added**
 - Implemented Environmental Chaos feature with natural disasters affecting gameplay
 - Added options for players to enable or disable disasters, updated game logic to trigger disasters randomly, and localized new terms in Italian
 - Included tests to ensure correct functionality of the new feature
+
+### [`08d84be`](https://github.com/aoscarius/wormgeddon/commit/08d84be39b8738d1becf884689fdf75c6790b50a)
+
+**Added**
+- Implement Gandalf's slab effect: add ground cracking and falling mechanics
+
+**Changed**
+- Update rendering and event handling for slab interactions, and enhance tests to verify functionality

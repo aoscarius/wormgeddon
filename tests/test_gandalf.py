@@ -24,24 +24,31 @@ const run = ([base]) => {
   window.emit = e => { ev.push(e.e + (e.s ? ':' + e.s : '')); return old(e); };
   window.mp3Sfx = (src) => { mp3.push(src); };
   const mk = (x, y) => T.mask[y * T.w + x];
+  // a floating rock high above the section, and one outside it: only the first falls with the column
+  for (let y = 290; y < 310; y++) for (let x = cx - 10; x < cx + 10; x++) { T.mask[y * T.w + x] = 1; T.mask[y * T.w + x + 200] = 1; }
   const before = {front: mk(cx, 705), edgeIn: mk(cx + STAFF_R - 2, 705), edgeOut: mk(cx + STAFF_R + 8, 705), under: mk(800, 705), behind: mk(700, 705), deep: mk(cx, T.h - 5)};
   const t0 = g.time;
   LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
   out.tool = a.tool && a.tool.k; out.ammoUsed = g.teams[a.team].ammo.gandalf;
-  let slamAt = null, early = null;
+  let slamAt = null, early = null, brokeAt = null, slab = null, crackHold = null;
   for (let i = 0; i < 60 * 8; i++) {
     w.stepOnce(1/60);
     const t = g.time - t0;
     if (t < STAFF_DELAY - 0.1 && mk(cx, 705) === 0) early = t;
     if (slamAt === null && ev.includes('snd:thud')) slamAt = t;
+    if (slab === null && ev.includes('fr')) slab = !!(FX.slab && FX.slab.shards.length > 8 && FX.slab.cracks.length > 8);
+    if (crackHold === null && slamAt !== null && t > slamAt + STAFF_CRACK * 0.6) crackHold = mk(cx, 705) === 1 && ev.includes('fr') && !ev.includes('rc');
+    if (brokeAt === null && ev.includes('rc')) brokeAt = t;
   }
   window.emit = old; window.mp3Sfx = oldMp3;
-  out.slamAt = slamAt; out.early = early; out.delay = STAFF_DELAY; out.mp3 = mp3;
+  out.slamAt = slamAt; out.brokeAt = brokeAt; out.slab = slab; out.crackHold = crackHold; out.rcEv = null; out.early = early; out.delay = STAFF_DELAY; out.crack = STAFF_CRACK; out.mp3 = mp3;
   out.sfx = ev.filter(e => e === 'snd:gandalf' || e === 'snd:thud' || e === 'rc');
-  out.after = {front: mk(cx, 705), edgeIn: mk(cx + STAFF_R - 2, 705), edgeOut: mk(cx + STAFF_R + 8, 705), under: mk(800, 705), behind: mk(700, 705), deep: mk(cx, T.h - 5), above: mk(cx, 700 - STAFF_R - 5)};
+  out.after = {front: mk(cx, 705), edgeIn: mk(cx + STAFF_R - 2, 705), edgeOut: mk(cx + STAFF_R + 8, 705), under: mk(800, 705), behind: mk(700, 705), deep: mk(cx, T.h - 5), above: mk(cx, 300), aside: mk(cx + 200, 300)};
   out.before = before;
   out.foeDead = foe.dead; out.foeSunk = !!foe.sunk || foe.y > g.waterY; out.mateAlive = !mate.dead; out.aAlive = !a.dead;
   out.toolDone = !a.tool;
+  for (let i = 0; i < 60 * 6; i++) { w.stepOnce(1/60); fxUpdate(1/60); }
+  out.fallen = !FX.slab;
   // the track: the sound exists and is registered
   out.mp3Listed = MP3_FILES.includes('sounds/shallnotpass.mp3');
   return out;
@@ -56,9 +63,15 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["early"] is None, "the ground holds until the slam"
     assert r["slamAt"] is not None and abs(r["slamAt"] - r["delay"]) <= 1 / 30, f"slam at STAFF_DELAY: {r['slamAt']}"
     assert "snd:thud" in r["sfx"] and "rc" in r["sfx"]
+    assert r["slab"], "the slam starts the fracture: shards and cracks cut from the real ground"
+    assert r["crackHold"], "the ground still stands while it cracks"
+    assert r["brokeAt"] is not None and abs(r["brokeAt"] - r["slamAt"] - r["crack"]) <= 1 / 30, f"collapse after the cracks: {r['brokeAt']}"
+    assert r["fallen"], "the shards fall and are cleaned up"
     b, a = r["before"], r["after"]
     assert all(v == 1 for v in b.values()), b
-    assert a["front"] == 0 and a["edgeIn"] == 0 and a["deep"] == 0 and a["above"] == 0, "the section collapses completely"
+    assert a["front"] == 0 and a["edgeIn"] == 0 and a["deep"] == 0 and a["above"] == 0, "the whole column goes, top to bottom"
+    assert a["aside"] == 1
+    assert a["front"] == 0 and a["edgeIn"] == 0, "the section collapses completely"
     assert a["edgeOut"] == 1 and a["under"] == 1 and a["behind"] == 1, "nothing outside it is touched"
     assert r["foeDead"] and r["foeSunk"], "the worm standing on it falls into the sea"
     assert r["mateAlive"] and r["aAlive"], "worms off the section and the caster are safe"

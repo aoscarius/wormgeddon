@@ -7,8 +7,113 @@
  * damage, messages ...) into visuals and sound. Runs on host and clients.
  *
  * Depends on: view, audio
- * Globals defined: addP, puff, showMsg, addLog, applyEvent, fxUpdate
+ * Globals defined: addP, puff, slabStart, slabRelease, slabUpdate, showMsg, addLog, applyEvent, fxUpdate
  */
+
+/* ---- Gandalf's slab: the ground that cracks, breaks into shards and falls ---- */
+const SLAB_GRAV = 700;
+/** Cracks start running through the ground between x0 and x1 (the real terrain: only cells holding ground count); it breaks after t s. */
+function slabStart(x0, x1, t) {
+  x0 = Math.floor(x0);
+  x1 = Math.ceil(x1);
+  const { w, h, mask } = T,
+    solidAt = (x, y) => x >= 0 && y >= 0 && x < w && y < h && mask[y * w + x] === 1;
+  let top = h;
+  for (let y = 0; y < h && top === h; y++) for (let x = x0; x <= x1; x += 2) if (solidAt(x, y)) { top = y; break; }
+  if (top >= Math.min(h, G.waterY)) return;
+  const bot = Math.min(h, G.waterY + 40),
+    nx = Math.max(2, Math.round((x1 - x0) / 24)),
+    ny = Math.max(2, Math.round((bot - top) / 28)),
+    V = [];
+  for (let j = 0; j <= ny; j++) {
+    V.push([]);
+    for (let i = 0; i <= nx; i++) {
+      const edge = i === 0 || i === nx;
+      V[j].push([
+        x0 + ((x1 - x0) * i) / nx + (edge ? 0 : rnd(-8, 8)),
+        top + ((bot - top) * j) / ny + (j === ny ? 0 : rnd(-9, 9)) - (j === 0 ? 3 : 0),
+      ]);
+    }
+  }
+  const shards = [],
+    cracks = [],
+    mx = (x0 + x1) / 2;
+  const has = poly => {
+    const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
+    const ax = Math.min(...xs), bx = Math.max(...xs), ay = Math.min(...ys), by = Math.max(...ys);
+    for (let y = ay; y <= by; y += 4) for (let x = ax; x <= bx; x += 4) if (solidAt(Math.round(x), Math.round(y))) return true;
+    return false;
+  };
+  for (let j = 0; j < ny; j++)
+    for (let i = 0; i < nx; i++) {
+      const a = V[j][i], b = V[j][i + 1], c = V[j + 1][i + 1], d = V[j + 1][i],
+        polys = Math.random() < 0.5 ? [[a, b, c], [a, c, d]] : [[a, b, d], [b, c, d]];
+      for (const poly of polys) {
+        if (!has(poly)) continue;
+        const cx = (poly[0][0] + poly[1][0] + poly[2][0]) / 3, cy = (poly[0][1] + poly[1][1] + poly[2][1]) / 3;
+        shards.push({ poly: poly.map(p => [p[0] - cx, p[1] - cy]), cx, cy, x: cx, y: cy, rot: 0, vx: 0, vy: 0, vr: 0, wait: 0 });
+        for (let k = 0; k < 3; k++) {
+          const p = poly[k], q = poly[(k + 1) % 3], ex = (p[0] + q[0]) / 2, ey = (p[1] + q[1]) / 2;
+          if (solidAt(Math.round(ex), Math.round(ey))) cracks.push({ p, q, d: Math.hypot(ex - mx, ey - top) });
+        }
+      }
+    }
+  const reach = Math.max(1, ...cracks.map(c => c.d));
+  FX.slab = { x0, x1, top, bot, t: 0, dur: Math.max(0.2, t), shards, cracks, reach, img: null, fall: false };
+}
+/** The ground between e.x0..e.x1 is about to be cut away: copies it into the slab's image and lets the shards go. */
+function slabRelease(e) {
+  let s = FX.slab;
+  if (!s || s.fall || Math.abs(s.x0 - e.x0) > 2) {
+    slabStart(e.x0, e.x1, 0);
+    s = FX.slab;
+  }
+  if (!s || s.fall) return;
+  const iw = Math.ceil(s.x1 - s.x0 + 1), ih = Math.ceil(s.bot - s.top);
+  s.img = document.createElement('canvas');
+  s.img.width = iw;
+  s.img.height = ih;
+  s.img.getContext('2d').drawImage(T.cv, s.x0, s.top, iw, ih, 0, 0, iw, ih);
+  s.fall = true;
+  s.t = 0;
+  const mid = (s.x0 + s.x1) / 2, span = Math.max(1, s.x1 - s.x0);
+  for (const k of s.shards) {
+    k.wait = Math.random() * 0.45 + Math.abs(k.cx - mid) / span * 0.35;
+    k.vx = ((k.cx - mid) / span) * 70 + rnd(-18, 18);
+    k.vy = rnd(-30, 0);
+    k.vr = rnd(-1.4, 1.4);
+  }
+  for (let i = 0; i < 40; i++)
+    addP({
+      x: rnd(s.x0, s.x1), y: s.top + rnd(-4, 10), vx: rnd(-40, 40), vy: rnd(-60, -5),
+      l: rnd(1, 2), m: 2, c: ['#cfc6b8', '#a89f93', '#8a8178'][i % 3], s: rnd(2, 5), g: -10, k: 's',
+    });
+}
+/** Advances the slab: cracks grow until it breaks, then every shard falls (spinning) into the sea. */
+function slabUpdate(dt) {
+  const s = FX.slab;
+  if (!s) return;
+  s.t += dt;
+  if (!s.fall) return;
+  let alive = 0;
+  for (const k of s.shards) {
+    if (k.gone) continue;
+    alive++;
+    if (k.wait > 0) {
+      k.wait -= dt;
+      continue;
+    }
+    k.vy += SLAB_GRAV * dt;
+    k.x += k.vx * dt;
+    k.y += k.vy * dt;
+    k.rot += k.vr * dt;
+    if (k.y > G.waterY) {
+      k.gone = true;
+      puff(k.x, G.waterY, 5, 200, ['#cfe9ff', '#8cc4ee', '#fff'], 0.8, 3, 520, 'd');
+    }
+  }
+  if (!alive) FX.slab = null;
+}
 
 /* ---- FX spawners ---- */
 /** Adds a particle (capped at 1600; the oldest is dropped). */
@@ -291,39 +396,37 @@ function applyEvent(e) {
       if (SFX[e.hit ? 'zap' : 'fizzle']) SFX[e.hit ? 'zap' : 'fizzle']();
       break;
     }
+    case 'fr':
+      slabStart(e.x0, e.x1, e.t);
+      break;
     case 'rc': {
-      // Break the collapsing section into staggered chunks that fall toward the sea.
-      const width = e.x1 - e.x0,
-        height = Math.max(1, Math.min(e.y1, G.waterY) - e.y0),
-        step = clamp(Math.sqrt((width * height) / 180), 10, 26),
+      // the shards fall (slabRelease already cut them from the ground); dust, then a rain of loose rocks
+      const mid = (e.x0 + e.x1) / 2,
         cols = [T.theme.top, T.theme.dirt, T.theme.deep, [100, 92, 80]];
-      for (let y = e.y0; y < Math.min(e.y1, G.waterY); y += step) {
-        for (let x = e.x0; x < e.x1; x += step) {
-          const col = cols[(Math.random() * cols.length) | 0];
-          addP({
-            x: x + step * (0.35 + Math.random() * 0.3),
-            y: y + step * (0.35 + Math.random() * 0.3),
-            vx: rnd(-28, 28),
-            vy: rnd(-12, 35),
-            l: rnd(1.8, 2.6),
-            m: 2.6,
-            c: `rgb(${col[0]},${col[1]},${col[2]})`,
-            s: step * rnd(0.75, 1.15),
-            g: 520,
-            k: 'd',
-            wait: (y - e.y0) / height * 0.22 + Math.random() * 0.06,
-          });
-        }
-      }
-      // Delay the spray so it appears when the falling debris reaches the water.
+      // for (let i = 0; i < 80; i++) {
+      //   const col = cols[(Math.random() * cols.length) | 0];
+      //   addP({
+      //     x: rnd(e.x0, e.x1),
+      //     y: rnd(-20, 40),
+      //     vx: rnd(-25, 25),
+      //     vy: rnd(20, 80),
+      //     l: 6,
+      //     m: 6,
+      //     c: `rgb(${col[0]},${col[1]},${col[2]})`,
+      //     s: rnd(3, 9),
+      //     g: 620,
+      //     k: 'd',
+      //     wait: rnd(0.5, 2.4),
+      //   });
+      // }
       for (let x = e.x0; x < e.x1; x += 24) {
         const first = FX.p.length;
         puff(x, G.waterY, 4, 220, ['#cfe9ff', '#8cc4ee', '#fff'], 0.9, 3, 520, 'd');
-        const delay = 0.35 + Math.random() * 0.25;
+        const delay = 0.6 + Math.random() * 0.5;
         for (let i = first; i < FX.p.length; i++) FX.p[i].wait = delay;
       }
-      UI.shake = Math.min(18, UI.shake + 8);
-      camImpact((e.x0 + e.x1) / 2, e.y0);
+      UI.shake = Math.min(18, UI.shake + 10);
+      camImpact(mid, G.waterY * 0.5);
       break;
     }
 
@@ -475,6 +578,10 @@ function fxUpdate(dt) {
     }
   for (let i = FX.p.length - 1; i >= 0; i--) {
     const p = FX.p[i];
+    if (p.wait > 0) {
+      p.wait -= dt;
+      continue;
+    }
     p.l -= dt;
     if (p.l <= 0) {
       FX.p.splice(i, 1);
@@ -542,6 +649,7 @@ function fxUpdate(dt) {
     return s.t < 1;
   });
   FX.flats = (FX.flats || []).filter(f => (f.t += dt) < 2);
+  slabUpdate(dt);
   if (FX.quake > 0) {
     FX.quake -= dt;
     UI.shake = Math.max(UI.shake, 5);

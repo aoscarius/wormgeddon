@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -561,7 +561,8 @@ function snapTick(w, tl, dt) {
  * of it, within STAFF_R px of the point STAFF_DIST px ahead, collapses completely into the sea.
  */
 const STAFF_DELAY = 3.0, // s from the start (and the audio) to the slam
-  STAFF_SLAM = 0.8, // s the slam pose is held
+  STAFF_CRACK = 0.9, // s from the slam to the collapse: the ground cracks and shakes first
+  STAFF_SLAM = 1.1, // s the slam pose is held
   STAFF_DIST = 90, // px in front of the worm to the centre of the collapsing section
   STAFF_R = 60; // px: half the width of the section (the worm itself stands outside it)
 function staffTick(w, tl, dt) {
@@ -571,19 +572,26 @@ function staffTick(w, tl, dt) {
   physWorm(w, dt, false);
   if (!tl.done && tl.age >= STAFF_DELAY) {
     tl.done = true;
-    staffSlam(w);
+    tl.sec = staffSlam(w);
+  }
+  if (tl.sec && !tl.broke && tl.age >= STAFF_DELAY + STAFF_CRACK) {
+    tl.broke = true;
+    staffBreak(tl.sec);
   }
   if (tl.age >= STAFF_DELAY + STAFF_SLAM) tl.t = 0;
 }
-/** The slam: heavy thud, a quake, and every column of the section below the worm's head height is cut away down to the sea bed. */
+/** The slam: heavy thud and a quake; cracks run through the section (event 'fr') and STAFF_CRACK s later staffBreak() drops it. */
 function staffSlam(w) {
   const cx = w.x + w.face * STAFF_DIST,
-    x0 = clamp(cx - STAFF_R, 0, T.w - 1),
-    x1 = clamp(cx + STAFF_R, 0, T.w - 1),
-    y0 = Math.max(0, Math.floor(w.y - STAFF_R));
+    sec = { x0: clamp(cx - STAFF_R, 0, T.w - 1), x1: clamp(cx + STAFF_R, 0, T.w - 1) };
   emit({ e: 'snd', s: 'thud' });
-  emit({ e: 'quake', t: 2 });
-  emit({ e: 'rc', x0, y0, x1, y1: T.h - 1 });
+  emit({ e: 'quake', t: STAFF_CRACK + 1.6 });
+  emit({ e: 'fr', x0: sec.x0, x1: sec.x1, t: STAFF_CRACK });
+  return sec;
+}
+/** The collapse: the whole column, from the top of the level down to the sea bed, is cut away. */
+function staffBreak({ x0, x1 }) {
+  emit({ e: 'rc', x0, y0: 0, x1, y1: T.h - 1 });
   // everything that stood on it has lost its ground
   for (const o of G.worms)
     if (!o.dead && o.x >= x0 - o.r && o.x <= x1 + o.r) {

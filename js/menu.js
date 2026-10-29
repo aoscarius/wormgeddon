@@ -69,6 +69,7 @@ function enterGame() {
   chatSync();
   UI.sig = '';
   FX.p.length = 0;
+  FX.slab = null;
   FX.nuke = null;
   FX.bolts.length = 0;
   FX.storms.length = 0;

@@ -6,7 +6,7 @@
  * Per-frame drawing: parallax sky, water, terrain, entities, effects and targeting previews.
  *
  * Depends on: sprites, worm-art, fx, terrain
- * Globals defined: SKY_CLOUDS, SKY_CLOUDS2, SKY_STARS, SKY_RAIN, mixHex, drawSky, drawSkyOverlay, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, render
+ * Globals defined: SKY_CLOUDS, SKY_CLOUDS2, SKY_STARS, SKY_RAIN, mixHex, drawSky, drawSkyOverlay, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, drawSlab, render
  */
 
 /* ---- Rendering ---- */
@@ -647,7 +647,9 @@ function render() {
     ctx2.stroke();
     ctx2.globalAlpha = 1;
   }
+  drawSlab();
   for (const p of FX.p) {
+    if (p.wait > 0) continue;
     const a = clamp(p.l / p.m, 0, 1);
     ctx2.globalAlpha = p.k === 's' ? a * 0.45 : a;
     ctx2.fillStyle = p.c;
@@ -866,4 +868,42 @@ function render() {
     ctx2.fillRect(0, 0, cvs.width, cvs.height);
     ctx2.globalAlpha = 1;
   }
+}
+
+/** Gandalf's slab: jagged cracks growing out of the impact point along the real ground, then the shards of ground falling. */
+function drawSlab() {
+  const s = FX.slab;
+  if (!s) return;
+  ctx2.save();
+  if (!s.fall) {
+    const k = clamp(s.t / (s.dur * 0.7), 0, 1);
+    ctx2.lineCap = 'round';
+    for (const pass of [0, 1]) {
+      ctx2.strokeStyle = pass ? 'rgba(255,230,170,0.5)' : '#0b0703';
+      ctx2.lineWidth = pass ? 1.0 : 1.0;
+      ctx2.beginPath();
+      for (const c of s.cracks)
+        if (c.d <= k * s.reach) {
+          ctx2.moveTo(c.p[0], c.p[1]);
+          ctx2.lineTo(c.q[0], c.q[1]);
+        }
+      ctx2.stroke();
+    }
+  } else {
+    for (const k of s.shards) {
+      if (k.gone) continue;
+      ctx2.save();
+      ctx2.translate(k.x, k.y);
+      ctx2.rotate(k.rot);
+      ctx2.beginPath();
+      k.poly.forEach((p, i) => (i ? ctx2.lineTo(p[0], p[1]) : ctx2.moveTo(p[0], p[1])));
+      ctx2.closePath();
+      ctx2.save();
+      ctx2.clip();
+      ctx2.drawImage(s.img, s.x0 - k.cx, s.top - k.cy);
+      ctx2.restore();
+      ctx2.restore();
+    }
+  }
+  ctx2.restore();
 }
