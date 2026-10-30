@@ -46,6 +46,11 @@ function projectileWormHit(p, x0, y0, x1, y1) {
 
   for (const w of worms) {
     if (w.dead || w.sunk) continue;
+    // a fresh projectile cannot hit its own thrower until it has cleared it once (it starts at the hands, inside its reach)
+    if (w.id === p.ow && !p.out) {
+      if (Math.hypot(x1 - w.x, y1 - w.y) > (p.r || 0) + (w.r || 0) + 4) p.out = 1;
+      else continue;
+    }
 
     const t = len2
       ? Math.max(0, Math.min(1, ((w.x - x0) * dx + (w.y - y0) * dy) / len2))

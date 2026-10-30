@@ -375,6 +375,19 @@ function applyEvent(e) {
       camImpact(e.x, e.y);
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
       break;
+    case 'rsplat':
+      // a worm shredded by the Rasenshuriken vortex: blood flung outward along the wind (a shower and a stain in Splatter Mode)
+      bloodSplat(e.x, e.y);
+      for (let i = 0; i < (UI.splatterMode ? 22 : 7); i++)
+        addP({
+          x: e.x, y: e.y, vx: e.ux * rnd(80, 300) - e.uy * rnd(-160, 160), vy: e.uy * rnd(80, 300) + e.ux * rnd(-160, 160) - 40,
+          l: rnd(0.5, 1.2), m: 1.2, c: ['#7d1020', '#b5122b', '#d21f3c'][i % 3], s: rnd(1, 2.8), g: 300, k: 'c',
+        });
+      if (UI.splatterMode) {
+        bloodShower(e.x, e.y - 2, 30, 0.8);
+        bloodStain(e.x, e.y + 4, 20);
+      }
+      break;
     case 'btsplat':
       // a Bullet Time round hits a worm: a spray of blood thrown along the shot (heavier in Splatter Mode)
       bloodSplat(e.x, e.y);

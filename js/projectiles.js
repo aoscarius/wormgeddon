@@ -1074,18 +1074,22 @@ registerProj('proton', {
  * inside it (small 'cv' carves at random points plus 'rdust' wind-blown grains), hurts every worm in it each RASEN_TICK s
  * and blows them outward, away from its centre.
  */
-const RASEN_R = 80,
+const RASEN_LO = 520, // px/s of the weakest throw (a weaker one would land inside its own vortex)
+  RASEN_HI = 900,
+  RASEN_LIFT = 7, // px above the muzzle where it is let go
+  RASEN_R = 80,
   RASEN_T = 4.5,
   RASEN_GROW = 0.7,
   RASEN_TICK = 0.15,
   RASEN_DMG = 6,
-  RASEN_PUSH = 2200;
+  RASEN_PUSH = 3400;
 registerProj('rasen', {
   r: 5,
   grav: 0.8,
   wind: 2.5,
   hit: true,
   again: true,
+  mark: 80, // the radius of the vortex it becomes: drawn at the end of the F4 prediction
   spr: 'rasen',
   boom(p) {
     emit({ e: 'snd', s: 'rasenhowl' });
@@ -1131,7 +1135,10 @@ registerProj('vortex', {
       o.vy += Math.sin(a) * RASEN_PUSH * dt - 260 * dt;
       o.grounded = false;
       o.rope = null;
-      if (hit) hurt(o, RASEN_DMG, { src: p.ow });
+      if (hit) {
+        hurt(o, RASEN_DMG, { src: p.ow });
+        if (!o.clone) emit({ e: 'rsplat', x: o.x, y: o.y - 2, ux: Math.cos(a), uy: Math.sin(a) }); // blood torn out of it, flung outward
+      }
     }
     return false;
   },

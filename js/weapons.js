@@ -421,10 +421,17 @@ registerWeapon({
   ammo: 1,
   delay: 5,
   charge: true,
-  fire(c) {
-    emit({ e: 'snd', s: 'whoosh' });
-    return throwP('rasen', 250, 800)(c);
-  },
+  fire: Object.assign(
+    c => {
+      // thrown from above the hand, so that a flat throw does not scrape the ground at the thrower's feet
+      const w = c.w,
+        [mx, my, dx, dy] = muzzle(w),
+        sp = RASEN_LO + (RASEN_HI - RASEN_LO) * c.power;
+      emit({ e: 'snd', s: 'whoosh' });
+      return spawnProj('rasen', mx, my - RASEN_LIFT, dx * sp, dy * sp, w, {});
+    },
+    { launch: { type: 'rasen', lo: RASEN_LO, hi: RASEN_HI, lift: RASEN_LIFT } } // F4 predicts its flight like the other throws
+  ),
 });
 // Shadow Clone Jutsu: smoke, and CLONE_N clones of the caster appear at random standing spots across the map. They look like
 // worms of the team, always show full health and vanish when hit, wasting the attacker's turn (see spawnClone / clonePoof).

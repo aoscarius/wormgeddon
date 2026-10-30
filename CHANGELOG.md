@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-57 commits, 2026-10-18 to 2026-10-31. Up to commit `956c1dbe7b303c62ae86ec104f877b9ed3688293`.
+58 commits, 2026-10-18 to 2026-10-31. Up to commit `2614acb992fbfde9877f55f2fac7466062cd15f4`.
 
 ## 2026-10-18
 
@@ -443,7 +443,12 @@ fixed, changed or refactored.
 
 ## 2026-10-31
 
-### [`956c1db`](https://github.com/aoscarius/wormgeddon/commit/956c1dbe7b303c62ae86ec104f877b9ed3688293)
+### [`e0cc1f9`](https://github.com/aoscarius/wormgeddon/commit/e0cc1f954dff7c7ee63fd897359f80e8189def11)
 
 **Changed**
 - Enhanced Shadow Clone Jutsu: implement clone swapping mechanics, ensure clones vanish with the original, and update tests for functionality
+
+### [`2614acb`](https://github.com/aoscarius/wormgeddon/commit/2614acb992fbfde9877f55f2fac7466062cd15f4)
+
+**Changed**
+- Enhanced Rasenshuriken mechanics: implement blood splatter effects on hit, adjust projectile launch parameters, and update tests for functionality

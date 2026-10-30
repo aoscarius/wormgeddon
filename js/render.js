@@ -523,7 +523,8 @@ function drawTrajectories() {
     power = G.weapon.pw > 0 ? G.weapon.pw : 1,
     sp = lo + (hi - lo) * power,
     [mx, my, dx, dy] = muzzle(aw),
-    g = { x: mx, y: my, vx: dx * sp, vy: dy * sp, r: pt.r || 3, bounce: pt.bounce || 0, fric: pt.fric == null ? 0.85 : pt.fric };
+    ly = d.fire.launch.lift || 0,
+    g = { x: mx, y: my - ly, vx: dx * sp, vy: dy * sp, r: pt.r || 3, bounce: pt.bounce || 0, fric: pt.fric == null ? 0.85 : pt.fric };
   let fuse = pt.fuse != null ? (d.fuse ? G.weapon.fuse : pt.fuse) : null,
     t = 0;
   ctx2.strokeStyle = '#ffe04a';
@@ -552,7 +553,7 @@ function drawTrajectories() {
   if (end) {
     ctx2.strokeStyle = '#ff4040';
     ctx2.beginPath();
-    ctx2.arc(end[0], end[1], (pt.expl ? pt.expl.r : 10), 0, TAU);
+    ctx2.arc(end[0], end[1], (pt.expl ? pt.expl.r : pt.mark || 10), 0, TAU);
     ctx2.stroke();
   }
 }

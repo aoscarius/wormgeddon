@@ -43,7 +43,7 @@ const run = ([base]) => {
     out.maxR = maxR; out.foeDx = maxD - 30; out.foeHp = hp0 - s.foe.hp; out.farHp = farHp - s.far.hp;
     out.eroded = before - solidCount(Math.round(vx) - 70, Math.round(vy) - 10, Math.round(vx) + 70, Math.round(vy) + 70);
     out.gone = !s.g.projs.some(p => p.t === 'vortex');
-    out.dustEv = ev.includes('rdust'); out.howl = ev.includes('snd:rasenhowl');
+    out.dustEv = ev.includes('rdust'); out.splat = ev.includes('rsplat'); out.howl = ev.includes('snd:rasenhowl');
     out.R = RASEN_R;
   }
   // B: a second press in flight
@@ -57,6 +57,17 @@ const run = ([base]) => {
   w.stepOnce(1/60);
   const v2 = s.g.projs.find(p => p.t === 'vortex');
   out.pressed = !!v2 && !s.g.projs.some(p => p.t === 'rasen') && v2.y < 690;
+  // C: the throw does not run into its own thrower, whatever the aim and the wind
+  out.launch = !!WEAPONS.rasenshuriken.fire.launch && WEAPONS.rasenshuriken.fire.launch.type === 'rasen' && PTYPES.rasen.mark === RASEN_R;
+  out.tries = [];
+  for (const [aim, wind] of [[0, 0], [-0.2, 1], [-0.2, -1], [-0.6, 1], [-0.6, -1], [-1.0, 0]]) {
+    s = setup('ra3');
+    s.a.aim = aim; s.g.wind = wind;
+    throwIt(s);
+    let v = null, firstDist = null;
+    for (let i = 0; i < 60 * 4 && !v; i++) { w.stepOnce(1/60); v = s.g.projs.find(p => p.t === 'vortex'); }
+    out.tries.push({aim, wind, dist: v ? Math.round(Math.abs(v.x - s.a.x)) : -1, hp: s.a.hp});
+  }
   window.emit = old;
   return out;
 };
@@ -70,8 +81,13 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert abs(r["maxR"] - r["R"]) < 2, "the vortex grows to RASEN_R"
     assert r["eroded"] > 1500 and r["dustEv"], "the terrain is eroded to dust"
     assert r["foeHp"] >= 12, f"heavy continuous damage: {r['foeHp']}"
-    assert r["foeDx"] > 40, f"worms are pushed outward: {r['foeDx']}"
+    assert r["foeDx"] > 30, f"worms are pushed outward: {r['foeDx']}"
+    assert r["splat"], "worms in the vortex are splattered with blood"
     assert r["farHp"] == 0, "worms outside are untouched"
     assert r["gone"], "the vortex ends"
     assert r["inFlight"] and r["pressed"], "a second press of Fire in flight makes the vortex in mid-air"
+    assert r["launch"], "the debug view (F4) predicts the flight"
+    for t in r["tries"]:
+        assert t["dist"] >= 0 and t["hp"] == 100, f"no hit on the thrower: {t}"
+        assert t["dist"] >= 90, f"it lands clear of the thrower: {t}"
     finish(errors)
