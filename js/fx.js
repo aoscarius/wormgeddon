@@ -379,6 +379,13 @@ function applyEvent(e) {
       // a round deflected or passing through the Bullet Time caster: green sparks and a ring
       puff(e.x, e.y, 8, 160, ['#b8ffc8', '#38ff6a', '#fff'], 0.35, 1.6, 0, 'c');
       FX.rings.push({ x: e.x, y: e.y, r: 14, t: 0, big: false });
+    case 'rdust':
+      // eroded ground turning into fine dust that the wind takes away
+      for (let i = 0; i < 6; i++)
+        addP({
+          x: e.x + rnd(-8, 8), y: e.y + rnd(-8, 8), vx: rnd(-80, 80), vy: rnd(-90, 20),
+          l: rnd(0.8, 1.8), m: 1.8, c: ['#cfc6b8', '#a89f93', '#8a7a64', '#6d5a40'][i % 4], s: rnd(0.8, 2.2), g: 0, k: 'w',
+        });
       break;
     case 'quake':
       FX.quake = e.t;

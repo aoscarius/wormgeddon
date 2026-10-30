@@ -233,6 +233,14 @@ const SFX = {
   },
   // Force Choke: the track while the worm is held, and the whoosh of the throw.
   forcechoke: () => mp3Sfx('sounds/darthvader.mp3'),
+  // Rasenshuriken: the high wind howl of the vortex (about RASEN_T s long).
+  rasenhowl: () => {
+    noiseBurst(4.5, 0.22, 4200);
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => tone(1400 + i * 180, 2600 + (i % 2) * 700, 0.9, 'sine', 0.05), i * 650);
+      setTimeout(() => tone(2800 - i * 120, 1900, 0.7, 'triangle', 0.03), i * 650 + 300);
+    }
+  },
   whoosh: () => {
     noiseBurst(0.45, 0.3, 2500);
     tone(200, 1200, 0.4, 'sawtooth', 0.05);

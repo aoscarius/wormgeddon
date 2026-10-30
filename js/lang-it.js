@@ -343,6 +343,7 @@ I18N.it = {
   'The ground trembles': 'Il terreno trema',
   'Meteors are falling': 'Cadono meteoriti',
   'Bullet Time': 'Bullet Time',
+  'Rasenshuriken': 'Rasenshuriken',
   'Force Choke': 'Soffocamento della Forza',
   'Target too far': 'Bersaglio troppo lontano',
   'Snap!': 'Schiocco!',

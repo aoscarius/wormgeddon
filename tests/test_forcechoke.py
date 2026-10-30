@@ -1,5 +1,5 @@
 """Force Choke: the clicked worm is lifted and held in the air while the track plays, loses health with blood, is flung
-away from the caster and takes impact damage when it hits the terrain."""
+against the caster's facing and takes impact damage when it hits the terrain."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
 
@@ -15,7 +15,7 @@ const run = ([base]) => {
     g.worms.forEach((o, i) => { if (o !== a && o !== foe) stand(o, 60 + 25 * i); });
     g.teams[a.team].ammo.forcechoke = 2;
     stand(a, 700); a.face = 1; stand(foe, foeX);
-    // a wall far to the right: the flung worm hits it
+    // terrain on both sides: the flung worm hits it
     for (let y = 300; y < 700; y++) T.mask.fill(1, y * T.w + 1500, y * T.w + 1560);
     for (let i = 0; i < 10; i++) w.stepOnce(1/60);
     g.weapon.id = 'forcechoke';
@@ -68,10 +68,10 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["snapHeld"], "guests see it held"
     assert abs(r["xDuring"] - 1000) < 1, "held in place"
     f = r["flung"]
-    assert f and abs(f["t"] - r["delay"]) < 0.1 and f["vx"] > 600, f"flung away from the caster at the end of the track: {f}"
+    assert f and abs(f["t"] - r["delay"]) < 0.1 and f["vx"] < -600, f"flung against the caster's facing at the end of the track: {f}"
     assert r["whoosh"] and r["hitEv"], "whoosh when thrown, impact effect on collision"
     assert r["hitAt"] and r["hitAt"]["hp"] < f["hp"] - 15, "impact damage on collision"
-    assert r["hitAt"]["x"] > 1000, "it flew away from the caster"
+    assert r["hitAt"]["x"] < 1000, "it flew in the direction opposite to the caster's facing"
     assert r["toolDone"] and r["aHp"] == 100, "the caster is fine"
     assert r["far"]["tool"] is None and r["far"]["ammo"] == 2, "out of range: nothing happens"
     assert r["empty"]["tool"] is None and r["empty"]["ammo"] == 2, "no worm clicked: nothing happens"

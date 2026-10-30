@@ -411,6 +411,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Rasenshuriken: charge to throw a spinning wind shuriken (pushed by the wind); where it lands, or when Fire is pressed again
+// in flight, it becomes a vortex that erodes the ground to dust, hurts and blows worms outward (see 'rasen' in projectiles.js).
+registerWeapon({
+  id: 'rasenshuriken',
+  name: 'Rasenshuriken',
+  code: 'RS',
+  ammo: 1,
+  delay: 5,
+  charge: true,
+  fire(c) {
+    emit({ e: 'snd', s: 'whoosh' });
+    return throwP('rasen', 250, 800)(c);
+  },
+});
 // Force Choke: click a worm within FORCE_RANGE px; the caster raises an arm while the track plays, the worm is lifted into the
 // air and choked (damage and blood), then flung away and hurt again when it hits the terrain (see forceTick in worms.js).
 registerWeapon({
@@ -1204,7 +1218,7 @@ function handleFire(w, t, inp, dt) {
     d = WEAPONS[W.id];
   // detonate controllable sheep with fire
   if (inp.fireP) {
-    const ctl = G.projs.find(p => PTYPES[p.t].ctl && p.ow === w.id);
+    const ctl = G.projs.find(p => (PTYPES[p.t].ctl || PTYPES[p.t].again) && p.ow === w.id);
     if (ctl) {
       detonate(ctl);
       inp.fireP = 0;

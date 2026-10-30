@@ -321,6 +321,12 @@ const ICON_DRAW = {
       icCircle(g, x + 5, y, 1.8, IC.skin);
     }
   },
+  // Rasenshuriken: a blue wind sphere with four curved blades.
+  rasenshuriken(g) {
+    icCircle(g, 32, 32, 12, IC.blue);
+    icCircle(g, 32, 32, 6, IC.white);
+    for (const [x, y, x2, y2] of [[32, 32, 56, 22], [32, 32, 42, 56], [32, 32, 8, 42], [32, 32, 22, 8]]) icLine(g, x, y, x2, y2, 5, IC.steel);
+  },
   // Force Choke: an open hand reaching out, with force rings.
   forcechoke(g) {
     icEllipse(g, 24, 38, 14, 16, IC.skin);

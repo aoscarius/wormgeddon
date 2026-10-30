@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-52 commits, 2026-10-18 to 2026-10-29. Up to commit `e0e086cb34e4db3e8986b37ad22eaae50e49461e`.
+54 commits, 2026-10-18 to 2026-10-30. Up to commit `55543ed5c53aaf770a8fc7903eb1dcb64d478b03`.
 
 ## 2026-10-18
 
@@ -409,10 +409,24 @@ fixed, changed or refactored.
 **Changed**
 - Enhance Environmental Chaos feature: pause active turn clock during disasters, update disaster mechanics, and improve related tests for functionality
 
-### [`e0e086c`](https://github.com/aoscarius/wormgeddon/commit/e0e086cb34e4db3e8986b37ad22eaae50e49461e)
+### [`e89fc0c`](https://github.com/aoscarius/wormgeddon/commit/e89fc0cdd8a5ac055ef673e0eaad9535f5581fef)
 
 **Changed**
 - Enhance worm drawing with pulsing ellipses for visual effect
 
 **Refactored**
 - Refactored Force Choke effects: removed blood emission from hurt function, adjust blood effects in choke event
+
+## 2026-10-30
+
+### [`fecdff5`](https://github.com/aoscarius/wormgeddon/commit/fecdff5a9cf23ee0f20309db16ee6e631cd1c079)
+
+**Added**
+- Implemented Bullet Time weapon allowing the caster to slow down time while remaining unharmed
+- Added functionality for deflecting hostile projectiles during Bullet Time
+- Introduced high-velocity rounds that freeze mid-air and accelerate back to full speed after the effect ends
+
+### [`55543ed`](https://github.com/aoscarius/wormgeddon/commit/55543ed5c53aaf770a8fc7903eb1dcb64d478b03)
+
+**Added**
+- Added Rasenshuriken weapon: implement mechanics for charged throw and vortex effect, update audio and visual representations, and include tests for functionality

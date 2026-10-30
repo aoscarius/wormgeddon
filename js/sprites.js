@@ -15,6 +15,64 @@ function spriteProj(p) {
   ctx2.save();
   ctx2.translate(p.x, p.y);
   switch (d.spr) {
+    case 'rasen': {
+      // a small blue-white wind sphere with four spinning blades
+      ctx2.globalCompositeOperation = 'lighter';
+      const rg = ctx2.createRadialGradient(0, 0, 0, 0, 0, 12);
+      rg.addColorStop(0, 'rgba(255,255,255,.9)');
+      rg.addColorStop(0.5, 'rgba(120,200,255,.5)');
+      rg.addColorStop(1, 'rgba(60,140,255,0)');
+      ctx2.fillStyle = rg;
+      ctx2.beginPath();
+      ctx2.arc(0, 0, 12, 0, TAU);
+      ctx2.fill();
+      ctx2.globalCompositeOperation = 'source-over';
+      ctx2.rotate(G.time * 24);
+      ctx2.fillStyle = '#eaf6ff';
+      ctx2.strokeStyle = '#3d7fc8';
+      ctx2.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        ctx2.rotate(Math.PI / 2);
+        ctx2.beginPath();
+        ctx2.moveTo(0, 0);
+        ctx2.quadraticCurveTo(7, -2, 13, 3);
+        ctx2.quadraticCurveTo(6, 1, 0, 3);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
+      }
+      break;
+    }
+    case 'vortex': {
+      // the vortex sphere: translucent layers and spiral arms turning at different speeds
+      const R = p.net ? p.net[0] : 0,
+        life = p.net ? p.net[1] : 0,
+        fade = Math.min(1, (RASEN_T - life) / 0.6);
+      if (R < 2) break;
+      ctx2.globalAlpha = Math.max(0, fade);
+      ctx2.globalCompositeOperation = 'lighter';
+      const rg = ctx2.createRadialGradient(0, 0, R * 0.1, 0, 0, R);
+      rg.addColorStop(0, 'rgba(235,250,255,.55)');
+      rg.addColorStop(0.6, 'rgba(110,190,255,.28)');
+      rg.addColorStop(1, 'rgba(60,130,255,.05)');
+      ctx2.fillStyle = rg;
+      ctx2.beginPath();
+      ctx2.arc(0, 0, R, 0, TAU);
+      ctx2.fill();
+      ctx2.lineCap = 'round';
+      for (let k = 0; k < 14; k++) {
+        const rr = R * (0.15 + 0.85 * (k / 14)),
+          a0 = G.time * (9 - k * 0.45) + k * 1.9;
+        ctx2.strokeStyle = `rgba(${170 + k * 4},${225},255,${0.55 - k * 0.025})`;
+        ctx2.lineWidth = 1.5 + (k % 3);
+        ctx2.beginPath();
+        ctx2.arc(0, 0, rr, a0, a0 + 1.2 + (k % 4) * 0.3);
+        ctx2.stroke();
+      }
+      ctx2.globalCompositeOperation = 'source-over';
+      ctx2.globalAlpha = 1;
+      break;
+    }
     case 'avada': {
       // the green beam: a bright orb with a tail along its heading and a pulsing glow
       const pulse = 1 + Math.sin(G.time * 40) * 0.12;

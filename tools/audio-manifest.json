@@ -19,6 +19,7 @@
     "gomugomuno.mp3": { "kind": "voice" },
     "kamehameha.mp3": { "kind": "voice" },
     "iaminevitable.mp3": { "kind": "voice" },
+    "darthvader.mp3": { "kind": "voice" },
     "hallelujah.mp3": { "kind": "music", "eq_limit_db": 2.0 }
   }
 }

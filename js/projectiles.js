@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: KAME_*, PROTON_*, AVADA_*, avadaPath, avadaFire, kameGeom, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
+ * Globals defined: RASEN_*, KAME_*, PROTON_*, AVADA_*, avadaPath, avadaFire, kameGeom, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -1063,6 +1063,76 @@ registerProj('proton', {
       }
     }
     if (p.life >= end + PROTON_FADE) p.dead = true;
+    return false;
+  },
+});
+
+/**
+ * Rasenshuriken: a spinning wind shuriken thrown in an arc (strongly pushed by the wind). When it hits the ground or a worm,
+ * or when Fire is pressed again in flight ('again': see handleFire), it grows into a vortex sphere ('vortex'): for RASEN_T s
+ * the vortex (p.net = [radius, age], sent to guests) grows to RASEN_R px within RASEN_GROW s, erodes the terrain to dust
+ * inside it (small 'cv' carves at random points plus 'rdust' wind-blown grains), hurts every worm in it each RASEN_TICK s
+ * and blows them outward, away from its centre.
+ */
+const RASEN_R = 80,
+  RASEN_T = 4.5,
+  RASEN_GROW = 0.7,
+  RASEN_TICK = 0.15,
+  RASEN_DMG = 6,
+  RASEN_PUSH = 2200;
+registerProj('rasen', {
+  r: 5,
+  grav: 0.8,
+  wind: 2.5,
+  hit: true,
+  again: true,
+  spr: 'rasen',
+  boom(p) {
+    emit({ e: 'snd', s: 'rasenhowl' });
+    spawnProj('vortex', p.x, p.y, 0, 0, null, { ow: p.ow, team: p.team, net: [0, 0], life: 0, er: 0, ht: 0 });
+  },
+});
+registerProj('vortex', {
+  r: 2,
+  grav: 0,
+  spr: 'vortex',
+  tick(p, dt) {
+    p.life += dt;
+    const g = clamp(p.life / RASEN_GROW, 0, 1),
+      R = RASEN_R * g * (2 - g);
+    p.net = [R, p.life];
+    if (p.life >= RASEN_T) {
+      p.dead = true;
+      return false;
+    }
+    p.er -= dt;
+    if (p.er <= 0) {
+      p.er = 0.06;
+      for (let k = 0; k < 2; k++) {
+        const a = Math.random() * TAU,
+          d = R * Math.sqrt(Math.random()),
+          x = p.x + Math.cos(a) * d,
+          y = p.y + Math.sin(a) * d;
+        emit({ e: 'cv', x, y, r: rnd(9, 15), s: 0 });
+        emit({ e: 'rdust', x, y });
+      }
+    }
+    p.ht -= dt;
+    const hit = p.ht <= 0;
+    if (hit) p.ht = RASEN_TICK;
+    for (const o of G.worms) {
+      if (o.dead) continue;
+      const dx = o.x - p.x,
+        dy = o.y - 2 - p.y,
+        d = Math.hypot(dx, dy);
+      if (d > R + 6) continue;
+      const a = d > 1 ? Math.atan2(dy, dx) : Math.random() * TAU;
+      o.vx += Math.cos(a) * RASEN_PUSH * dt;
+      o.vy += Math.sin(a) * RASEN_PUSH * dt - 260 * dt;
+      o.grounded = false;
+      o.rope = null;
+      if (hit) hurt(o, RASEN_DMG, { src: p.ow });
+    }
     return false;
   },
 });
