@@ -405,6 +405,7 @@ registerWeapon({
   fire(c) {
     if (G.bt && G.bt.t > 0) return 'miss';
     G.bt = { id: c.w.id, t: BT_TIME, cd: 0 };
+    G.timer = 3 + BT_TIME;
     emit({ e: 'snd', s: 'bullettime' });
     emit({ e: 'msg', t: 'Bullet Time' });
     c.w.tool = { k: 'bt', t: 99, p: 0 };
@@ -1037,7 +1038,7 @@ registerWeapon({
     return 'keep';
   },
 });
-// Teleport: click anywhere free to jump there.
+// Teleport: click anywhere free to jump there. It uses up the turn (the usual 3 s retreat follow).
 registerWeapon({
   id: 'teleport',
   name: 'Teleport',
@@ -1046,7 +1047,6 @@ registerWeapon({
   delay: 1,
   click: true,
   instant: true,
-  noEnd: true,
   fire(c) {
     const f = findFree(c.target.x, c.target.y, WORM_R, 30);
     if (!f) return 'miss';

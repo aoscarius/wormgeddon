@@ -375,6 +375,20 @@ function applyEvent(e) {
       camImpact(e.x, e.y);
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
       break;
+    case 'btsplat':
+      // a Bullet Time round hits a worm: a spray of blood thrown along the shot (heavier in Splatter Mode)
+      bloodSplat(e.x, e.y);
+      for (let i = 0; i < (UI.splatterMode ? 26 : 8); i++)
+        addP({
+          x: e.x, y: e.y, vx: e.ux * rnd(60, 240) + rnd(-60, 60), vy: e.uy * rnd(60, 240) + rnd(-110, 20),
+          l: rnd(0.5, 1.1), m: 1.1, c: ['#7d1020', '#b5122b', '#d21f3c'][i % 3], s: rnd(1, 2.6), g: 560, k: 'c',
+        });
+      if (UI.splatterMode) {
+        bloodShower(e.x, e.y - 2, 24, 0.6);
+        bloodStain(e.x, e.y + 4, 16);
+      }
+      FX.rings.push({ x: e.x, y: e.y, r: 12, t: 0, big: false });
+      break;
     case 'btdefl':
       // a round deflected or passing through the Bullet Time caster: green sparks and a ring
       puff(e.x, e.y, 8, 160, ['#b8ffc8', '#38ff6a', '#fff'], 0.35, 1.6, 0, 'c');

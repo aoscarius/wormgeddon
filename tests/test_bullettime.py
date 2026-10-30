@@ -18,7 +18,9 @@ const run = ([base]) => {
   stand(foe, 1000);
   for (let i = 0; i < 10; i++) w.stepOnce(1/60);
   g.weapon.id = 'bullettime';
-  const hp0 = foe.hp, ahp0 = a.hp;
+  const hp0 = foe.hp, ahp0 = a.hp, timer0 = g.timer;
+  const evs = [], oldEmit = window.emit;
+  window.emit = e => { evs.push(e.e); return oldEmit(e); };
   LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
   out.tool = a.tool && a.tool.k; out.ammo = g.teams[a.team].ammo.bullettime; out.bt = !!g.bt && g.bt.id === a.id;
   let animEnd = null; const t0 = g.time;
@@ -55,7 +57,7 @@ const run = ([base]) => {
   while (g.bt) w.stepOnce(1/60);
   const x1 = bl().map(q => q.x);
   for (let i = 0; i < 60 * 3; i++) w.stepOnce(1/60);
-  out.hit = foe.hp < hp0 || foe.pend > 0;
+  out.hit = foe.hp < hp0 || foe.pend > 0; out.splat = evs.includes('btsplat'); window.emit = oldEmit;
   out.after = !g.bt; out.btLeft = bl().length;
   hurt(a, 10); out.vulnerable = a.hp < ahp0;
   out.consts = {slow: BT_SLOW, time: BT_TIME, anim: BT_ANIM};
@@ -74,5 +76,6 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["rounds"] >= 5, "holding Fire sends a barrage"
     assert r["frozen"] and r["foeHpFrozen"], "the rounds freeze in mid-air"
     assert r["after"] and r["hit"], "when the effect ends the rounds speed up and hit"
+    assert r["splat"], "a round that hits a worm splatters blood"
     assert r["vulnerable"], "the caster is vulnerable again afterwards"
     finish(errors)

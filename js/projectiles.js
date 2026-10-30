@@ -250,7 +250,7 @@ registerProj('btbullet', {
         hw.vy += uy * 60 - 40;
         hw.grounded = false;
         hw.rope = null;
-        emit({ e: 'btdefl', x: p.x, y: p.y });
+        emit({ e: 'btsplat', x: p.x, y: p.y, ux, uy });
         p.dead = true;
         return false;
       }
