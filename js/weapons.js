@@ -428,13 +428,13 @@ registerWeapon({
 });
 // Shadow Clone Jutsu: smoke, and CLONE_N clones of the caster appear at random standing spots across the map. They look like
 // worms of the team, always show full health and vanish when hit, wasting the attacker's turn (see spawnClone / clonePoof).
+// Casting uses up the turn, and at the end of each of its turns the caster swaps places with one of its clones (cloneSwap).
 registerWeapon({
   id: 'shadowclone',
   name: 'Shadow Clone Jutsu',
   code: 'SC',
   ammo: 1,
   delay: 4,
-  noEnd: true,
   instant: true,
   fire(c) {
     const taken = G.worms.filter(o => !o.dead).map(o => [o.x, o.y]);
@@ -452,6 +452,7 @@ registerWeapon({
       emit({ e: 'msg', t: 'No room for clones' });
       return 'miss';
     }
+    c.w.clonist = true; // from now on it swaps places with one of its clones at the end of each of its turns
   },
 });
 // Force Choke: click a worm within FORCE_RANGE px; the caster raises an arm while the track plays, the worm is lifted into the

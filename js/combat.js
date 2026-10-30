@@ -7,7 +7,7 @@
  * mines/drums and spawns fire.
  *
  * Depends on: core
- * Globals defined: CLONE_N, CLONE_LIFE, findSpot, spawnClone, clonePoof, hurt, explode
+ * Globals defined: CLONE_N, CLONE_LIFE, findSpot, cloneOrphan, cloneSwap, spawnClone, clonePoof, hurt, explode
  */
 
 /* ===== Shadow clones ===== */
@@ -64,11 +64,40 @@ function spawnClone(o, x, y) {
     chute: false,
     burn: 0,
     clone: true,
+    owner: o.id,
     life: CLONE_LIFE,
   };
   G.worms.push(w);
   emit({ e: 'poof', x, y: y - 4 });
   return w;
+}
+/** True when the worm that made clone `c` is dead (or gone): the clone cannot outlive it. */
+function cloneOrphan(c) {
+  const o = wById(c.owner);
+  return !o || o.dead;
+}
+/**
+ * Called when a turn is over: a worm that used Shadow Clone Jutsu swaps places with one of its living clones, picked at
+ * random (nothing happens when none is left), so nobody knows which one is the original.
+ */
+function cloneSwap(w) {
+  if (!w || w.dead || !w.clonist) return;
+  const cs = G.worms.filter(c => c.clone && !c.dead && c.owner === w.id);
+  if (!cs.length) return;
+  const c = cs[(Math.random() * cs.length) | 0],
+    x = w.x,
+    y = w.y;
+  emit({ e: 'poof', x, y: y - 4 });
+  emit({ e: 'poof', x: c.x, y: c.y - 4 });
+  w.x = c.x;
+  w.y = c.y;
+  c.x = x;
+  c.y = y;
+  w.vx = w.vy = c.vx = c.vy = 0;
+  w.grounded = c.grounded = false;
+  w.rope = null;
+  w.jet = null;
+  [w.face, c.face] = [c.face, w.face];
 }
 /**
  * A clone vanishes. When an enemy worm that is taking its turn is the one who hit it (`src` = its id), the strike is

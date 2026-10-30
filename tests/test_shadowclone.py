@@ -58,6 +58,38 @@ const run = ([base]) => {
   // roster survival: killing the caster's real worms ends the team although clones remain
   g.worms.filter(o => !o.clone && o.team === a.team).forEach(o => { o.dead = true; });
   out.teamGone = !teamAlive(g.teams[a.team]);
+  // at the end of the turn the caster swaps places with one of its clones
+  ({g, a} = setup('sc4'));
+  const px = a.x, py = a.y;
+  LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
+  for (let i = 0; i < 90; i++) w.stepOnce(1/60);
+  const before = g.worms.filter(o => o.clone).map(o => [o.x, o.y]), ax = a.x, ay = a.y;
+  const turn0 = g.active; let swapped = false;
+  for (let i = 0; i < 60 * 10 && g.active === turn0; i++) { w.stepOnce(1/60); }
+  out.turnOver = g.active !== turn0;
+  const spot = before.find(b => Math.hypot(b[0] - a.x, b[1] - a.y) < 25);
+  out.swapped = !!spot && Math.hypot(ax - a.x, ay - a.y) > 60;
+  out.cloneAtOld = g.worms.some(o => o.clone && Math.hypot(o.x - ax, o.y - ay) < 25);
+  out.cloneCount = g.worms.filter(o => o.clone).length; out.swapEv = ev.includes('poof');
+  // no clones left: nothing to swap with
+  ({g, a} = setup('sc5'));
+  LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
+  for (let i = 0; i < 90; i++) w.stepOnce(1/60);
+  g.worms.filter(o => o.clone).forEach(o => hurt(o, 1, {})); // (the caster's own turn: no turn lost, clones vanish)
+  for (let i = 0; i < 5; i++) w.stepOnce(1/60);
+  const bx = a.x, by = a.y, t1 = g.active;
+  for (let i = 0; i < 60 * 10 && g.active === t1; i++) w.stepOnce(1/60);
+  out.noClones = g.active !== t1 && Math.abs(a.x - bx) < 40 && g.worms.filter(o => o.clone).length === 0;
+  // the original dies: every clone it made vanishes in smoke, those of other casters stay
+  ({g, a} = setup('sc6'));
+  LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
+  for (let i = 0; i < 90; i++) w.stepOnce(1/60);
+  const other = g.worms.find(o => !o.clone && o.team !== a.team);
+  spawnClone(other, 500, 300); other.clonist = true;
+  const n6 = g.worms.filter(o => o.clone && o.owner === a.id).length, pf0 = ev.filter(e => e === 'poof').length;
+  a.hp = 0; a.dead = true;
+  for (let i = 0; i < 5; i++) w.stepOnce(1/60);
+  out.orphans = [n6, g.worms.filter(o => o.clone && o.owner === a.id).length, g.worms.filter(o => o.clone && o.owner === other.id).length, ev.filter(e => e === 'poof').length - pf0];
   // expiry
   ({g, a} = setup('sc3'));
   LOCAL.fireP = 1; w.stepOnce(1/60); LOCAL.fireP = 0;
@@ -74,7 +106,7 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     r = pg.evaluate("([b]) => {" + JS + "return run([b]); }", [BASE])
     print(r)
     assert r["count"] == r["n"] == 10 and r["ammo"] == 1, "ten clones, ammo spent"
-    assert r["phase"] == "turn", "casting does not end the turn"
+    assert r["phase"] == "retreat", "casting uses up the turn"
     assert r["roster"], "clones are not in the team roster"
     assert r["team"] and r["hp"], "same team and name, full health"
     assert r["spread"] > 300 and r["grounded"], f"scattered over standing spots: {r['spread']}"
@@ -84,5 +116,8 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["exploded"], "explosions pop clones too"
     assert r["ownKeeps"], "hitting your own clone costs no turn"
     assert r["teamGone"], "clones do not keep a team alive"
+    assert r["turnOver"] and r["swapped"] and r["cloneAtOld"] and r["cloneCount"] == 10, "the caster swaps places with a clone at the end of its turn"
+    assert r["noClones"], "no clones left: no swap"
+    assert r["orphans"][0] == 10 and r["orphans"][1] == 0 and r["orphans"][2] == 1 and r["orphans"][3] >= 10, f"clones vanish with their original: {r['orphans']}"
     assert r["expired"], "clones fade after their time"
     finish(errors)

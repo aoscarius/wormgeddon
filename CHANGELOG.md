@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-56 commits, 2026-10-18 to 2026-10-30. Up to commit `a0d0bd5367c2b22e538d34f5fdb75534a56e574a`.
+57 commits, 2026-10-18 to 2026-10-31. Up to commit `956c1dbe7b303c62ae86ec104f877b9ed3688293`.
 
 ## 2026-10-18
 
@@ -436,7 +436,14 @@ fixed, changed or refactored.
 **Added**
 - Implement Shadow Clone Jutsu: add mechanics for spawning clones, update audio and visual effects, and include tests for functionality
 
-### [`a0d0bd5`](https://github.com/aoscarius/wormgeddon/commit/a0d0bd5367c2b22e538d34f5fdb75534a56e574a)
+### [`3e33ac7`](https://github.com/aoscarius/wormgeddon/commit/3e33ac764a504e2f591c0442a99c81b7f3f1f9d2)
 
 **Added**
 - Add Bullet Time splatter effects: implement blood splatter visuals on hit, update projectile emission, and enhance tests for functionality
+
+## 2026-10-31
+
+### [`956c1db`](https://github.com/aoscarius/wormgeddon/commit/956c1dbe7b303c62ae86ec104f877b9ed3688293)
+
+**Changed**
+- Enhanced Shadow Clone Jutsu: implement clone swapping mechanics, ensure clones vanish with the original, and update tests for functionality
