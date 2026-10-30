@@ -6,7 +6,7 @@
  * Per-frame drawing: parallax sky, water, terrain, entities, effects and targeting previews.
  *
  * Depends on: sprites, worm-art, fx, terrain
- * Globals defined: SKY_CLOUDS, SKY_CLOUDS2, SKY_STARS, SKY_RAIN, mixHex, drawSky, drawSkyOverlay, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, drawSlab, render
+ * Globals defined: SKY_CLOUDS, SKY_CLOUDS2, SKY_STARS, SKY_RAIN, mixHex, drawSky, drawSkyOverlay, drawNuke, drawDebug, drawTrajectories, DBG_PATHS, debugText, drawWater, drawSlab, drawBulletTime, render
  */
 
 /* ---- Rendering ---- */
@@ -861,6 +861,7 @@ function render() {
   }
   drawSkyOverlay();
   themeFxScreen();
+  drawBulletTime();
   if (UI.flashA > 0) {
     ctx2.setTransform(1, 0, 0, 1, 0, 0);
     ctx2.globalAlpha = UI.flashA * 0.8;
@@ -906,4 +907,31 @@ function drawSlab() {
     }
   }
   ctx2.restore();
+}
+
+/** Bullet Time: a green cast over the screen and columns of falling digital rain, fading in and out with the effect. */
+function drawBulletTime() {
+  if (!G.bt || !(G.bt.t > 0)) return;
+  const k = Math.min(1, (BT_TIME - G.bt.t) / 0.35, G.bt.t / 0.5),
+    W = cvs.width,
+    H = cvs.height,
+    g = ctx2;
+  g.save();
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalAlpha = 0.16 * Math.max(0, k);
+  g.fillStyle = '#00ff55';
+  g.fillRect(0, 0, W, H);
+  g.globalAlpha = 0.5 * Math.max(0, k);
+  g.font = `${Math.round(14 * DPR)}px monospace`;
+  const col = Math.round(18 * DPR);
+  for (let x = 0, i = 0; x < W; x += col, i++) {
+    const sp = 60 + ((i * 37) % 90),
+      y0 = ((G.time * sp * DPR + i * 197) % (H + 200 * DPR)) - 100 * DPR;
+    for (let j = 0; j < 8; j++) {
+      g.fillStyle = j === 0 ? '#d8ffe0' : '#27ff63';
+      g.globalAlpha = 0.5 * Math.max(0, k) * (1 - j / 8);
+      g.fillText(String.fromCharCode(0x30a0 + ((i * 7 + j * 13 + Math.floor(G.time * 6 + j)) % 60)), x, y0 - j * 16 * DPR);
+    }
+  }
+  g.restore();
 }

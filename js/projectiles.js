@@ -217,6 +217,53 @@ registerProj('mortar', {
       spawnProj('bomblet', p.x, p.y - 4, rnd(-170, 170), -rnd(120, 300), null, { ow: p.ow });
   },
 });
+// Bullet Time round: very fast, flies BT_FLY s, freezes in mid-air while the time dilation lasts, then accelerates back to
+// full speed. Hits the first worm (never its owner) or terrain on its way; walks its path in 3 px steps.
+registerProj('btbullet', {
+  r: 2,
+  bt: true,
+  spr: 'dot',
+  col: '#b8ffc8',
+  tick(p, dt) {
+    const slow = G.bt && G.bt.t > 0;
+    if (slow && p.fl >= BT_FLY) {
+      p.frozen = 1;
+      return false;
+    }
+    if (p.frozen) {
+      p.frozen = 0;
+      p.rel = 0;
+    }
+    if (!slow) p.rel = (p.rel || 0) + dt;
+    const sp = Math.hypot(p.vx, p.vy),
+      v = slow ? sp : sp * Math.min(1, 0.15 + (p.rel || 0) / 0.35),
+      ux = p.vx / sp,
+      uy = p.vy / sp;
+    p.fl += dt;
+    for (let d = 0; d < v * dt; d += 3) {
+      p.x += ux * Math.min(3, v * dt - d);
+      p.y += uy * Math.min(3, v * dt - d);
+      const hw = G.worms.find(o => !o.dead && o.id !== p.ow && Math.abs(o.x - p.x) < 6 && Math.abs(o.y - p.y) < 8);
+      if (hw) {
+        hurt(hw, BT_DMG, { src: p.ow });
+        hw.vx += ux * 60;
+        hw.vy += uy * 60 - 40;
+        hw.grounded = false;
+        hw.rope = null;
+        emit({ e: 'btdefl', x: p.x, y: p.y });
+        p.dead = true;
+        return false;
+      }
+      if (solid(p.x, p.y)) {
+        emit({ e: 'cv', x: p.x, y: p.y, r: 4, s: 0 });
+        p.dead = true;
+        return false;
+      }
+    }
+    p.a = Math.atan2(p.vy, p.vx);
+    return false;
+  },
+});
 // Small bomblet released by the mortar.
 registerProj('bomblet', { r: 2, hit: true, spr: 'dot', col: '#ffd23f', expl: { r: 14, d: 14 } });
 // Grenade: 3 s fuse (adjustable), bounces, ignores wind.

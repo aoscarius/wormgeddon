@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -221,8 +221,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -556,6 +556,66 @@ function snapTick(w, tl, dt) {
   if (tl.age >= SNAP_T) tl.t = 0;
 }
 /**
+ * Matrix "Bullet Time": the worm puts on its sunglasses and bends backwards (tl.p = 0..1 over BT_ANIM s, sent to guests),
+ * then G.bt = {id, t} slows the whole world to BT_SLOW of its speed for BT_TIME s while the caster stays at full speed:
+ * enemy worms, projectiles, fires and crates are slowed (see step), and the caster takes no damage at all (btShield) while
+ * hostile projectiles that come close are deflected. With the weapon still selected, holding Fire sends a barrage of
+ * high-velocity pistol rounds (btFire): each flies BT_FLY s, freezes in mid-air and, when the effect ends, accelerates back
+ * to full speed (the 'btbullet' projectile in projectiles.js).
+ */
+const BT_TIME = 5,
+  BT_SLOW = 0.08,
+  BT_ANIM = 0.9,
+  BT_RATE = 0.07, // s between two rounds
+  BT_SPEED = 1500, // px/s
+  BT_FLY = 0.16, // s of flight before a round freezes
+  BT_DMG = 9,
+  BT_GUARD = 26; // px: hostile projectiles closer than this to the caster are deflected
+/** True while the worm is inside its own Bullet Time (it cannot be hurt). */
+function btShield(w) {
+  return !!(G.bt && G.bt.t > 0 && G.bt.id === w.id);
+}
+/** The speed of the world for things that are not the caster's rounds: BT_SLOW during Bullet Time, else 1. */
+function btScale() {
+  return G.bt && G.bt.t > 0 ? BT_SLOW : 1;
+}
+function btTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / BT_ANIM).toFixed(2);
+  physWorm(w, dt, false);
+  if (tl.age >= BT_ANIM) tl.t = 0;
+}
+/** Fire held while Bullet Time runs: one more high-velocity round every BT_RATE s. */
+function btFire(w, dt) {
+  const b = G.bt;
+  b.cd = (b.cd || 0) - dt;
+  if (b.cd > 0) return;
+  b.cd = BT_RATE;
+  const [dx, dy] = aimDir(w),
+    a = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.03;
+  spawnProj('btbullet', w.x + Math.cos(a) * 10, w.y - 2 + Math.sin(a) * 10, Math.cos(a) * BT_SPEED, Math.sin(a) * BT_SPEED, w, { fl: 0 });
+  emit({ e: 'snd', s: 'shot', q: 1 });
+}
+/** A hostile projectile that gets within BT_GUARD px of the caster is turned back, now fighting for the caster. */
+function btDeflect(p) {
+  const b = G.bt,
+    w = b && b.t > 0 ? wById(b.id) : null;
+  if (!w || w.dead || p.ow === w.id || PTYPES[p.t].bt || p.defl) return;
+  const dx = p.x - w.x,
+    dy = p.y - (w.y - 2),
+    d = Math.hypot(dx, dy);
+  if (d > BT_GUARD) return;
+  const sp = Math.max(160, Math.hypot(p.vx, p.vy)),
+    ux = d > 0.5 ? dx / d : -p.face;
+  p.vx = ux * sp;
+  p.vy = (d > 0.5 ? dy / d : -1) * sp;
+  p.defl = 1;
+  p.ow = w.id;
+  p.team = w.team;
+  emit({ e: 'btdefl', x: p.x, y: p.y });
+}
+/**
  * Gandalf's Staff: the worm raises its staff while the track plays (tl.p = 0..1 over STAFF_DELAY + STAFF_SLAM s, sent to
  * guests), slams it down STAFF_DELAY s after the start (set it to the length of its track), and the ground in front
  * of it, within STAFF_R px of the point STAFF_DIST px ahead, collapses completely into the sea.
@@ -772,13 +832,14 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'staff') staffTick(w, tl, dt);
     else if (tl.k === 'wand') wandTick(w, tl, dt);
     else if (tl.k === 'force') forceTick(w, tl, dt);
+    else if (tl.k === 'bt') btTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;
     }
     if (tl.t <= 0 && w.tool) {
       w.tool = null;
-      if (G.phase === 'turn') {
+      if (G.phase === 'turn' && tl.k !== 'bt') {
         G.phase = 'retreat';
         G.timer = 3;
       }

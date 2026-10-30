@@ -23,7 +23,13 @@
  */
 function step(dt, inputs) {
   G.time += dt;
-  const w = activeWorm(),
+  // Bullet Time: the effect counts down in real time; everything but the caster (and its rounds) runs at `bs` of the speed
+  if (G.bt) {
+    G.bt.t -= dt;
+    if (G.bt.t <= 0) G.bt = null;
+  }
+  const bs = btScale(),
+    w = activeWorm(),
     t = w ? teamOf(w) : null;
   curInp = t && (G.phase === 'turn' || G.phase === 'retreat') ? inputs[t.id] : null;
   // scheduled actions
@@ -59,6 +65,7 @@ function step(dt, inputs) {
       if (!G.envDisaster) G.timer -= dt;
       if (G.weapon.ch === false || G.phase === 'retreat') {
       }
+      if (G.bt && G.bt.id === w.id && G.weapon.id === 'bullettime' && !w.tool && G.phase === 'turn' && inp.fire) btFire(w, dt);
       handleFire(w, t, inp, dt);
       if (inp.tab) {
         cycleWorm(w, false);
@@ -83,18 +90,19 @@ function step(dt, inputs) {
     if (o === w && curInp && !o.dead && G.phase !== 'settle' && G.phase !== 'over') continue;
     if (o.dead && o.sunk) continue;
     if (o.tool && o !== w) o.tool = null;
-    physWorm(o, dt, false);
+    physWorm(o, G.bt && G.bt.id === o.id ? dt : dt * bs, false);
   }
   // a worm marked by the Hokuto Hyakuretsu Ken dies when its countdown ends
   for (const o of G.worms)
     if (o.doom > 0 && !o.dead) {
-      o.doom -= dt;
+      o.doom -= dt * bs;
       if (o.doom <= 0) doomBlast(o);
     }
   // worms turned to dust by Thanos' Gauntlet die when the dissolve is over
-  for (const o of G.worms) if (o.dust > 0 && !o.dead) dustTick(o, dt);
+  for (const o of G.worms) if (o.dust > 0 && !o.dead) dustTick(o, dt * bs);
   for (const p of G.projs) {
-    updateProj(p, dt);
+    if (bs < 1) btDeflect(p);
+    updateProj(p, PTYPES[p.t].bt ? dt : dt * bs);
     if (!p.dead && p.y > G.waterY + 2) {
       p.dead = true;
       emit({ e: 'splash', x: p.x, y: G.waterY });
@@ -103,10 +111,11 @@ function step(dt, inputs) {
   }
   G.projs = G.projs.filter(p => !p.dead);
   for (const f of G.fires) {
-    f.life -= dt;
+    const fdt = dt * bs;
+    f.life -= fdt;
     if (!f.rest) {
-      f.vy += GRAV * 0.7 * dt;
-      const c = stepBody(f, dt);
+      f.vy += GRAV * 0.7 * fdt;
+      const c = stepBody(f, fdt);
       if (c && Math.hypot(f.vx, f.vy) < 40) {
         f.rest = true;
         f.vx = f.vy = 0;
@@ -115,7 +124,7 @@ function step(dt, inputs) {
     if (f.y > G.waterY) f.life = 0;
     for (const o of G.worms)
       if (!o.dead && Math.abs(o.x - f.x) < 8 && Math.abs(o.y - f.y) < 9) {
-        o.burn -= dt;
+        o.burn -= fdt;
         if (o.burn <= 0) {
           o.burn = 0.3;
           hurt(o, 1, {});
@@ -141,7 +150,7 @@ function step(dt, inputs) {
         emit({ e: 'rad', x: o.x, y: o.y });
       }
     }
-  updateObjs(dt);
+  updateObjs(dt * bs);
   // water motion
   if (G.waterY > G.waterTarget) G.waterY = Math.max(G.waterTarget, G.waterY - 14 * dt);
   // phase logic

@@ -342,6 +342,7 @@ I18N.it = {
   'A tsunami is coming': 'Sta arrivando uno tsunami',
   'The ground trembles': 'Il terreno trema',
   'Meteors are falling': 'Cadono meteoriti',
+  'Bullet Time': 'Bullet Time',
   'Force Choke': 'Soffocamento della Forza',
   'Target too far': 'Bersaglio troppo lontano',
   'Snap!': 'Schiocco!',

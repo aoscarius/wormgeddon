@@ -375,6 +375,11 @@ function applyEvent(e) {
       camImpact(e.x, e.y);
       puff(e.x, e.y, 26, 140, ['#9fe', '#fff', '#7bf'], 0.7, 2.5, -120, 'c');
       break;
+    case 'btdefl':
+      // a round deflected or passing through the Bullet Time caster: green sparks and a ring
+      puff(e.x, e.y, 8, 160, ['#b8ffc8', '#38ff6a', '#fff'], 0.35, 1.6, 0, 'c');
+      FX.rings.push({ x: e.x, y: e.y, r: 14, t: 0, big: false });
+      break;
     case 'quake':
       FX.quake = e.t;
       break;

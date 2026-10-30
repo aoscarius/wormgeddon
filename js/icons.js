@@ -309,6 +309,18 @@ const ICON_DRAW = {
     icLine(g, 24, 54, 16, 61, 2, IC.ink);
     icLine(g, 40, 54, 48, 61, 2, IC.ink);
   },
+  // Bullet Time: sunglasses with frozen rounds in front of them.
+  bullettime(g) {
+    icEllipse(g, 20, 30, 11, 8, IC.ink);
+    icEllipse(g, 44, 30, 11, 8, IC.ink);
+    icLine(g, 28, 28, 36, 28, 3, IC.ink);
+    icLine(g, 8, 26, 3, 22, 2.5, IC.ink);
+    icLine(g, 56, 26, 61, 22, 2.5, IC.ink);
+    for (const [x, y] of [[12, 50], [26, 47], [40, 50], [54, 47]]) {
+      icLine(g, x - 4, y, x + 4, y, 3, IC.green || IC.blue);
+      icCircle(g, x + 5, y, 1.8, IC.skin);
+    }
+  },
   // Force Choke: an open hand reaching out, with force rings.
   forcechoke(g) {
     icEllipse(g, 24, 38, 14, 16, IC.skin);

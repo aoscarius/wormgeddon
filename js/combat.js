@@ -17,6 +17,10 @@
  */
 function hurt(w, amt, o = {}) {
   if (w.dead || amt <= 0) return;
+  if (btShield(w)) {
+    emit({ e: 'btdefl', x: w.x, y: w.y - 4 });
+    return;
+  }
   w.hp -= amt;
   w.pend += amt;
   if (w.id === G.active && (G.phase === 'turn' || G.phase === 'retreat') && !o.noEnd) toSettle();
@@ -42,6 +46,10 @@ function explode(x, y, r, dmg, push, o = {}) {
       dy = w.y - y - 2,
       d = Math.hypot(dx, dy);
     if (d >= reach) continue;
+    if (btShield(w)) {
+      emit({ e: 'btdefl', x: w.x, y: w.y - 4 });
+      continue;
+    }
     const f = 1 - d / reach;
     const ux = d > 0.5 ? dx / d : 0,
       uy = d > 0.5 ? dy / d : -1;

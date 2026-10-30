@@ -83,6 +83,7 @@ const MP3_FILES = [
   'sounds/shallnotpass.mp3',
   'sounds/avadakedavra.mp3',
   'sounds/darthvader.mp3',
+  'sounds/bullettime.mp3',
 ];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
@@ -246,6 +247,8 @@ const SFX = {
     noiseBurst(0.5, 0.18, 3500);
     tone(900, 90, 0.5, 'triangle', 0.08);
   },
+  // Matrix Bullet Time: the digital-rain swoosh as time slows down (track length ~ BT_ANIM).
+  bullettime: () => mp3Sfx('sounds/bullettime.mp3'),
   // Gandalf's Staff: the track (see STAFF_DELAY for its length), then the heavy thud of the slam.
   gandalf: () => mp3Sfx('sounds/shallnotpass.mp3'),
   thud: () => {

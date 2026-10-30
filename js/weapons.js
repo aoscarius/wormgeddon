@@ -393,6 +393,24 @@ registerWeapon({
     return 'keep';
   },
 });
+// Matrix "Bullet Time": the world slows to BT_SLOW for BT_TIME s while the caster keeps full speed and cannot be hurt; with the
+// weapon still selected, holding Fire sends a barrage of fast rounds that freeze in mid-air and speed up again when it ends.
+registerWeapon({
+  id: 'bullettime',
+  name: 'Bullet Time',
+  code: 'BT',
+  ammo: 1,
+  delay: 6,
+  noEnd: true,
+  fire(c) {
+    if (G.bt && G.bt.t > 0) return 'miss';
+    G.bt = { id: c.w.id, t: BT_TIME, cd: 0 };
+    emit({ e: 'snd', s: 'bullettime' });
+    emit({ e: 'msg', t: 'Bullet Time' });
+    c.w.tool = { k: 'bt', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Force Choke: click a worm within FORCE_RANGE px; the caster raises an arm while the track plays, the worm is lifted into the
 // air and choked (damage and blood), then flung away and hurt again when it hits the terrain (see forceTick in worms.js).
 registerWeapon({
@@ -1306,7 +1324,8 @@ function doFire(w, t, d, power, target) {
     W.tx = null;
     W.ty = null;
   }
-  if (!avail(t, W.id)) {
+  // (Bullet Time stays selected while it runs: it is the pistol that fires the barrage)
+  if (!avail(t, W.id) && !(W.id === 'bullettime' && G.bt)) {
     const f = WLIST.find(x => avail(t, x.id) && !x.noFire);
     if (f) W.id = f.id;
   }

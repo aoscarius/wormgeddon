@@ -35,6 +35,7 @@ function newGame(cfg, teamDefs) {
     fires: [],
     objs: [],
     ev: [],
+    bt: null,
     sched: [],
     nid: 1,
     phase: 'turn',

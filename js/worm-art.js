@@ -404,6 +404,12 @@ function drawWormBody(w) {
     else g.rect(26 - (52 - 52 * w.dustP), -34, 52 - 52 * w.dustP, 60);
     g.clip();
   }
+  // Matrix Bullet Time: the worm bends backwards (pivoting at its feet) while it starts the effect
+  if (w.tool && w.tool.k === 'bt') {
+    g.translate(0, 6);
+    g.rotate(-w.face * Math.sin(clamp(w.tool.p || 0, 0, 1) * Math.PI) * 0.7);
+    g.translate(0, -6);
+  }
   const f = w.face,
     t = G.time,
     act = w.id === G.active,
@@ -533,6 +539,27 @@ function drawWormBody(w) {
       g.lineTo(ex + er, ey - er * 1.12 * (1 - lid));
       g.stroke();
     }
+  }
+  // Matrix Bullet Time: black sunglasses once the worm has put them on, until the effect is over
+  if ((G.bt && G.bt.t > 0 && G.bt.id === w.id) || (w.tool && w.tool.k === 'bt' && (w.tool.p || 0) > 0.3)) {
+    g.fillStyle = '#0a0a0c';
+    g.strokeStyle = '#0a0a0c';
+    g.lineWidth = 0.9;
+    for (const [ex, ey, er] of eyes) {
+      g.beginPath();
+      g.ellipse(ex, ey, er + 1.1, er * 0.95 + 0.5, 0, 0, TAU);
+      g.fill();
+    }
+    g.beginPath();
+    g.moveTo(eyes[0][0], eyes[0][1] - 0.4);
+    g.lineTo(eyes[1][0], eyes[1][1] - 0.4);
+    g.moveTo(eyes[0][0] - f * 2.2, eyes[0][1] - 0.4);
+    g.lineTo(eyes[0][0] - f * 5, eyes[0][1] + 1);
+    g.stroke();
+    g.fillStyle = 'rgba(120,255,160,0.55)';
+    g.beginPath();
+    g.ellipse(eyes[1][0] - f * 0.6, eyes[1][1] - 0.9, 0.8, 0.4, -0.5 * f, 0, TAU);
+    g.fill();
   }
   // Brows: determined while charging, worried when hurt.
   const charging = act && G.weapon.ch;

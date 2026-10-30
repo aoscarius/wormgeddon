@@ -43,6 +43,7 @@ const CRATE_WEAP = [
   'gandalf',
   'avada',
   'forcechoke',
+  'bullettime',
   'proton',
   'airstrike',
   'napalm',

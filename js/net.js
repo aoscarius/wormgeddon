@@ -73,6 +73,7 @@ function snapshot(withAmmo) {
     ov: G.over ? 1 : 0,
     win: G.winner,
     sd: G.sdOn ? 1 : 0,
+    bt: G.bt && G.bt.t > 0 ? [G.bt.id, +G.bt.t.toFixed(2)] : 0, // Bullet Time: caster and seconds left
     w: G.worms.map(w => [
       w.id,
       r1(w.x),
@@ -127,6 +128,7 @@ function applySnapshot(s) {
   G.over = !!s.ov;
   G.winner = s.win;
   G.sdOn = !!s.sd;
+  G.bt = s.bt ? { id: s.bt[0], t: s.bt[1] } : null;
   for (const a of s.w) {
     const w = wById(a[0]);
     if (!w) continue;
