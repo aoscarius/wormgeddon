@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-54 commits, 2026-10-18 to 2026-10-30. Up to commit `55543ed5c53aaf770a8fc7903eb1dcb64d478b03`.
+55 commits, 2026-10-18 to 2026-10-30. Up to commit `7b1d5cefea0c5ed4d93690cc3cfef56eca26afa9`.
 
 ## 2026-10-18
 
@@ -426,7 +426,12 @@ fixed, changed or refactored.
 - Added functionality for deflecting hostile projectiles during Bullet Time
 - Introduced high-velocity rounds that freeze mid-air and accelerate back to full speed after the effect ends
 
-### [`55543ed`](https://github.com/aoscarius/wormgeddon/commit/55543ed5c53aaf770a8fc7903eb1dcb64d478b03)
+### [`08af3cd`](https://github.com/aoscarius/wormgeddon/commit/08af3cde32bc6445572addaced665aec6b5736e4)
 
 **Added**
 - Added Rasenshuriken weapon: implement mechanics for charged throw and vortex effect, update audio and visual representations, and include tests for functionality
+
+### [`7b1d5ce`](https://github.com/aoscarius/wormgeddon/commit/7b1d5cefea0c5ed4d93690cc3cfef56eca26afa9)
+
+**Added**
+- Implement Shadow Clone Jutsu: add mechanics for spawning clones, update audio and visual effects, and include tests for functionality

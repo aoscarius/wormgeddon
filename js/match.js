@@ -239,7 +239,7 @@ function startTurn() {
     if (sd && G.round >= sd) {
       if (!G.sdOn) {
         G.sdOn = true;
-        for (const w of G.worms) if (!w.dead) w.hp = 1;
+        for (const w of G.worms) if (!w.dead && !w.clone) w.hp = 1;
         emit({ e: 'msg', t: 'SUDDEN DEATH' });
       }
       G.waterTarget -= 34;

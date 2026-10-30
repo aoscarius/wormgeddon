@@ -387,6 +387,12 @@ function applyEvent(e) {
           l: rnd(0.8, 1.8), m: 1.8, c: ['#cfc6b8', '#a89f93', '#8a7a64', '#6d5a40'][i % 4], s: rnd(0.8, 2.2), g: 0, k: 'w',
         });
       break;
+    case 'poof':
+      // a smoke cloud (clone born or vanished)
+      puff(e.x, e.y, 16, 90, ['#f4f4f4', '#d8d8d8', '#bfbfbf'], 0.9, 7, -10, 's');
+      puff(e.x, e.y, 6, 120, ['#fff', '#e8e8e8'], 0.5, 3.5, 0, 'c');
+      if (e.q !== 1) SFX.poof();
+      break;
     case 'quake':
       FX.quake = e.t;
       break;

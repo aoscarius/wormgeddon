@@ -74,6 +74,7 @@ function snapshot(withAmmo) {
     win: G.winner,
     sd: G.sdOn ? 1 : 0,
     bt: G.bt && G.bt.t > 0 ? [G.bt.id, +G.bt.t.toFixed(2)] : 0, // Bullet Time: caster and seconds left
+    cl: G.worms.filter(w => w.clone).map(w => [w.id, w.team, w.name]), // shadow clones (not part of the rosters)
     w: G.worms.map(w => [
       w.id,
       r1(w.x),
@@ -129,6 +130,12 @@ function applySnapshot(s) {
   G.winner = s.win;
   G.sdOn = !!s.sd;
   G.bt = s.bt ? { id: s.bt[0], t: s.bt[1] } : null;
+  // shadow clones come and go: create the new ones before the worm records are read, drop the vanished ones
+  const cl = s.cl || [];
+  for (const [id, team, name] of cl)
+    if (!wById(id))
+      G.worms.push({ id, team, name, r: WORM_R, hp: G.cfg.hp, face: 1, aim: -0.3, grounded: false, dead: false, vx: 0, vy: 0, clone: true });
+  if (G.worms.some(w => w.clone && !cl.some(c => c[0] === w.id))) G.worms = G.worms.filter(w => !w.clone || cl.some(c => c[0] === w.id));
   for (const a of s.w) {
     const w = wById(a[0]);
     if (!w) continue;

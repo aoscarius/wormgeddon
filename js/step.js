@@ -151,6 +151,9 @@ function step(dt, inputs) {
       }
     }
   updateObjs(dt * bs);
+  // shadow clones fade after CLONE_LIFE s; the vanished ones leave the match
+  for (const o of G.worms) if (o.clone && !o.dead && (o.life -= dt) <= 0) clonePoof(o);
+  if (G.worms.some(o => o.clone && o.dead)) G.worms = G.worms.filter(o => !(o.clone && o.dead));
   // water motion
   if (G.waterY > G.waterTarget) G.waterY = Math.max(G.waterTarget, G.waterY - 14 * dt);
   // phase logic

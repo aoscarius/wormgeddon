@@ -425,6 +425,34 @@ registerWeapon({
     return throwP('rasen', 250, 800)(c);
   },
 });
+// Shadow Clone Jutsu: smoke, and CLONE_N clones of the caster appear at random standing spots across the map. They look like
+// worms of the team, always show full health and vanish when hit, wasting the attacker's turn (see spawnClone / clonePoof).
+registerWeapon({
+  id: 'shadowclone',
+  name: 'Shadow Clone Jutsu',
+  code: 'SC',
+  ammo: 1,
+  delay: 4,
+  noEnd: true,
+  instant: true,
+  fire(c) {
+    const taken = G.worms.filter(o => !o.dead).map(o => [o.x, o.y]);
+    emit({ e: 'snd', s: 'poof' });
+    emit({ e: 'poof', x: c.w.x, y: c.w.y - 4 });
+    let n = 0;
+    for (let i = 0; i < CLONE_N; i++) {
+      const p = findSpot(taken, 60) || findSpot(taken, 20);
+      if (!p) break;
+      taken.push(p);
+      spawnClone(c.w, p[0], p[1]);
+      n++;
+    }
+    if (!n) {
+      emit({ e: 'msg', t: 'No room for clones' });
+      return 'miss';
+    }
+  },
+});
 // Force Choke: click a worm within FORCE_RANGE px; the caster raises an arm while the track plays, the worm is lifted into the
 // air and choked (damage and blood), then flung away and hurt again when it hits the terrain (see forceTick in worms.js).
 registerWeapon({

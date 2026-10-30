@@ -156,6 +156,10 @@ function physWorm(w, dt, active) {
  * @param {string} text English log key with {0} = worm name
  */
 function sinkWorm(w, text) {
+  if (w.clone) {
+    clonePoof(w);
+    return;
+  }
   w.sunk = true;
   w.hp = 0;
   w.dead = true;
@@ -543,7 +547,7 @@ function snapTick(w, tl, dt) {
     emit({ e: 'quake', t: 1 });
     emit({ e: 'msg', t: 'Snap!' });
     // three quarters of the worms in range, of every team and picked at random (the caster can be one of them)
-    const pool = G.worms.filter(o => !o.dead && !(o.dust > 0) && Math.hypot(o.x - w.x, o.y - w.y) <= THANOS_RADIUS);
+    const pool = G.worms.filter(o => !o.dead && !o.clone && !(o.dust > 0) && Math.hypot(o.x - w.x, o.y - w.y) <= THANOS_RADIUS);
     for (let i = pool.length - 1; i > 0; i--) {
       const j = (Math.random() * (i + 1)) | 0;
       [pool[i], pool[j]] = [pool[j], pool[i]];

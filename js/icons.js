@@ -327,6 +327,15 @@ const ICON_DRAW = {
     icCircle(g, 32, 32, 6, IC.white);
     for (const [x, y, x2, y2] of [[32, 32, 56, 22], [32, 32, 42, 56], [32, 32, 8, 42], [32, 32, 22, 8]]) icLine(g, x, y, x2, y2, 5, IC.steel);
   },
+  // Shadow Clone Jutsu: three worms-in-a-row silhouettes inside a puff of smoke.
+  shadowclone(g) {
+    for (const [x, y, r] of [[14, 40, 10], [32, 34, 12], [50, 40, 10], [24, 24, 8], [42, 24, 8]]) icCircle(g, x, y, r, IC.white);
+    for (const x of [14, 32, 50]) {
+      icCircle(g, x, 44, 5, IC.skin);
+      icCircle(g, x - 1.5, 43, 1, IC.ink);
+      icCircle(g, x + 1.5, 43, 1, IC.ink);
+    }
+  },
   // Force Choke: an open hand reaching out, with force rings.
   forcechoke(g) {
     icEllipse(g, 24, 38, 14, 16, IC.skin);

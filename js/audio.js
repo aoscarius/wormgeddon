@@ -241,6 +241,11 @@ const SFX = {
       setTimeout(() => tone(2800 - i * 120, 1900, 0.7, 'triangle', 0.03), i * 650 + 300);
     }
   },
+  // Shadow Clone Jutsu: the soft pop of the smoke cloud.
+  poof: () => {
+    noiseBurst(0.5, 0.28, 1400);
+    tone(520, 120, 0.25, 'sine', 0.12);
+  },
   whoosh: () => {
     noiseBurst(0.45, 0.3, 2500);
     tone(200, 1200, 0.4, 'sawtooth', 0.05);

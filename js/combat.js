@@ -7,8 +7,85 @@
  * mines/drums and spawns fire.
  *
  * Depends on: core
- * Globals defined: hurt, explode
+ * Globals defined: CLONE_N, CLONE_LIFE, findSpot, spawnClone, clonePoof, hurt, explode
  */
+
+/* ===== Shadow clones ===== */
+/** Shadow Clone Jutsu: how many clones one cast makes, and how long (s) they last if nobody attacks them. */
+const CLONE_N = 10,
+  CLONE_LIFE = 300;
+/**
+ * A standing spot anywhere on the map for a spawned body: a random point in the air is dropped onto the first ground
+ * below it (caves and lower tiers included); it needs firm footing, headroom and `gap` px to every point in `taken`.
+ * Returns [x, y], or null when nothing fits.
+ */
+function findSpot(taken, gap) {
+  const limit = T.waterBase - 40;
+  for (let a = 0; a < 800; a++) {
+    const x = 50 + Math.random() * (T.w - 100),
+      y0 = 20 + Math.random() * (limit - 20);
+    if (hitC(x, y0, 8)) continue;
+    let y = y0;
+    while (y < limit && !hitC(x, y + 2, 8)) y += 2;
+    if (y >= limit) continue;
+    if (!solid(x - 9, y + 10) || !solid(x + 9, y + 10)) continue;
+    if (hitC(x, y - 14, 8)) continue;
+    if (taken.some(s => Math.hypot(s[0] - x, s[1] - y) < gap)) continue;
+    return [x, y];
+  }
+  return null;
+}
+/**
+ * Adds a shadow clone of worm `o` at (x, y): a worm of the same team and name that is not in the team roster (so it
+ * never takes a turn and does not count for the team being alive), always shows full health and vanishes in a poof
+ * of smoke the moment anything hurts it, or after CLONE_LIFE s.
+ */
+function spawnClone(o, x, y) {
+  const w = {
+    id: G.nid++,
+    team: o.team,
+    name: o.name,
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    r: WORM_R,
+    hp: G.cfg.hp,
+    face: Math.random() < 0.5 ? 1 : -1,
+    aim: -0.3,
+    grounded: false,
+    dead: false,
+    pend: 0,
+    bounce: 0.2,
+    fric: 0.6,
+    rope: null,
+    jet: null,
+    tool: null,
+    chute: false,
+    burn: 0,
+    clone: true,
+    life: CLONE_LIFE,
+  };
+  G.worms.push(w);
+  emit({ e: 'poof', x, y: y - 4 });
+  return w;
+}
+/**
+ * A clone vanishes. When an enemy worm that is taking its turn is the one who hit it (`src` = its id), the strike is
+ * intercepted and that worm's turn is over: the shot is wasted.
+ */
+function clonePoof(w, src) {
+  if (w.dead) return;
+  w.dead = true;
+  w.gone = true;
+  emit({ e: 'poof', x: w.x, y: w.y - 4 });
+  const a = src == null ? null : wById(src);
+  if (a && !a.dead && a.team !== w.team && a.id === G.active && (G.phase === 'turn' || G.phase === 'retreat')) {
+    emit({ e: 'msg', t: 'It was a shadow clone!' });
+    G.fired = true;
+    toSettle();
+  }
+}
 
 /* ===== Damage & explosions ===== */
 /**
@@ -17,6 +94,10 @@
  */
 function hurt(w, amt, o = {}) {
   if (w.dead || amt <= 0) return;
+  if (w.clone) {
+    clonePoof(w, o.src);
+    return;
+  }
   if (btShield(w)) {
     emit({ e: 'btdefl', x: w.x, y: w.y - 4 });
     return;
