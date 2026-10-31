@@ -256,6 +256,15 @@ function startTurn() {
   const t = G.teams[k],
     alive = t.worms.map(wById).filter(w => !w.dead),
     w = alive[t.rot++ % alive.length];
+  // Neuralizer: the confusion of the previous turn's worm is over; a worm hit by the flash is confused for this whole turn.
+  for (const o of G.worms) if (o.conf === 2) o.conf = 0;
+  G.confInv = null;
+  if (w.conf) {
+    w.conf = 2;
+    const mv = Math.random() < 0.5;
+    G.confInv = { mv, aim: mv ? Math.random() < 0.5 : true }; // at least one of the two is inverted
+    emit({ e: 'msg', t: 'Confused!' });
+  }
   G.active = w.id;
   G.phase = 'turn';
   G.timer = +G.cfg.turnTime;

@@ -241,6 +241,14 @@ const SFX = {
       setTimeout(() => tone(2800 - i * 120, 1900, 0.7, 'triangle', 0.03), i * 650 + 300);
     }
   },
+  // Men in Black Neuralizer: a rising capacitor whine, then the sharp click and crack of a camera flash.
+  neuralizer: () => {
+    tone(900, 3200, 0.35, 'sine', 0.05);
+    setTimeout(() => {
+      noiseBurst(0.12, 0.45, 6000);
+      tone(2600, 700, 0.18, 'square', 0.1);
+    }, 330);
+  },
   // Shadow Clone Jutsu: the soft pop of the smoke cloud.
   poof: () => {
     noiseBurst(0.5, 0.28, 1400);

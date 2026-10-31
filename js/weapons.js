@@ -412,6 +412,20 @@ registerWeapon({
     return 'keep';
   },
 });
+// Men in Black Neuralizer: the worm puts on dark sunglasses, raises the device and a blinding flash confuses every worm on the
+// map (their movement / aim controls get inverted for one full turn, see neuTick in worms.js); it ends the turn at once.
+registerWeapon({
+  id: 'neuralizer',
+  name: 'Neuralizer',
+  code: 'NE',
+  ammo: 1,
+  delay: 5,
+  noEnd: true,
+  fire(c) {
+    c.w.tool = { k: 'neu', t: 99, p: 0 };
+    return 'keep';
+  },
+});
 // Rasenshuriken: charge to throw a spinning wind shuriken (pushed by the wind); where it lands, or when Fire is pressed again
 // in flight, it becomes a vortex that erodes the ground to dust, hurts and blows worms outward (see 'rasen' in projectiles.js).
 registerWeapon({

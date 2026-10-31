@@ -865,7 +865,7 @@ function render() {
   drawBulletTime();
   if (UI.flashA > 0) {
     ctx2.setTransform(1, 0, 0, 1, 0, 0);
-    ctx2.globalAlpha = UI.flashA * 0.8;
+    ctx2.globalAlpha = Math.min(1, UI.flashA * 0.8);
     ctx2.fillStyle = UI.flash;
     ctx2.fillRect(0, 0, cvs.width, cvs.height);
     ctx2.globalAlpha = 1;

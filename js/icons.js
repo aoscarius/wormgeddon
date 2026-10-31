@@ -321,6 +321,15 @@ const ICON_DRAW = {
       icCircle(g, x + 5, y, 1.8, IC.skin);
     }
   },
+  // Neuralizer: a silver pen-shaped device with a flaring lens and dark sunglasses beneath.
+  neuralizer(g) {
+    icLine(g, 26, 34, 40, 10, 8, IC.steel);
+    icLine(g, 26, 34, 40, 10, 3, IC.white);
+    icCircle(g, 42, 7, 5, IC.white);
+    icEllipse(g, 20, 50, 9, 6, IC.ink);
+    icEllipse(g, 44, 50, 9, 6, IC.ink);
+    icLine(g, 28, 49, 36, 49, 2.5, IC.ink);
+  },
   // Rasenshuriken: a blue wind sphere with four curved blades.
   rasenshuriken(g) {
     icCircle(g, 32, 32, 12, IC.blue);

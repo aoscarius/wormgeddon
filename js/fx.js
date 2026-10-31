@@ -513,7 +513,7 @@ function applyEvent(e) {
       break;
     case 'flash':
       UI.flash = e.c;
-      UI.flashA = 1;
+      UI.flashA = e.a || 1;
       break;
     case 'mark':
       FX.marks.push({ x: e.x, y: e.y, l: 3 });

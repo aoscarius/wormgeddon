@@ -6,10 +6,28 @@
  * One fixed 1/60 s tick of the whole simulation. Host/local only; online clients never call it.
  *
  * Depends on: everything above
- * Globals defined: step
+ * Globals defined: confuse, step
  */
 
 /* ===== Main step ===== */
+/**
+ * Neuralizer: while the active worm is confused (G.confInv, rolled in startTurn) its input is a view of the real one with
+ * left/right swapped (mv) and/or up/down swapped (aim); every other field (one-shot flags, clicks) reads and writes through.
+ */
+function confuse(w, inp) {
+  const ci = G.confInv;
+  if (w.conf !== 2 || !ci) return inp;
+  const c = Object.create(inp);
+  for (const k of Object.keys(inp)) {
+    if (k === 'l' || k === 'r' || k === 'u' || k === 'd') continue;
+    Object.defineProperty(c, k, { get: () => inp[k], set: v => (inp[k] = v), enumerable: true });
+  }
+  c.l = ci.mv ? inp.r : inp.l;
+  c.r = ci.mv ? inp.l : inp.r;
+  c.u = ci.aim ? inp.d : inp.u;
+  c.d = ci.aim ? inp.u : inp.d;
+  return c;
+}
 /**
  * Advances the whole simulation by dt seconds (always 1/60 s). Only the host / a local game
  * calls this; online guests just display what the host sends.
@@ -60,7 +78,7 @@ function step(dt, inputs) {
   }
   // active worm control
   if (w && !w.dead && curInp) {
-    const inp = curInp;
+    const inp = confuse(w, curInp);
     if (G.phase === 'turn' || G.phase === 'retreat') {
       if (!G.envDisaster) G.timer -= dt;
       if (G.weapon.ch === false || G.phase === 'retreat') {

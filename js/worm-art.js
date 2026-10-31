@@ -583,7 +583,7 @@ function drawWormBody(w) {
     }
   }
   // Matrix Bullet Time: black sunglasses once the worm has put them on, until the effect is over
-  if ((G.bt && G.bt.t > 0 && G.bt.id === w.id) || (w.tool && w.tool.k === 'bt' && (w.tool.p || 0) > 0.3)) {
+  if ((G.bt && G.bt.t > 0 && G.bt.id === w.id) || (w.tool && w.tool.k === 'bt' && (w.tool.p || 0) > 0.3) || (w.tool && w.tool.k === 'neu' && (w.tool.p || 0) > 0.15)) {
     g.fillStyle = '#0a0a0c';
     g.strokeStyle = '#0a0a0c';
     g.lineWidth = 0.9;
@@ -860,6 +860,30 @@ function drawWormBody(w) {
       g.arc(tx, ty, 4 + 9 * glow + Math.sin(G.time * 22) * 0.8, 0, TAU);
       g.fill();
       g.globalCompositeOperation = 'source-over';
+    } else if (w.tool.k === 'neu') {
+      // Neuralizer: the slim silver device is raised in front of the face, its lens flaring at the moment of the flash
+      const p = w.tool.p || 0,
+        up = clamp(p / 0.5, 0, 1),
+        hx = f * 6,
+        hy = 1 - 9 * up,
+        fl = clamp(1 - Math.abs(p - 0.63) / 0.2, 0, 1);
+      g.strokeStyle = '#2b2f36';
+      g.lineWidth = 3.4;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(hx, hy);
+      g.lineTo(hx + f * 4, hy - 5);
+      g.stroke();
+      g.strokeStyle = '#b9c2cf';
+      g.lineWidth = 1.6;
+      g.beginPath();
+      g.moveTo(hx, hy);
+      g.lineTo(hx + f * 4, hy - 5);
+      g.stroke();
+      g.fillStyle = '#e8f4ff';
+      g.beginPath();
+      g.arc(hx + f * 4.6, hy - 5.8, 1.4 + 3 * fl, 0, TAU);
+      g.fill();
     } else if (w.tool.k === 'staff') {
       // Raise the staff vertically, then slam it straight down without rotating it.
       const age = (w.tool.p || 0) * (STAFF_DELAY + STAFF_SLAM),
@@ -1125,6 +1149,19 @@ function drawWormLabel(w) {
   const t = G.teams[w.team],
     s = 1 / CAM.s,
     act = w.id === G.active;
+  if (w.conf) {
+    // Neuralizer: yellow stars spinning round the head of a confused worm
+    ctx2.save();
+    ctx2.translate(w.x, w.y - 12);
+    ctx2.fillStyle = '#ffe04a';
+    for (let i = 0; i < 3; i++) {
+      const a = G.time * 4 + (i * TAU) / 3;
+      ctx2.beginPath();
+      ctx2.arc(Math.cos(a) * 9, Math.sin(a) * 3, 1.8, 0, TAU);
+      ctx2.fill();
+    }
+    ctx2.restore();
+  }
   ctx2.save();
   ctx2.translate(w.x, w.y - 18 - (act ? Math.sin(G.time * 5) * 2 : 0));
   ctx2.font = `700 ${12 * s}px 'Barlow Condensed',sans-serif`;

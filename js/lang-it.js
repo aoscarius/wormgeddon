@@ -343,6 +343,8 @@ I18N.it = {
   'The ground trembles': 'Il terreno trema',
   'Meteors are falling': 'Cadono meteoriti',
   'Bullet Time': 'Bullet Time',
+  Neuralizer: 'Deneuralizzatore',
+  'Confused!': 'Confuso!',
   'Rasenshuriken': 'Rasenshuriken',
   'Shadow Clone Jutsu': 'Tecnica della Moltiplicazione Suprema del Corpo',
   'It was a shadow clone!': 'Era un clone d\'ombra!',

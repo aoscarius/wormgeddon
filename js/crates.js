@@ -44,6 +44,7 @@ const CRATE_WEAP = [
   'avada',
   'forcechoke',
   'bullettime',
+  'neuralizer',
   'rasenshuriken',
   'shadowclone',
   'proton',

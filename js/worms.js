@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, WAND_LEN, wandTip, BT_*, btShield, btScale, btTick, btFire, btDeflect, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, NEU_*, neuTick, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -230,8 +230,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -595,6 +595,29 @@ function btTick(w, tl, dt) {
   physWorm(w, dt, false);
   if (tl.age >= BT_ANIM) tl.t = 0;
 }
+/**
+ * Men in Black Neuralizer: sunglasses on, device raised (tl.p = 0..1 over NEU_ANIM s, sent to guests); at NEU_FLASH s a
+ * full-screen white flash and a camera-flash sound hit the whole map and every living worm (clones excepted) gets
+ * w.conf = 1 ("confused"); the turn ends right after the animation. In startTurn (match.js) a worm with conf 1 begins its next
+ * turn confused (conf 2, random inversion of its movement and/or aim in G.confInv, applied in step.js) and loses it when
+ * that turn is over.
+ */
+const NEU_ANIM = 1.5,
+  NEU_FLASH = 0.95;
+function neuTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / NEU_ANIM).toFixed(2);
+  physWorm(w, dt, false);
+  if (!tl.fl && tl.age >= NEU_FLASH) {
+    tl.fl = 1;
+    emit({ e: 'snd', s: 'neuralizer' });
+    emit({ e: 'flash', c: '#ffffff', a: 2.2 });
+    emit({ e: 'msg', t: 'Confused!' });
+    for (const o of G.worms) if (!o.dead && !o.clone) o.conf = 1;
+  }
+  if (tl.age >= NEU_ANIM) tl.t = 0;
+}
 /** Fire held while Bullet Time runs: one more high-velocity round every BT_RATE s. */
 function btFire(w, dt) {
   const b = G.bt;
@@ -848,13 +871,15 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'wand') wandTick(w, tl, dt);
     else if (tl.k === 'force') forceTick(w, tl, dt);
     else if (tl.k === 'bt') btTick(w, tl, dt);
+    else if (tl.k === 'neu') neuTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;
     }
     if (tl.t <= 0 && w.tool) {
       w.tool = null;
-      if (G.phase === 'turn' && tl.k !== 'bt') {
+      if (tl.k === 'neu' && G.phase === 'turn') toSettle();
+      else if (G.phase === 'turn' && tl.k !== 'bt') {
         G.phase = 'retreat';
         G.timer = 3;
       }
