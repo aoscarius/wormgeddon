@@ -308,6 +308,47 @@ function drawGrave(g, team) {
   g.fillRect(-6.5, 7, 13, 1.8);
 }
 
+/** Avada Kedavra: the victim hangs in a bubble of electric green (the colour of the bolt), crackling, until the curse takes it. */
+function drawZapBubble(w) {
+  const g = ctx2,
+    R = 21 + Math.sin(G.time * 18) * 1.2,
+    cy = w.y - 3;
+  g.save();
+  g.translate(w.x, cy);
+  g.globalCompositeOperation = 'lighter';
+  const rg = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R);
+  rg.addColorStop(0, 'rgba(60,255,120,0.12)');
+  rg.addColorStop(0.75, 'rgba(60,255,120,0.3)');
+  rg.addColorStop(1, 'rgba(180,255,200,0.85)');
+  g.fillStyle = rg;
+  g.beginPath();
+  g.arc(0, 0, R, 0, TAU);
+  g.fill();
+  g.strokeStyle = 'rgba(210,255,225,0.9)';
+  g.lineWidth = 1.4;
+  g.stroke();
+  // a glint and small discharges running over the surface
+  g.fillStyle = 'rgba(255,255,255,0.7)';
+  g.beginPath();
+  g.ellipse(-R * 0.4, -R * 0.45, R * 0.18, R * 0.1, -0.7, 0, TAU);
+  g.fill();
+  const fl = mulberry(w.id * 131 + Math.floor(G.time * 24));
+  g.strokeStyle = '#8dffae';
+  g.lineWidth = 1.1;
+  g.beginPath();
+  for (let k = 0; k < 4; k++) {
+    let a = fl() * TAU, x = Math.cos(a) * R, y = Math.sin(a) * R;
+    g.moveTo(x, y);
+    for (let s = 0; s < 3; s++) {
+      a += (fl() - 0.5) * 1.4;
+      x += Math.cos(a + Math.PI) * R * 0.28 + (fl() - 0.5) * 3;
+      y += Math.sin(a + Math.PI) * R * 0.28 + (fl() - 0.5) * 3;
+      g.lineTo(x, y);
+    }
+  }
+  g.stroke();
+  g.restore();
+}
 /**
  * Draws a worm. In Splatter Mode a worm just sliced by the Oni Giri (`w._cut`, set by the 'slash' event) is drawn as two
  * halves along the cut line that slide apart and come back together, while blood spurts from the cut (fx.js).
@@ -318,6 +359,7 @@ function drawWorm(w) {
   if (!cut || t > 1.1) {
     if (cut) w._cut = null;
     drawWormBody(w);
+    if (w.zap > 0 && !w.dead) drawZapBubble(w);
     return;
   }
   const g = ctx2,
@@ -797,9 +839,10 @@ function drawWormBody(w) {
       const age = (w.tool.p || 0) * (WAND_DELAY + WAND_HOLD),
         glow = clamp(age / WAND_DELAY, 0, 1),
         hx = f * 7,
-        hy = -5,
-        tx = hx + f * 22,
-        ty = hy - 9;
+        hy = -1,
+        [wdx, wdy] = aimDir(w), // the wand points straight at the target, held low
+        tx = hx + wdx * WAND_LEN,
+        ty = hy + wdy * WAND_LEN;
       g.strokeStyle = '#2a1a10';
       g.lineWidth = 2.2;
       g.lineCap = 'round';

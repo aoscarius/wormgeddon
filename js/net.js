@@ -82,7 +82,7 @@ function snapshot(withAmmo) {
       Math.round(w.hp),
       w.face,
       +w.aim.toFixed(2),
-      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0) | (w.doom > 0 ? 16 : 0) | (w.dust > 0 ? 32 : 0) | (w.dusted ? 64 : 0) | (w.held ? 128 : 0),
+      (w.grounded ? 1 : 0) | (w.dead ? 2 : 0) | (w.sunk ? 4 : 0) | (w.chute ? 8 : 0) | (w.doom > 0 ? 16 : 0) | (w.dust > 0 ? 32 : 0) | (w.dusted ? 64 : 0) | (w.held ? 128 : 0) | (w.zap > 0 ? 256 : 0),
       w.rope ? [w.rope.ax | 0, w.rope.ay | 0] : 0,
       w.jet ? (w.jet.on ? 2 : 1) : 0,
       w.tool ? w.tool.k : 0,
@@ -155,6 +155,7 @@ function applySnapshot(s) {
     w.doom = a[6] & 16 ? 1 : 0;
     w.dust = a[6] & 32 ? 1 : 0;
     w.held = a[6] & 128 ? { y0: w.y } : null;
+    w.zap = a[6] & 256 ? 1 : 0;
     w.dusted = !!(a[6] & 64);
     w.dustP = a[12] || 0;
     w.rope = a[7] ? { ax: a[7][0], ay: a[7][1] } : null;

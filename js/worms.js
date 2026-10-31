@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, WAND_LEN, wandTip, BT_*, btShield, btScale, btTick, btFire, btDeflect, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -68,6 +68,11 @@ function supported(w) {
 }
 
 function physWorm(w, dt, active) {
+  if (w.zap > 0) {
+    // Avada Kedavra: frozen inside the bubble until the curse takes it
+    w.vx = w.vy = 0;
+    return;
+  }
   if (w.held) {
     // choked by the Force: suspended in the air (forceTick moves it)
     w.vx = w.vy = 0;
@@ -735,6 +740,12 @@ function forceTick(w, tl, dt) {
  */
 const WAND_DELAY = 1.5,
   WAND_HOLD = 0.5;
+/** Where the wand's tip is: the hand, low on the body, plus WAND_LEN px along the worm's aim (the wand points straight at the target). */
+const WAND_LEN = 22;
+function wandTip(w) {
+  const [dx, dy] = aimDir(w);
+  return [w.x + w.face * 7 + dx * WAND_LEN, w.y - 1 + dy * WAND_LEN];
+}
 function wandTick(w, tl, dt) {
   if (tl.age === undefined) tl.age = 0;
   tl.age += dt;

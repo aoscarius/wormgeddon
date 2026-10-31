@@ -493,14 +493,17 @@ registerWeapon({
       return 'miss';
     }
     c.w.face = tw.x >= c.w.x ? 1 : -1;
+    // the wand points straight at the target (face * cos(aim), sin(aim)) from its hand
+    c.w.aim = clamp(Math.atan2(tw.y - 2 - (c.w.y - 1), Math.abs(tw.x - c.w.x)), -1.5, 1.5);
     emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
     emit({ e: 'snd', s: 'forcechoke' });
     c.w.tool = { k: 'force', t: 99, p: 0, tw: tw.id };
     return 'keep';
   },
 });
-// Avada Kedavra: click a worm; the wand points at it while the incantation plays, then a green beam finds its way through
-// the open air around the terrain to the target and kills it on the spot. If it is walled in, the beam dies on the ground.
+// Avada Kedavra: click a worm; the wand points at it while the incantation plays, then a green lightning bolt shoots from the
+// wand straight at it. The first thing on its line decides: a worm dies (the target or whoever stands in the way), mines and oil
+// drums explode, the ground stops it (a miss).
 registerWeapon({
   id: 'avada',
   name: 'Avada Kedavra',

@@ -74,28 +74,63 @@ function spriteProj(p) {
       break;
     }
     case 'avada': {
-      // the green beam: a bright orb with a tail along its heading and a pulsing glow
-      const pulse = 1 + Math.sin(G.time * 40) * 0.12;
-      ctx2.rotate(p.a);
+      // the green bolt: a slightly zig-zag line of lightning from the wand to its head, with electrical discharges forking off
+      const n = p.net;
+      if (!n) break;
+      ctx2.translate(-p.x, -p.y);
+      const [x1, y1, x2, y2, seed, prog, fade] = n,
+        L = Math.hypot(x2 - x1, y2 - y1),
+        ux = L ? (x2 - x1) / L : 1,
+        uy = L ? (y2 - y1) / L : 0,
+        reach = L * prog,
+        rng = mulberry(seed),
+        fl = mulberry(seed + 7919 * Math.floor(G.time * 28)), // the discharges flicker
+        pts = [[x1, y1]],
+        forks = [];
+      for (let d = 15, k = 0; d < reach; d += 13 + rng() * 8, k++) {
+        const off = (k % 2 ? 1 : -1) * (2 + rng() * 4) * Math.min(1, d / 40, (L - d) / 40 + 0.2),
+          j = (fl() - 0.5) * 1.6;
+        pts.push([x1 + ux * d - uy * (off + j), y1 + uy * d + ux * (off + j)]);
+        if (rng() < 0.45) forks.push([pts[pts.length - 1], Math.atan2(uy, ux) + (rng() < 0.5 ? -1 : 1) * (0.6 + rng() * 0.8), 8 + fl() * 16]);
+      }
+      pts.push([x1 + ux * reach, y1 + uy * reach]);
+      const strokeAll = () => {
+        ctx2.beginPath();
+        pts.forEach((q, i) => (i ? ctx2.lineTo(q[0], q[1]) : ctx2.moveTo(q[0], q[1])));
+        ctx2.stroke();
+        // discharges: short two-step forks
+        ctx2.beginPath();
+        for (const [q, a, l] of forks) {
+          const mx = q[0] + Math.cos(a) * l * 0.5 + (fl() - 0.5) * 4,
+            my = q[1] + Math.sin(a) * l * 0.5 + (fl() - 0.5) * 4;
+          ctx2.moveTo(q[0], q[1]);
+          ctx2.lineTo(mx, my);
+          ctx2.lineTo(mx + Math.cos(a + (fl() - 0.5)) * l * 0.5, my + Math.sin(a + (fl() - 0.5)) * l * 0.5);
+        }
+        ctx2.stroke();
+      };
       ctx2.globalCompositeOperation = 'lighter';
-      const tail = ctx2.createLinearGradient(-34, 0, 0, 0);
-      tail.addColorStop(0, 'rgba(20,200,60,0)');
-      tail.addColorStop(1, 'rgba(90,255,130,.8)');
-      ctx2.fillStyle = tail;
-      ctx2.beginPath();
-      ctx2.moveTo(-34, 0);
-      ctx2.lineTo(0, -3.2);
-      ctx2.lineTo(0, 3.2);
-      ctx2.fill();
-      const gl = ctx2.createRadialGradient(0, 0, 0, 0, 0, 11 * pulse);
+      ctx2.lineCap = 'round';
+      ctx2.lineJoin = 'round';
+      for (const [w, al, col] of [[12, 0.3, '#0f9a32'], [5, 0.7, '#25e85a'], [1.8, 1, '#b4ffc6']]) {
+        ctx2.globalAlpha = al * (1 - (fade || 0));
+        ctx2.lineWidth = w;
+        ctx2.strokeStyle = col;
+        strokeAll();
+      }
+      const hx = x1 + ux * reach,
+        hy = y1 + uy * reach,
+        gl = ctx2.createRadialGradient(hx, hy, 0, hx, hy, 15);
       gl.addColorStop(0, 'rgba(230,255,235,1)');
-      gl.addColorStop(0.35, 'rgba(90,255,130,.85)');
+      gl.addColorStop(0.4, 'rgba(90,255,130,.7)');
       gl.addColorStop(1, 'rgba(20,160,50,0)');
+      ctx2.globalAlpha = 1 - (fade || 0);
       ctx2.fillStyle = gl;
       ctx2.beginPath();
-      ctx2.arc(0, 0, 11 * pulse, 0, TAU);
+      ctx2.arc(hx, hy, 15 + Math.sin(G.time * 50) * 2, 0, TAU);
       ctx2.fill();
       ctx2.globalCompositeOperation = 'source-over';
+      ctx2.globalAlpha = 1;
       break;
     }
     case 'rocket':

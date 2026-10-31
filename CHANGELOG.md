@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-58 commits, 2026-10-18 to 2026-10-31. Up to commit `2614acb992fbfde9877f55f2fac7466062cd15f4`.
+59 commits, 2026-10-18 to 2026-10-31. Up to commit `89b5683b53a1a8cde9d14fb3150ecff1fdcbea65`.
 
 ## 2026-10-18
 
@@ -448,7 +448,15 @@ fixed, changed or refactored.
 **Changed**
 - Enhanced Shadow Clone Jutsu: implement clone swapping mechanics, ensure clones vanish with the original, and update tests for functionality
 
-### [`2614acb`](https://github.com/aoscarius/wormgeddon/commit/2614acb992fbfde9877f55f2fac7466062cd15f4)
+### [`9e8cf72`](https://github.com/aoscarius/wormgeddon/commit/9e8cf7208f99677e6aa211f97549c5693739be7f)
 
 **Changed**
 - Enhanced Rasenshuriken mechanics: implement blood splatter effects on hit, adjust projectile launch parameters, and update tests for functionality
+
+### [`89b5683`](https://github.com/aoscarius/wormgeddon/commit/89b5683b53a1a8cde9d14fb3150ecff1fdcbea65)
+
+**Changed**
+- Revamped Avada Kedavra to use a lightning bolt instead of pathfinding
+- Replaced the previous pathfinding mechanism with a direct lightning bolt effect that shoots straight to the target
+- Updated the projectile behavior to handle collisions with worms, mines, and oil drums, with appropriate effects for each
+- Enhanced visual representation of the lightning bolt with a zig-zag pattern and flickering discharges

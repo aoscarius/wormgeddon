@@ -8,7 +8,7 @@
  * boom()/expl explosion data.
  *
  * Depends on: core, combat, collision
- * Globals defined: RASEN_*, KAME_*, PROTON_*, AVADA_*, avadaPath, avadaFire, kameGeom, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
+ * Globals defined: RASEN_*, KAME_*, PROTON_*, AVADA_*, avadaTrace, avadaFire, kameGeom, streamRay, protonGeom, protonRig, segDist, kameFire, spawnProj, spawnFire, detonate, updateProj, fuseTick, gr, DONKEY_MAX_HOPS, HAMMER_CHARGE, CAR_MAX_AGE
  */
 
 /* ===== Projectiles ===== */
@@ -789,152 +789,83 @@ registerProj('kamebeam', {
 });
 
 /**
- * Avada Kedavra: beam speed (px/s), grid cell of the path search (px), clearance radius of the beam (px) and the longest
- * path it may take (px).
+ * Avada Kedavra: a green lightning bolt from the wand to the target. It flies along the straight line at AVADA_SPEED px/s,
+ * drawn as a slightly zig-zag bolt with electrical discharges (p.net = [x1, y1, x2, y2, seed, progress]: guests redraw
+ * the same bolt from the seed). The first thing on the line decides: a worm dies on the spot (not necessarily the intended
+ * one), a mine or an oil drum explodes, the ground stops it (a miss). The bolt lingers AVADA_LINGER s after it arrived.
  */
-const AVADA_SPEED = 560,
-  AVADA_CELL = 6,
-  AVADA_CLEAR = 3,
-  AVADA_MAX_PATH = 3500;
-/** Is the beam's body free at (x, y)? Above the map it is open sky; the left / right borders and the sea are walls. */
-function avadaOpen(x, y) {
-  if (x < 0 || x >= T.w || y >= T.h || y > G.waterY - 4) return false; // the sea is out of bounds too
-  if (y < 0) return true;
-  const c = AVADA_CLEAR;
-  return !(solid(x, y) || solid(x + c, y) || solid(x - c, y) || solid(x, y + c) || solid(x, y - c));
-}
-/** Is the straight segment (x1, y1) - (x2, y2) free for the beam? */
-function avadaLine(x1, y1, x2, y2) {
-  const n = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 3));
-  for (let i = 1; i <= n; i++) if (!avadaOpen(x1 + ((x2 - x1) * i) / n, y1 + ((y2 - y1) * i) / n)) return false;
-  return true;
-}
+const AVADA_SPEED = 1500,
+  AVADA_LINGER = 0.35,
+  AVADA_BUBBLE = 1.1; // s the victim hangs frozen in the green bubble before it dies
 /**
- * Searches the way for the beam from (x1, y1) to (x2, y2) through open air: breadth-first over a grid of AVADA_CELL px
- * cells (8 neighbours, no corner cutting), then the corners are pulled tight with line-of-sight checks. The sky above
- * the level is open, so the beam may go over a hill but never through ground. Returns the list of points, or null
- * when the target cannot be reached (walled in, or farther than AVADA_MAX_PATH px of travel).
+ * Follows the straight line from (x1, y1) towards (x2, y2) in 3 px steps and returns what the bolt meets first:
+ * {x, y, worm}, {x, y, mine: projectile}, {x, y, drum: object}, {x, y, ground: 1} or {x, y} when it reaches the end.
  */
-function avadaPath(x1, y1, x2, y2) {
-  const C = AVADA_CELL,
-    top = 20, // rows above the level (y < 0) the beam may use
-    cols = Math.ceil(T.w / C),
-    rows = Math.ceil(T.h / C) + top,
-    cx = x => Math.min(cols - 1, Math.max(0, Math.floor(x / C))),
-    cy = y => Math.min(rows - 1, Math.max(0, Math.floor(y / C) + top)),
-    px = i => (i % cols) * C + C / 2,
-    py = i => Math.floor(i / cols) * C + C / 2 - top * C,
-    start = cy(y1) * cols + cx(x1),
-    goal = cy(y2) * cols + cx(x2),
-    prev = new Int32Array(cols * rows).fill(-2),
-    open = new Int8Array(cols * rows); // 0 unknown, 1 open, 2 blocked
-  const free = i => {
-    if (i === start || i === goal) return true; // the ends sit next to the ground (muzzle, worm)
-    if (!open[i]) open[i] = avadaOpen(px(i), py(i)) ? 1 : 2;
-    return open[i] === 1;
-  };
-  const queue = [start];
-  prev[start] = -1;
-  let found = false;
-  for (let h = 0; h < queue.length && !found; h++) {
-    const i = queue[h],
-      x = i % cols,
-      y = (i - x) / cols;
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++) {
-        if (!dx && !dy) continue;
-        const nx = x + dx,
-          ny = y + dy;
-        if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
-        const j = ny * cols + nx;
-        if (prev[j] !== -2 || !free(j)) continue;
-        if (dx && dy && !(free(y * cols + nx) && free(ny * cols + x))) continue; // no cutting corners
-        prev[j] = i;
-        queue.push(j);
-        if (j === goal) found = true;
-      }
+function avadaTrace(w, x1, y1, x2, y2) {
+  const len = Math.hypot(x2 - x1, y2 - y1),
+    n = Math.max(1, Math.ceil(len / 3));
+  for (let i = 1; i <= n; i++) {
+    const x = x1 + ((x2 - x1) * i) / n,
+      y = y1 + ((y2 - y1) * i) / n;
+    for (const o of G.worms)
+      if (!o.dead && !o.sunk && o !== w && Math.abs(o.x - x) < 7 && Math.abs(o.y - 2 - y) < 9) return { x: o.x, y: o.y - 2, worm: o };
+    for (const q of G.projs)
+      if (PTYPES[q.t].mine && !q.dead && Math.hypot(q.x - x, q.y - y) < 10) return { x: q.x, y: q.y, mine: q };
+    for (const ob of G.objs)
+      if (ob.k === 'drum' && Math.hypot(ob.x - x, ob.y - y) < 10) return { x, y, drum: ob };
+    if (solid(x, y)) return { x, y, ground: 1 };
   }
-  if (!found) return null;
-  let cells = [];
-  for (let i = goal; i !== -1; i = prev[i]) cells.push(i);
-  cells.reverse();
-  const pts = [[x1, y1], ...cells.slice(1, -1).map(i => [px(i), py(i)]), [x2, y2]],
-    out = [pts[0]];
-  // pull the string tight: from each point jump to the farthest one that can be seen from it
-  for (let a = 0; a < pts.length - 1; ) {
-    let b = pts.length - 1;
-    while (b > a + 1 && !avadaLine(pts[a][0], pts[a][1], pts[b][0], pts[b][1])) b--;
-    out.push(pts[b]);
-    a = b;
-  }
-  let len = 0;
-  for (let i = 1; i < out.length; i++) len += Math.hypot(out[i][0] - out[i - 1][0], out[i][1] - out[i - 1][1]);
-  return len <= AVADA_MAX_PATH ? out : null;
+  return { x: x2, y: y2 };
 }
-/**
- * Launches the Avada Kedavra beam from worm `w` at worm `t`: along the path through the open air when there is one
- * (p.ok), else straight at it until it hits the terrain and fizzles out.
- */
+/** Launches the bolt from worm `w` at worm `t`; what it will hit is worked out at once and applied when it arrives. */
 function avadaFire(w, t) {
-  const sx = w.x + w.face * 10,
-    sy = w.y - 4;
-  let path = avadaPath(sx, sy, t.x, t.y - 2),
-    ok = !!path;
-  if (!path) {
-    // blocked: the beam goes straight for the target and stops where the ground is
-    const n = Math.max(1, Math.ceil(Math.hypot(t.x - sx, t.y - 2 - sy) / 3));
-    let ex = sx,
-      ey = sy;
-    for (let i = 1; i <= n; i++) {
-      const x = sx + ((t.x - sx) * i) / n,
-        y = sy + ((t.y - 2 - sy) * i) / n;
-      if (!avadaOpen(x, y)) break;
-      ex = x;
-      ey = y;
-    }
-    path = [[sx, sy], [ex, ey]];
-  }
-  const p = spawnProj('avada', sx, sy, 0, 0, w, { path, seg: 1, dist: 0, ok, tw: t.id });
-  p.a = Math.atan2(path[1][1] - sy, path[1][0] - sx);
-  emit({ e: 'flash', c: '#7dff9a' });
+  const [sx, sy] = wandTip(w),
+    r = avadaTrace(w, sx, sy, t.x, t.y - 2),
+    p = spawnProj('avada', sx, sy, 0, 0, w, { res: r, t0: 0, net: [sx, sy, r.x, r.y, (Math.random() * 1e6) | 0, 0, 0], len: Math.hypot(r.x - sx, r.y - sy) });
   return p;
 }
-// Avada Kedavra beam: a green orb that follows its path at AVADA_SPEED. At the end of an open path the target dies on the
-// spot; at the end of a blocked one the beam fizzles out against the terrain, leaving nothing.
 registerProj('avada', {
   r: 2,
   grav: 0,
   spr: 'avada',
   fixedAngle: true,
   tick(p, dt) {
-    let left = AVADA_SPEED * dt;
-    while (left > 0 && p.seg < p.path.length) {
-      const [tx, ty] = p.path[p.seg],
-        d = Math.hypot(tx - p.x, ty - p.y);
-      if (d > left) {
-        p.x += ((tx - p.x) / d) * left;
-        p.y += ((ty - p.y) / d) * left;
-        p.a = Math.atan2(ty - p.y, tx - p.x);
-        left = 0;
-      } else {
-        p.x = tx;
-        p.y = ty;
-        left -= d;
-        if (++p.seg < p.path.length) p.a = Math.atan2(p.path[p.seg][1] - p.y, p.path[p.seg][0] - p.x);
+    const n = p.net;
+    p.t0 += dt;
+    const fly = p.len / AVADA_SPEED;
+    n[5] = +Math.min(1, fly > 0 ? p.t0 / fly : 1).toFixed(3);
+    p.x = n[0] + (n[2] - n[0]) * n[5];
+    p.y = n[1] + (n[3] - n[1]) * n[5];
+    n[6] = +clamp((p.t0 - fly) / AVADA_LINGER, 0, 1).toFixed(2); // how far it has faded after arriving
+    if (!p.done && Math.random() < 0.9) emit({ e: 'trail', x: p.x, y: p.y, k: 'avada', q: 1 }); // sparks at the head
+    if (!p.done && p.t0 >= fly) {
+      p.done = true;
+      const r = p.res;
+      if (r.worm && !r.worm.dead) {
+        emit({ e: 'avada', x: r.x, y: r.y, hit: 1 });
+        emit({ e: 'flash', c: '#d2ffdc' }); // the whole scene lights up
+        if (r.worm.clone) hurt(r.worm, 1, { src: p.ow });
+        else r.worm.zap = AVADA_BUBBLE; // frozen in an electric green bubble; the curse takes it at the end
+      } else if (r.mine && !r.mine.dead) {
+        emit({ e: 'avada', x: r.x, y: r.y, hit: 0 });
+        detonate(r.mine);
+      } else if (r.drum) {
+        emit({ e: 'avada', x: r.x, y: r.y, hit: 0 });
+        r.drum.lit = r.drum.lit || 0.05;
+      } else emit({ e: 'avada', x: r.x, y: r.y, hit: 0 }); // the ground, or thin air
+    }
+    const v = p.res && p.res.worm;
+    if (v && v.zap > 0 && !v.dead) {
+      v.zap -= dt;
+      if (v.zap <= 0) {
+        v.zap = 0;
+        v.quiet = true; // no blast: the worm just drops
+        v.pend = (v.pend || 0) + Math.max(0, v.hp);
+        v.hp = 0;
+        processDeaths();
       }
     }
-    if (Math.random() < 0.7) emit({ e: 'trail', x: p.x, y: p.y, k: 'avada', q: 1 });
-    if (p.seg >= p.path.length) {
-      p.dead = true;
-      const t = wById(p.tw);
-      if (p.ok && t && !t.dead) {
-        emit({ e: 'avada', x: t.x, y: t.y, hit: 1 });
-        t.quiet = true; // no blast: the worm just drops
-        t.pend = (t.pend || 0) + Math.max(0, t.hp);
-        t.hp = 0;
-        processDeaths();
-      } else emit({ e: 'avada', x: p.x, y: p.y, hit: 0 });
-    }
+    if (p.t0 >= fly + AVADA_LINGER && !(v && v.zap > 0)) p.dead = true;
     return false;
   },
 });
