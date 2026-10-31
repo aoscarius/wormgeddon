@@ -249,6 +249,12 @@ const SFX = {
       tone(2600, 700, 0.18, 'square', 0.1);
     }, 330);
   },
+  // Mind Transfer Jutsu: an eerie rising warble as the spirit leaves the body (MIND_ANIM = 1.3 s).
+  mindtransfer: () => {
+    tone(300, 900, 0.5, 'sine', 0.09);
+    tone(310, 1200, 0.9, 'triangle', 0.06);
+    setTimeout(() => tone(1500, 400, 0.3, 'sine', 0.07), 1000);
+  },
   // Shadow Clone Jutsu: the soft pop of the smoke cloud.
   poof: () => {
     noiseBurst(0.5, 0.28, 1400);

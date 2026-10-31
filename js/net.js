@@ -73,6 +73,7 @@ function snapshot(withAmmo) {
     ov: G.over ? 1 : 0,
     win: G.winner,
     sd: G.sdOn ? 1 : 0,
+    mt: G.mind ? [G.mind.id, G.mind.home, G.mind.to] : 0, // Mind Transfer: controlled worm, its own team, the controlling team
     bt: G.bt && G.bt.t > 0 ? [G.bt.id, +G.bt.t.toFixed(2)] : 0, // Bullet Time: caster and seconds left
     cl: G.worms.filter(w => w.clone).map(w => [w.id, w.team, w.name]), // shadow clones (not part of the rosters)
     w: G.worms.map(w => [
@@ -129,6 +130,13 @@ function applySnapshot(s) {
   G.over = !!s.ov;
   G.winner = s.win;
   G.sdOn = !!s.sd;
+  // Mind Transfer: a controlled worm sits in the controlling team for the turn (the worm records are read below)
+  if ((s.mt && (!G.mind || G.mind.id !== s.mt[0])) || (!s.mt && G.mind)) mindEnd();
+  if (s.mt && !G.mind) {
+    G.mind = { id: s.mt[0], home: s.mt[1], to: s.mt[2] };
+    const mw = wById(s.mt[0]);
+    if (mw) mw.team = s.mt[2];
+  }
   G.bt = s.bt ? { id: s.bt[0], t: s.bt[1] } : null;
   // shadow clones come and go: create the new ones before the worm records are read, drop the vanished ones
   const cl = s.cl || [];

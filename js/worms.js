@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, NEU_*, neuTick, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, NEU_*, neuTick, MIND_ANIM, mindTick, mindLink, mindEnd, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -230,8 +230,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -618,6 +618,47 @@ function neuTick(w, tl, dt) {
   }
   if (tl.age >= NEU_ANIM) tl.t = 0;
 }
+/**
+ * Mind Transfer Jutsu: the caster's spirit travels to the target (tl.p = 0..1 over MIND_ANIM s, tl.lv = target id + 1, both sent
+ * to guests). mindLink() then makes the target the active worm and moves it to the caster's team (w.team) for the rest of the
+ * turn, so input, ammo, HUD and the camera all follow without special cases; G.mind = {id, home, to} remembers the original
+ * team (also sent to guests) and mindEnd() hands the worm back at the start of the next turn.
+ */
+const MIND_ANIM = 1.3;
+function mindTick(w, tl, dt) {
+  if (tl.age === undefined) tl.age = 0;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / MIND_ANIM).toFixed(2);
+  physWorm(w, dt, false);
+  if (tl.age >= MIND_ANIM) tl.t = 0;
+}
+function mindLink(w, tw) {
+  if (!tw || tw.dead) {
+    emit({ e: 'msg', t: 'Connection lost' });
+    return;
+  }
+  G.mind = { id: tw.id, home: tw.team, to: w.team };
+  tw.team = w.team;
+  tw.tool = null;
+  tw.jet = null;
+  tw.rope = null;
+  G.active = tw.id;
+  G.fired = false;
+  G.weapon = { id: 'bazooka', fuse: 3, pw: 0, ch: false, shots: 0, ang: 0, tx: null, ty: null };
+  const t = teamOf(tw);
+  if (!avail(t, 'bazooka')) G.weapon.id = WLIST.find(d => avail(t, d.id) && !d.noFire).id;
+  G.timer = Math.max(G.timer, 15);
+  emit({ e: 'flash', c: '#b58cff', a: 0.9 });
+  emit({ e: 'msg', t: 'Mind Transfer' });
+}
+/** Gives the controlled worm back to its own team (start of the next turn, host or guest). */
+function mindEnd() {
+  const m = G.mind;
+  if (!m) return;
+  const w = wById(m.id);
+  if (w) w.team = m.home;
+  G.mind = null;
+}
 /** Fire held while Bullet Time runs: one more high-velocity round every BT_RATE s. */
 function btFire(w, dt) {
   const b = G.bt;
@@ -872,6 +913,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'force') forceTick(w, tl, dt);
     else if (tl.k === 'bt') btTick(w, tl, dt);
     else if (tl.k === 'neu') neuTick(w, tl, dt);
+    else if (tl.k === 'mind') mindTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;
@@ -879,6 +921,7 @@ function controlWorm(w, inp, dt) {
     if (tl.t <= 0 && w.tool) {
       w.tool = null;
       if (tl.k === 'neu' && G.phase === 'turn') toSettle();
+      else if (tl.k === 'mind') mindLink(w, wById(tl.lv - 1));
       else if (G.phase === 'turn' && tl.k !== 'bt') {
         G.phase = 'retreat';
         G.timer = 3;

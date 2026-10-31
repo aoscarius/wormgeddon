@@ -884,6 +884,30 @@ function drawWormBody(w) {
       g.beginPath();
       g.arc(hx + f * 4.6, hy - 5.8, 1.4 + 3 * fl, 0, TAU);
       g.fill();
+    } else if (w.tool.k === 'mind') {
+      // Mind Transfer: a pale spirit with a wavering trail drifts from the caster to the target worm
+      const tw = wById((w.tool.lv || 0) - 1),
+        p = clamp(w.tool.p || 0, 0, 1);
+      if (tw) {
+        const e = p * p * (3 - 2 * p),
+          ox = (tw.x - w.x) * e,
+          oy = (tw.y - w.y - 6) * e - 8 - Math.sin(p * Math.PI) * 14;
+        g.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 7; i++) {
+          const q = Math.max(0, e - i * 0.03),
+            tx = (tw.x - w.x) * q + Math.sin(G.time * 14 + i) * 2,
+            ty = (tw.y - w.y - 6) * q - 8 - Math.sin(clamp(p - i * 0.03, 0, 1) * Math.PI) * 14;
+          g.fillStyle = `rgba(190,160,255,${0.5 - i * 0.06})`;
+          g.beginPath();
+          g.arc(tx, ty, 5 - i * 0.5, 0, TAU);
+          g.fill();
+        }
+        g.fillStyle = 'rgba(245,240,255,0.9)';
+        g.beginPath();
+        g.arc(ox, oy, 4.5, 0, TAU);
+        g.fill();
+        g.globalCompositeOperation = 'source-over';
+      }
     } else if (w.tool.k === 'staff') {
       // Raise the staff vertically, then slam it straight down without rotating it.
       const age = (w.tool.p || 0) * (STAFF_DELAY + STAFF_SLAM),
@@ -1160,6 +1184,20 @@ function drawWormLabel(w) {
       ctx2.arc(Math.cos(a) * 9, Math.sin(a) * 3, 1.8, 0, TAU);
       ctx2.fill();
     }
+    ctx2.restore();
+  }
+  if (G.mind && G.mind.id === w.id) {
+    // Mind Transfer: a violet aura shows which worm is being controlled by the enemy player
+    ctx2.save();
+    ctx2.globalCompositeOperation = 'lighter';
+    const r = 16 + Math.sin(G.time * 6) * 2,
+      rg = ctx2.createRadialGradient(w.x, w.y - 4, 2, w.x, w.y - 4, r);
+    rg.addColorStop(0, 'rgba(190,150,255,0.5)');
+    rg.addColorStop(1, 'rgba(120,80,255,0)');
+    ctx2.fillStyle = rg;
+    ctx2.beginPath();
+    ctx2.arc(w.x, w.y - 4, r, 0, TAU);
+    ctx2.fill();
     ctx2.restore();
   }
   ctx2.save();

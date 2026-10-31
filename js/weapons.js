@@ -393,6 +393,40 @@ registerWeapon({
     return 'keep';
   },
 });
+// Mind Transfer Jutsu: click an enemy worm; a spirit leaves the caster towards it (MIND_ANIM s) and, once connected, the camera
+// moves to that worm and the caster's player controls it (movement, weapons from the caster's arsenal) for the rest of the turn.
+registerWeapon({
+  id: 'mindtransfer',
+  name: 'Mind Transfer',
+  code: 'MT',
+  ammo: 1,
+  delay: 6,
+  click: true,
+  instant: true,
+  noEnd: true,
+  fire(c) {
+    if (G.mind) return 'miss';
+    let tw = null,
+      best = 70;
+    for (const o of G.worms) {
+      if (o.dead || o.clone || o.team === c.w.team) continue;
+      const d = Math.hypot(o.x - c.target.x, o.y - c.target.y);
+      if (d < best) {
+        best = d;
+        tw = o;
+      }
+    }
+    if (!tw) {
+      emit({ e: 'msg', t: 'Click an enemy worm' });
+      return 'miss';
+    }
+    c.w.face = tw.x >= c.w.x ? 1 : -1;
+    emit({ e: 'mark', x: tw.x, y: tw.y - 20 });
+    emit({ e: 'snd', s: 'mindtransfer' });
+    c.w.tool = { k: 'mind', t: 99, p: 0, lv: tw.id + 1 }; // lv carries the target to guests
+    return 'keep';
+  },
+});
 // Matrix "Bullet Time": the world slows to BT_SLOW for BT_TIME s while the caster keeps full speed and cannot be hurt; with the
 // weapon still selected, holding Fire sends a barrage of fast rounds that freeze in mid-air and speed up again when it ends.
 registerWeapon({
@@ -1210,7 +1244,7 @@ function cycleWorm(w, pay) {
   const t = teamOf(w),
     alive = t.worms.map(wById).filter(x => !x.dead);
   if (alive.length < 2) return 'miss';
-  if (G.fired) return 'miss';
+  if (G.fired || G.mind) return 'miss';
   const i = alive.indexOf(w),
     n = alive[(i + 1) % alive.length];
   G.active = n.id;

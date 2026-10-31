@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-59 commits, 2026-10-18 to 2026-10-31. Up to commit `89b5683b53a1a8cde9d14fb3150ecff1fdcbea65`.
+61 commits, 2026-10-18 to 2026-10-31. Up to commit `547567b26c1ea9a01217715c2f2245ea093a0623`.
 
 ## 2026-10-18
 
@@ -453,10 +453,20 @@ fixed, changed or refactored.
 **Changed**
 - Enhanced Rasenshuriken mechanics: implement blood splatter effects on hit, adjust projectile launch parameters, and update tests for functionality
 
-### [`89b5683`](https://github.com/aoscarius/wormgeddon/commit/89b5683b53a1a8cde9d14fb3150ecff1fdcbea65)
+### [`aed72eb`](https://github.com/aoscarius/wormgeddon/commit/aed72eb30c27d4836aa79255a90cf351c5af43c4)
 
 **Changed**
 - Revamped Avada Kedavra to use a lightning bolt instead of pathfinding
 - Replaced the previous pathfinding mechanism with a direct lightning bolt effect that shoots straight to the target
 - Updated the projectile behavior to handle collisions with worms, mines, and oil drums, with appropriate effects for each
 - Enhanced visual representation of the lightning bolt with a zig-zag pattern and flickering discharges
+
+### [`524dc06`](https://github.com/aoscarius/wormgeddon/commit/524dc067d87603e3c46a2ac65423f326fcd31c92)
+
+**Added**
+- Implemented Neuralizer weapon: add mechanics for confusion effect, audio, visual representation, and tests for functionality
+
+### [`547567b`](https://github.com/aoscarius/wormgeddon/commit/547567b26c1ea9a01217715c2f2245ea093a0623)
+
+**Added**
+- Implemented Mind Transfer Jutsu: add mechanics for spirit transfer to enemy worm, control mechanics, audio effects, visual representation, and tests for functionality

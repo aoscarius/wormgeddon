@@ -230,6 +230,7 @@ function nextTeamIdx() {
  * crate and, for bots, plans the move.
  */
 function startTurn() {
+  mindEnd();
   const prev = G.ti,
     k = nextTeamIdx();
   if (k < 0) return endGame();

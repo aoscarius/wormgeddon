@@ -330,6 +330,14 @@ const ICON_DRAW = {
     icEllipse(g, 44, 50, 9, 6, IC.ink);
     icLine(g, 28, 49, 36, 49, 2.5, IC.ink);
   },
+  // Mind Transfer: a spirit wisp leaving one head for another.
+  mindtransfer(g) {
+    icCircle(g, 14, 40, 9, IC.skin);
+    icCircle(g, 50, 40, 9, IC.skin);
+    icCircle(g, 32, 20, 6, IC.white);
+    icLine(g, 18, 32, 28, 22, 3, IC.blue);
+    icLine(g, 36, 22, 46, 32, 3, IC.blue);
+  },
   // Rasenshuriken: a blue wind sphere with four curved blades.
   rasenshuriken(g) {
     icCircle(g, 32, 32, 12, IC.blue);
