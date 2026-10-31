@@ -257,9 +257,12 @@ function startTurn() {
   const t = G.teams[k],
     alive = t.worms.map(wById).filter(w => !w.dead),
     w = alive[t.rot++ % alive.length];
-  // Neuralizer: the confusion of the previous turn's worm is over; a worm hit by the flash is confused for this whole turn.
-  for (const o of G.worms) if (o.conf === 2) o.conf = 0;
+  // Neuralizer: every worm but the caster is confused for the NEU_TURNS turns that follow the flash (each of them rolls its own
+  // random inversion when its turn starts); after the last one everybody is back to normal.
+  for (const o of G.worms) if (o.conf === 2) o.conf = 1;
   G.confInv = null;
+  if (G.confTurns > 0) G.confTurns--;
+  else for (const o of G.worms) o.conf = 0;
   if (w.conf) {
     w.conf = 2;
     const mv = Math.random() < 0.5;

@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-61 commits, 2026-10-18 to 2026-10-31. Up to commit `547567b26c1ea9a01217715c2f2245ea093a0623`.
+62 commits, 2026-10-18 to 2026-10-31. Up to commit `07f2063b2f27dea3ea1bf6f6f9baa5bb70d989b4`.
 
 ## 2026-10-18
 
@@ -466,7 +466,12 @@ fixed, changed or refactored.
 **Added**
 - Implemented Neuralizer weapon: add mechanics for confusion effect, audio, visual representation, and tests for functionality
 
-### [`547567b`](https://github.com/aoscarius/wormgeddon/commit/547567b26c1ea9a01217715c2f2245ea093a0623)
+### [`5a3756e`](https://github.com/aoscarius/wormgeddon/commit/5a3756e8877831cfdb9f08c8194e5316541d1ac3)
 
 **Added**
 - Implemented Mind Transfer Jutsu: add mechanics for spirit transfer to enemy worm, control mechanics, audio effects, visual representation, and tests for functionality
+
+### [`07f2063`](https://github.com/aoscarius/wormgeddon/commit/07f2063b2f27dea3ea1bf6f6f9baa5bb70d989b4)
+
+**Changed**
+- Enhanced Neuralizer mechanics: update confusion effect to last for two turns, excluding the caster, and adjust related tests for functionality

@@ -1,6 +1,6 @@
 """Men in Black Neuralizer: the caster puts on sunglasses and raises the device (tool 'neu'), a full-screen white flash with a
-camera-flash sound hits the map, every living worm becomes confused and the turn ends at once. A confused worm plays its next
-whole turn with inverted movement / aim controls (random), and is back to normal afterwards."""
+camera-flash sound hits the map, every other worm becomes confused and the turn ends at once. Confused worms play the following two
+turns with inverted movement / aim controls (random); the caster is not affected and afterwards everything is back to normal."""
 from common import game_page, finish, BASE
 from arena import ARENA_JS
 
@@ -25,7 +25,8 @@ const run = ([base]) => {
   out.phase = g.phase;
   out.flash = evs.filter(e => e.e === 'flash').map(e => e.a);
   out.snd = evs.some(e => e.e === 'snd' && e.s === 'neuralizer');
-  out.confAll = g.worms.every(o => o.conf === 1);
+  out.confAll = g.worms.every(o => o !== a ? o.conf === 1 : !o.conf);
+  out.turns = g.confTurns;
   window.emit = oldEmit;
   // next turn of a confused worm: inverted controls
   let guard = 0;
@@ -46,11 +47,19 @@ const run = ([base]) => {
   aim0 = b.aim;
   LOCAL.u = 1; for (let i = 0; i < 20; i++) w.stepOnce(1/60); LOCAL.u = 0;
   out.aimUp = b.aim - aim0;
-  // turn over: the confusion is gone
-  g.timer = 0.01;
-  guard = 0;
-  while (guard++ < 60 * 30 && g.active === b.id) w.stepOnce(1/60);
-  out.after = b.conf;
+  // the confusion lasts two turns, the caster is never affected; then everybody is back to normal
+  const seq = [b.conf === 2];
+  for (let n = 0; n < 2; n++) {
+    g.timer = 0.01;
+    const prev = g.active;
+    guard = 0;
+    while (guard++ < 60 * 40 && !(g.phase === 'turn' && g.active !== prev)) w.stepOnce(1/60);
+    const c = g.worms.find(o => o.id === g.active);
+    seq.push(c.conf === 2 && c !== a);
+  }
+  out.seq = seq;
+  out.casterFree = !a.conf;
+  out.after = g.worms.every(o => !o.conf);
   return out;
 };
 """
@@ -61,9 +70,10 @@ with game_page(viewport={"width": 1100, "height": 700}) as (pg, errors):
     assert r["tool"] == "neu" and r["ammo"] == 0 and r["confBefore"] == 0, "starts as a tool and spends its ammo"
     assert r["phase"] != "turn", "the turn ends right after the flash"
     assert r["flash"] and max(r["flash"]) > 1.5 and r["snd"], "full-screen flash and camera sound"
-    assert r["confAll"], "every worm on the map is confused"
+    assert r["confAll"], "every worm but the caster is confused"
     assert r["confActive"] == 2 and r["inv"], "the confused worm starts its turn with a random inversion"
     assert r["dx"] < -5, f"left/right inverted: {r['dx']}"
     assert r["aimNormal"] * r["aimUp"] < 0, f"up/down inverted: {r['aimNormal']} vs {r['aimUp']}"
-    assert r["after"] == 0, "the confusion lasts one turn only"
+    assert r["seq"] == [True, True, False], f"confused for two turns: {r['seq']}"
+    assert r["casterFree"] and r["after"], "the caster is spared; afterwards everyone is back to normal"
     finish(errors)

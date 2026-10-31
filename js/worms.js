@@ -597,13 +597,14 @@ function btTick(w, tl, dt) {
 }
 /**
  * Men in Black Neuralizer: sunglasses on, device raised (tl.p = 0..1 over NEU_ANIM s, sent to guests); at NEU_FLASH s a
- * full-screen white flash and a camera-flash sound hit the whole map and every living worm (clones excepted) gets
- * w.conf = 1 ("confused"); the turn ends right after the animation. In startTurn (match.js) a worm with conf 1 begins its next
- * turn confused (conf 2, random inversion of its movement and/or aim in G.confInv, applied in step.js) and loses it when
- * that turn is over.
+ * full-screen white flash and a camera-flash sound hit the whole map: every living worm except the caster (clones excepted) gets
+ * w.conf = 1 ("confused") and G.confTurns = NEU_TURNS; the turn ends right after the animation. In startTurn (match.js) a
+ * confused worm begins its turn with conf 2 and a random inversion of its movement and/or aim in G.confInv (applied in step.js);
+ * after NEU_TURNS turns everybody is back to normal.
  */
 const NEU_ANIM = 1.5,
-  NEU_FLASH = 0.95;
+  NEU_FLASH = 0.95,
+  NEU_TURNS = 2; // turns (of anyone) that follow the flash during which the other worms stay confused
 function neuTick(w, tl, dt) {
   if (tl.age === undefined) tl.age = 0;
   tl.age += dt;
@@ -614,7 +615,8 @@ function neuTick(w, tl, dt) {
     emit({ e: 'snd', s: 'neuralizer' });
     emit({ e: 'flash', c: '#ffffff', a: 2.2 });
     emit({ e: 'msg', t: 'Confused!' });
-    for (const o of G.worms) if (!o.dead && !o.clone) o.conf = 1;
+    for (const o of G.worms) if (!o.dead && !o.clone && o !== w) o.conf = 1; // the caster is spared
+    G.confTurns = NEU_TURNS;
   }
   if (tl.age >= NEU_ANIM) tl.t = 0;
 }
