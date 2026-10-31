@@ -84,6 +84,7 @@ const MP3_FILES = [
   'sounds/avadakedavra.mp3',
   'sounds/darthvader.mp3',
   'sounds/bullettime.mp3',
+  'sounds/lightsaber.mp3',
 ];
 /** src -> {el: HTMLAudioElement (always), buf: AudioBuffer (once decoded)}; live voices for mute. */
 const MP3 = {},
@@ -254,6 +255,23 @@ const SFX = {
     tone(300, 900, 0.5, 'sine', 0.09);
     tone(310, 1200, 0.9, 'triangle', 0.06);
     setTimeout(() => tone(1500, 400, 0.3, 'sine', 0.07), 1000);
+  },
+  // Lightsaber duel: the custom duel track (LS_TIME = 5 s), the ignition and the humming of the two blades.
+  saber: () => {
+    mp3Sfx('sounds/lightsaber.mp3', 0.5);
+    tone(80, 420, 0.35, 'sawtooth', 0.07);
+    tone(86, 450, 0.35, 'sawtooth', 0.05);
+    tone(110, 112, 4.6, 'sawtooth', 0.025); // the hum of the blue blade
+    tone(104, 102, 4.6, 'sawtooth', 0.025); // the hum of the red blade
+  },
+  saberclash: () => {
+    noiseBurst(0.12, 0.3, 7000);
+    tone(1900, 900, 0.18, 'square', 0.06);
+    tone(150, 90, 0.2, 'sawtooth', 0.08);
+  },
+  saberoff: () => {
+    tone(420, 70, 0.4, 'sawtooth', 0.07);
+    tone(450, 80, 0.4, 'sawtooth', 0.05);
   },
   // Shadow Clone Jutsu: the soft pop of the smoke cloud.
   poof: () => {

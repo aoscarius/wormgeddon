@@ -4,7 +4,7 @@ Generated from the git history by `python3 tools/changelog.py` - do not edit by 
 Commits are listed from the first one to the most recent; each is split into what was added,
 fixed, changed or refactored.
 
-62 commits, 2026-10-18 to 2026-10-31. Up to commit `07f2063b2f27dea3ea1bf6f6f9baa5bb70d989b4`.
+63 commits, 2026-10-18 to 2026-10-31. Up to commit `d4deca76bb3233ba47f5bae71af2fed2cbdf0f6a`.
 
 ## 2026-10-18
 
@@ -471,7 +471,12 @@ fixed, changed or refactored.
 **Added**
 - Implemented Mind Transfer Jutsu: add mechanics for spirit transfer to enemy worm, control mechanics, audio effects, visual representation, and tests for functionality
 
-### [`07f2063`](https://github.com/aoscarius/wormgeddon/commit/07f2063b2f27dea3ea1bf6f6f9baa5bb70d989b4)
+### [`c1d0e16`](https://github.com/aoscarius/wormgeddon/commit/c1d0e161022190c518fc06cfe63ed0db0a0ac118)
 
 **Changed**
 - Enhanced Neuralizer mechanics: update confusion effect to last for two turns, excluding the caster, and adjust related tests for functionality
+
+### [`d4deca7`](https://github.com/aoscarius/wormgeddon/commit/d4deca76bb3233ba47f5bae71af2fed2cbdf0f6a)
+
+**Added**
+- Added new lightsaber weapon, a duel between two characters with light sabers

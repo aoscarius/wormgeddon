@@ -12,7 +12,7 @@
  * about y = +7.5, and `f` (= worm.face, +1 or -1) mirrors everything horizontally.
  *
  * Depends on: view (ctx2, CAM), core (G, aimDir, WEAPONS)
- * Globals defined: TEAM_HATS, WORM_INK, WORM_SKIN, HELD_ITEMS, HP_HOLD, shownHp, hexRgb, rgbStr, wormBodyColor,
+ * Globals defined: drawSaberDuel, TEAM_HATS, WORM_INK, WORM_SKIN, HELD_ITEMS, HP_HOLD, shownHp, hexRgb, rgbStr, wormBodyColor,
  *     wCircle, drawHat, drawHeld, drawGrave, drawWorm, drawWormLabel, drawHeldWeaponBox, drawAim
  */
 
@@ -446,6 +446,16 @@ function drawWormBody(w) {
     else g.rect(26 - (52 - 52 * w.dustP), -34, 52 - 52 * w.dustP, 60);
     g.clip();
   }
+  // Lightsaber: the finishing spin of the attacker (one full turn between LS_SPIN and LS_STRIKE)
+  if (w.tool && w.tool.k === 'saber') {
+    const ts = (w.tool.p || 0) * LS_TIME,
+      sp = clamp((ts - LS_SPIN) / (LS_STRIKE - LS_SPIN), 0, 1);
+    if (sp > 0 && sp < 1) {
+      g.translate(0, -3);
+      g.rotate(w.face * TAU * sp * sp * (3 - 2 * sp));
+      g.translate(0, 3);
+    }
+  }
   // Matrix Bullet Time: the worm bends backwards (pivoting at its feet) while it starts the effect
   if (w.tool && w.tool.k === 'bt') {
     g.translate(0, 6);
@@ -655,6 +665,7 @@ function drawWormBody(w) {
     drawHeld(g, w, ax, ay);
   }
 
+  drawSaberDuel(g, w, f);
   // --- tool visuals (blowtorch flame, drill bit)
   if (w.tool) {
     const [dx, dy] = aimDir(w);
@@ -1164,6 +1175,76 @@ function drawWormBody(w) {
   g.restore();
 }
 
+/**
+ * Lightsaber duel (worm local coordinates): the attacker holds a blue blade and its adjacent target a red one; both ignite,
+ * swing towards each other so that the blades meet at every beat (LS_BEAT); the attacker then spins round (LS_SPIN..LS_STRIKE)
+ * with its blade stretched out, strikes, and both stow away at the end of the duel.
+ */
+function drawSaberDuel(g, w, f) {
+  let duel = null,
+    col = '#3fa7ff';
+  if (w.tool && w.tool.k === 'saber') duel = w.tool;
+  else {
+    const a = G.worms.find(o => o.tool && o.tool.k === 'saber' && o.tool.lv - 1 === w.id);
+    if (a) {
+      duel = a.tool;
+      col = '#ff3b3b';
+    }
+  }
+  if (!duel) return;
+  const p = clamp(duel.p || 0, 0, 1),
+    t = p * LS_TIME,
+    grow = clamp(Math.min(p / 0.08, (1 - p) / 0.08), 0, 1),
+    k = Math.floor(t / LS_BEAT),
+    u = (t / LS_BEAT) % 1,
+    off = col === '#3fa7ff' ? 0 : 0.06,
+    atk = col === '#3fa7ff',
+    sp = atk ? clamp((t - LS_SPIN) / (LS_STRIKE - LS_SPIN), 0, 1) : 0, // the attacker's finishing spin
+    struck = t >= LS_STRIKE,
+    lean = sp > 0 && !struck ? 1.5 : struck ? 0.35 : (0.15 + (0.95 + 0.25 * Math.sin(k * 2.1)) * Math.cos(Math.PI * (u + off)) ** 2) * (atk ? 1 : 0.92),
+    hx = f * 6,
+    hy = -2,
+    L = 25 * grow,
+    tx = hx + f * Math.sin(lean) * L,
+    ty = hy - Math.cos(lean) * L;
+  if (grow <= 0) return;
+  g.save();
+  g.lineCap = 'round';
+  g.strokeStyle = '#555a63';
+  g.lineWidth = 3;
+  g.beginPath();
+  g.moveTo(hx - f * Math.sin(lean) * 3, hy + Math.cos(lean) * 3);
+  g.lineTo(hx, hy);
+  g.stroke();
+  if (sp > 0 && sp < 1) {
+    // the swoosh of the spinning blade
+    g.globalCompositeOperation = 'lighter';
+    g.strokeStyle = col;
+    g.globalAlpha = 0.3;
+    g.lineWidth = 5;
+    g.beginPath();
+    g.arc(0, -3, L * 0.9, 0, TAU);
+    g.stroke();
+    g.globalAlpha = 1;
+  }
+  g.globalCompositeOperation = 'lighter';
+  g.strokeStyle = col;
+  g.globalAlpha = 0.35 + 0.1 * Math.sin(G.time * 40);
+  g.lineWidth = 7;
+  g.beginPath();
+  g.moveTo(hx, hy);
+  g.lineTo(tx, ty);
+  g.stroke();
+  g.globalAlpha = 0.9;
+  g.lineWidth = 3.4;
+  g.stroke();
+  g.globalCompositeOperation = 'source-over';
+  g.globalAlpha = 1;
+  g.strokeStyle = '#fff';
+  g.lineWidth = 1.4;
+  g.stroke();
+  g.restore();
+}
 /**
  * Draws the worm's name and health pill above it (counter-scaled so text stays readable at any
  * zoom), and a bobbing arrow above the active worm.

@@ -515,6 +515,10 @@ function applyEvent(e) {
       UI.flash = e.c;
       UI.flashA = e.a || 1;
       break;
+    case 'saberclash':
+      puff(e.x, e.y, 14, 170, ['#fff', '#ffe9a0', '#9fd0ff', '#ff8f8f'], 0.35, 2, 220, 'c');
+      SFX.saberclash();
+      break;
     case 'mark':
       FX.marks.push({ x: e.x, y: e.y, l: 3 });
       break;

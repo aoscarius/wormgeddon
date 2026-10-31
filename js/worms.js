@@ -7,7 +7,7 @@
  * passive physics for every other worm.
  *
  * Depends on: core, collision, combat
- * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, NEU_*, neuTick, MIND_ANIM, mindTick, mindLink, mindEnd, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
+ * Globals defined: TOOL_LOCKED, TOOL_ATOMIC, FORCE_*, forceTick, WAND_*, wandTick, STAFF_*, staffTick, staffSlam, staffBreak, BT_*, btShield, btScale, btTick, btFire, btDeflect, NEU_*, neuTick, LS_*, saberTick, MIND_ANIM, mindTick, mindLink, mindEnd, THANOS_RADIUS, THANOS_SHARE, SNAP_*, DUST_T, snapTick, dustTick, HYAKU_*, hyakuTick, kameTick, oniTick, protonTick, AXE_*, axeSpot, axeFoot, axeCrush, axeTick, ONI_*, doomBlast, walkStep, physBody, supported, physWorm, toolHurt, sinkWorm, ropePhys, controlWorm
  */
 
 /* Generic grounded/airborne helper for walkers (worms, sheep) */
@@ -230,8 +230,8 @@ function toolHurt(w, tl, dt, cx, cy, reach, dmg, push) {
   }
 }
 /** Tools the player cannot stop with Space (they run their course), and those that must also outlast the turn clock. */
-const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1 };
-const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1 };
+const TOOL_LOCKED = { kami: 1, hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1, saber: 1 };
+const TOOL_ATOMIC = { hyaku: 1, oni: 1, kame: 1, proton: 1, axe: 1, snap: 1, staff: 1, wand: 1, force: 1, bt: 1, neu: 1, mind: 1, saber: 1 };
 /**
  * Hokuto Hyakuretsu Ken: reach of the barrage (px), its length and punch rate (s), damage per punch, dash speed (px/s),
  * how far past the victim the attacker ends (px), the dash when nobody was hit, the time between the last blow and the
@@ -661,6 +661,53 @@ function mindEnd() {
   if (w) w.team = m.home;
   G.mind = null;
 }
+/**
+ * Lightsaber duel: the attacker and the adjacent enemy (tl.lv = its id + 1, tl.p = 0..1 over LS_TIME s, sent to guests) draw
+ * a blue and a red lightsaber and fight an automated cinematic duel for exactly LS_TIME s: the blades meet at every beat (a
+ * 'saberclash' event: sparks and a clash sound) until LS_SPIN, when the attacker spins once round (whoosh) and at LS_STRIKE
+ * delivers a lethal strike that kills the target outright (it is also knocked away); then both stow their sabers.
+ */
+const LS_TIME = 5,
+  LS_REACH = 46,
+  LS_BEAT = 0.5,
+  LS_SPIN = 3.9, // s: the finishing spin starts
+  LS_STRIKE = 4.6; // s: the lethal blow lands (the spin has made one full turn)
+function saberTick(w, tl, dt) {
+  const tw = wById(tl.lv - 1);
+  if (tl.age === undefined) tl.age = 0;
+  const a0 = tl.age;
+  tl.age += dt;
+  tl.p = +Math.min(1, tl.age / LS_TIME).toFixed(3);
+  physWorm(w, dt, false);
+  if (!tw || tw.dead) {
+    tl.t = 0;
+    return;
+  }
+  tw.face = -w.face;
+  if (tw.grounded && !tl.hit) tw.vx = 0;
+  // the blades meet at every beat, from the end of the ignition to the start of the finishing spin
+  const k0 = Math.floor(a0 / LS_BEAT),
+    k1 = Math.floor(tl.age / LS_BEAT);
+  if (k1 > k0 && k1 >= 1 && k1 * LS_BEAT < LS_SPIN) {
+    emit({ e: 'saberclash', x: (w.x + tw.x) / 2 + (w.x < tw.x ? 3 : -3), y: (w.y + tw.y) / 2 - 12, k: k1 });
+  }
+  if (a0 < LS_SPIN && tl.age >= LS_SPIN) emit({ e: 'snd', s: 'whoosh' });
+  if (!tl.hit && tl.age >= LS_STRIKE) {
+    tl.hit = 1;
+    hurt(tw, tw.hp + (tw.pend || 0) + 999, { src: w.id }); // lethal
+    tw.vx += w.face * 380;
+    tw.vy -= 240;
+    tw.grounded = false;
+    tw.rope = null;
+    emit({ e: 'saberclash', x: tw.x - w.face * 4, y: tw.y - 6, k: 99 });
+    emit({ e: 'punch', x: tw.x - w.face * 4, y: tw.y - 6, k: 'bat', f: w.face });
+    emit({ e: 'snd', s: 'hurt' });
+  }
+  if (tl.age >= LS_TIME) {
+    tl.t = 0;
+    emit({ e: 'snd', s: 'saberoff' });
+  }
+}
 /** Fire held while Bullet Time runs: one more high-velocity round every BT_RATE s. */
 function btFire(w, dt) {
   const b = G.bt;
@@ -916,6 +963,7 @@ function controlWorm(w, inp, dt) {
     else if (tl.k === 'bt') btTick(w, tl, dt);
     else if (tl.k === 'neu') neuTick(w, tl, dt);
     else if (tl.k === 'mind') mindTick(w, tl, dt);
+    else if (tl.k === 'saber') saberTick(w, tl, dt);
     if (inp.fireP && !TOOL_LOCKED[tl.k]) {
       tl.t = 0;
       inp.fireP = 0;

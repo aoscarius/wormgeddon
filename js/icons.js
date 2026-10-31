@@ -338,6 +338,15 @@ const ICON_DRAW = {
     icLine(g, 18, 32, 28, 22, 3, IC.blue);
     icLine(g, 36, 22, 46, 32, 3, IC.blue);
   },
+  // Lightsaber: two crossed glowing blades with their hilts.
+  lightsaber(g) {
+    icLine(g, 14, 50, 46, 10, 7, IC.blue);
+    icLine(g, 14, 50, 46, 10, 3, IC.white);
+    icLine(g, 50, 50, 18, 10, 7, IC.red);
+    icLine(g, 50, 50, 18, 10, 3, IC.white);
+    icLine(g, 8, 58, 16, 48, 5, IC.steel);
+    icLine(g, 56, 58, 48, 48, 5, IC.steel);
+  },
   // Rasenshuriken: a blue wind sphere with four curved blades.
   rasenshuriken(g) {
     icCircle(g, 32, 32, 12, IC.blue);

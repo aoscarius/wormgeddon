@@ -41,6 +41,7 @@ const CRATE_WEAP = [
   'onigiri',
   'gigantaxe',
   'gandalf',
+  'lightsaber',
   'avada',
   'forcechoke',
   'bullettime',

@@ -427,6 +427,38 @@ registerWeapon({
     return 'keep';
   },
 });
+// Lightsaber: draws a blue saber against the adjacent enemy, who draws a red one; a 5 s automated cinematic duel (custom track and
+// humming sound effects) ends with the attacker's finishing spin and a lethal strike on the target (see saberTick).
+registerWeapon({
+  id: 'lightsaber',
+  name: 'Lightsaber',
+  code: 'LS',
+  ammo: 1,
+  delay: 4,
+  noEnd: true,
+  fire(c) {
+    let tw = null,
+      best = LS_REACH;
+    for (const o of G.worms) {
+      if (o.dead || o.clone || o.team === c.w.team) continue;
+      const d = Math.hypot(o.x - c.w.x, o.y - c.w.y);
+      if (d < best && Math.abs(o.y - c.w.y) < 26) {
+        best = d;
+        tw = o;
+      }
+    }
+    if (!tw) {
+      emit({ e: 'msg', t: 'No worm within reach' });
+      return 'miss';
+    }
+    c.w.face = tw.x >= c.w.x ? 1 : -1;
+    tw.face = -c.w.face;
+    emit({ e: 'snd', s: 'saber' });
+    emit({ e: 'msg', t: 'Lightsaber duel' });
+    c.w.tool = { k: 'saber', t: 99, p: 0, lv: tw.id + 1 };
+    return 'keep';
+  },
+});
 // Matrix "Bullet Time": the world slows to BT_SLOW for BT_TIME s while the caster keeps full speed and cannot be hurt; with the
 // weapon still selected, holding Fire sends a barrage of fast rounds that freeze in mid-air and speed up again when it ends.
 registerWeapon({
