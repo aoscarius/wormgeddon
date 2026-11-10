@@ -402,6 +402,11 @@ Per-player (client-side) options that are *not* match rules, like **Auto-centre 
 kept in `UI` and `localStorage` (`wormgeddon.autocenter`); see the end of `menu.js`.
 **Splatter Mode**, are
 kept in `UI` and `localStorage` (`wormgeddon.splattermode`); see the end of `menu.js`.
+**Keep hosting in the background** (`UI.bgHost`, `wormgeddon.bghost`, on by default): browsers stop `requestAnimationFrame` in a hidden tab,
+which would freeze the match for every guest, and `navigator.locks` does not change that. While hosting, `bgSync()` (main.js) keeps a
+dedicated Web Worker that ticks every 16 ms (worker timers are not throttled); `bgTick()` runs `hostSim()` + `fxUpdate()` only when no
+animation frame has run for 120 ms, and nothing is rendered, so the simulation is never stepped twice. Mobile browsers that suspend the
+whole page cannot be helped.
 
 **Arsenal modes.** The *Arsenal* option is `cfg.arsenal`: `std`, `full`, `bazooka`, `chaos` or a key of
 `ARSENALS` (`match.js`): `special`, `anime`, `melee`, `artillery`. A restricted arsenal is data:

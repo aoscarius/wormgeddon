@@ -34,6 +34,7 @@ const UI = {
   traj: false,
   autoCenter: true,
   splatterMode: false,
+  bgHost: true, // host option: keep the match running while the tab is hidden (see bgSync in main.js)
   moving: false,
   shake: 0,
   flash: null,

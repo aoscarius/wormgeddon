@@ -239,6 +239,8 @@ I18N.it = {
   '{0} maps in the \'maps\' folder': '{0} mappe nella cartella \'maps\'',
   'Add PNG files to the \'maps\' folder (see maps/README.txt).': 'Aggiungi file PNG alla cartella \'maps\' (vedi maps/README.md).',
   'Auto-centre the camera when a worm moves': 'Ricentra la camera quando un verme si muove',
+  'Keep hosting in the background - Keep the match running while this tab is hidden':
+    'Mantieni l\'host in background - Il match continua anche se la scheda è nascosta',
   'Splatter Mode - Enable blood particles': 'Splatter Mode - Abilita gli schizzi di sangue',
   '(in debug view) show trajectories': '(nella vista debug) mostra le traiettorie',
   'Load maps folder\u2026': 'Carica cartella mappe\u2026',

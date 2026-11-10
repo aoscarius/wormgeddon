@@ -225,7 +225,9 @@ $('oTeams').addEventListener('change', buildTeamRows);
 try {
   UI.autoCenter = localStorage.getItem('wormgeddon.autocenter') !== '0';
   UI.splatterMode = localStorage.getItem('wormgeddon.splattermode') === '0';
+  UI.bgHost = localStorage.getItem('wormgeddon.bghost') !== '0';
 } catch (e) {}
+if (UI.bgHost === undefined) UI.bgHost = true;
 $('oAuto').checked = UI.autoCenter;
 $('oAuto').addEventListener('change', e => {
   UI.autoCenter = e.target.checked;
@@ -238,6 +240,13 @@ $('oSplatter').addEventListener('change', e => {
   UI.splatterMode = e.target.checked;
   try {
     localStorage.setItem('wormgeddon.splattermode', UI.splatterMode ? '1' : '0');
+  } catch (err) {}
+});
+$('oBgHost').checked = UI.bgHost;
+$('oBgHost').addEventListener('change', e => {
+  UI.bgHost = e.target.checked;
+  try {
+    localStorage.setItem('wormgeddon.bghost', UI.bgHost ? '1' : '0');
   } catch (err) {}
 });
 $('bStart').addEventListener('click', () => {
